@@ -2,13 +2,16 @@
 layout: page
 title: A propos
 permalink: /about/
-weight: 3
+weight: 5
 ---
 
 # **About Me**
 
-Hi I am **{{ site.author.name }}** :wave:,<br>
-Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+Bonjour ! Je suis **{{ site.author.name }}** :wave:,<br>
+
+>Si l'envie vous venait de vouloir me contacter par e-mail, vous noterez que j'utilise une adresse *étrange* `@duck.com`.
+>Il s'agit d'un alias fourni par **DuckDuckGo** (plus connu pour son navigateur) qui permet de cacher ma véritable adresse mail, et que je peux facilement désactiver et renouveler en cas de spam sur cette adresse.
+>Après tout, il s'agit d'un blog orienté cybersécurité, commencer par ne pas dévoiler une adresse personnelle au monde entier est un bon début <i class="fa-solid fa-user-secret fa-fade" style="--fa-animation-duration: 2s;"></i>
 
 <div class="row">
 {% include about/skills.html title="Programming Skills" source=site.data.programming-skills %}
