@@ -1,17 +1,13 @@
-- title: Student, Harvard CS
-  from: 2014
-  to: 2018
-  description: Lorem ipsum dolor sit amet, consectetur adipiscing elit,
-               sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-               Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
-               nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
-               reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
-
-- title: Software Engineer, Google, UK
-  from: 2018
+- title: Administrateur Systèmes, Capgemini, Le Relecq-Kerhuon, FR
+  icon: fa-solid fa-user-tie
+  from: 09/2023
   to: present
-  description: Lorem ipsum dolor sit amet, consectetur adipiscing elit,
-               sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-               Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
-               nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in
-               reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.
+  description: Administration systèmes dans le domaine bancaire.
+              Exploitation Mainframe, gestion de l'environnement, des comptes et des habilitations hors-production
+              Exploitation Outils de Sécurité, analyse de logs, gestion antivirus, gouvernance
+
+- title: Baccalauréat, Lycée Vauban, Brest, FR
+  icon: fa-solid fa-graduation-cap
+  from: 09/2008
+  to: 06/2010
+  description: Baccalauréat STI Génie Mécanique, option Systèmes Motorisés
