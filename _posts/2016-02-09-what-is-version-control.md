@@ -3,6 +3,7 @@ title: What is version control?
 tags: [Version Control]
 style: fill
 color: secondary
+modified: 25/08/2024
 comments: true
 description: Benefits of version control and version control systems.
 ---
