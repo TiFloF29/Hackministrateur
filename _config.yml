@@ -1,5 +1,6 @@
 ### Site Settings ###
 title               : Hackmin
+date_locale: fr
 description         : >-
                       Attaque ou défense, pourquoi choisir ?<br>
                       On ne peut pas protéger efficacement si on ne connaît pas les vulnérabilités !<br>
