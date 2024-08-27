@@ -1,7 +1,7 @@
 ---
 title: Bounty Hacker
 tags: [TryHackMe, Facile, Bruteforce]
-style: outline
+style: fill
 color: danger
 modified: 2024-08-26
 comments: false
