@@ -1,0 +1,15 @@
+{% if include.block %}
+  {%- assign block_style = "btn-block" -%}
+{%- else -%}
+  {%- assign block_style = "" -%}
+{%- endif -%}
+
+{%- if include.style -%}
+  {%- assign button_style = include.style -%}
+{%- else -%}
+  {%- assign button_style = 'outline-primary' -%}
+{%- endif -%}
+
+<a class="m-1 btn btn-{{ button_style }} btn-{{ include.size | default: 'md' }} {{ block_style }}" href="{{ include.link | default: '#' }}" style="{% if include.style %}{{ include.style }};{% endif %}">
+  {{ include.text | default: "Button" }}
+</a>
