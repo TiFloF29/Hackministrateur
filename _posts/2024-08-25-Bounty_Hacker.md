@@ -2,7 +2,7 @@
 title: Bounty Hacker
 tags: [TryHackMe, Facile, Bruteforce]
 style: border
-color: "danger"
+color: "#9ff000"
 modified: 2024-08-26
 comments: false
 description: Une box particulièrement facile pour débuter
