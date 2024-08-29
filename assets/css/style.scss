@@ -1,0 +1,56 @@
+---
+---
+@import 'portfolYOU';
+
+.border-thm {
+    background-color: $bg-thm;
+    color: $thm !important;
+    border: 2px solid $thm !important;
+}
+
+.border-thm:hover {
+    background-color: $thm;
+    color: $bg-thm !important;
+}
+
+.bg-thm {
+    background-color: $thm !important;
+    color: $bg-thm !important;
+}
+
+.bg-thm:hover {
+    background-color: $bg-thm !important;
+    color: $thm !important;
+    border: 2px solid $thm !important;
+}
+
+.border-htb {
+    background-color: $bg-htb;
+    color: $htb !important;
+    border: 2px solid $htb !important;
+}
+
+.border-htb:hover {
+    background-color: $htb;
+    color: $bg-htb !important;
+}
+
+.bg-htb {
+    background-color: $htb !important;
+    color: $bg-htb !important;
+}
+.bg-htb:hover {
+    background-color: $bg-htb !important;
+    color: $htb !important;
+    border: 1px solid $htb !important;
+}
+.border-htba {
+    background-color: transparent;
+    color: #cccccc !important;
+    border: 2px solid #cccccc !important;
+}
+
+.border-htba:hover {
+    background-color: #cccccc !important;
+    color: #fff !important;
+}
