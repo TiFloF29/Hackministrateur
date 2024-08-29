@@ -1,0 +1,32 @@
+.button1 {
+    background-color: #c6c8cd;
+    color: #1c2538;
+    border: 2px solid #1c2538;
+}
+
+.button1:hover {
+    background-color: #1c2538;
+    color: #c6c8cd;
+}
+
+.button2 {
+    background-color: #1a2332;
+    color: #9ff000;
+    border: 2px solid #9ff000;
+}
+
+.button2:hover {
+    background-color: #9ff000;
+    color: #1a2332;
+}
+
+.button3 {
+    background-color: transparent;
+    color: #cccccc;
+    border: 2px solid #cccccc;
+}
+
+.button3:hover {
+    background-color: #cccccc;
+    color: #fff;
+}
