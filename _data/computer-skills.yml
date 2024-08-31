@@ -1,0 +1,13 @@
+- name: Linux
+  percentage: 70
+  color: bg-secondary
+  icon: fa-brands fa-linux
+
+- name: Windows
+  percentage: 60
+  color: bg-primary
+  icon: fa-brands fa-windows
+
+- name: Mainframe
+  percentage: 50
+  color: teal

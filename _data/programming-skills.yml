@@ -1,9 +1,9 @@
 - name: Bash
   icon: fa-brands fa-linux
-  percentage: 50
-  color: secondary
+  percentage: 45
+  color: bg-secondary
 
 - name: Python
   icon: fa-brands fa-python
-  percentage: 70
-  color: warning
+  percentage: 50
+  color: bg-warning

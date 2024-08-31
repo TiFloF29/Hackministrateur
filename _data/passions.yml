@@ -1,0 +1,9 @@
+- name: Photographie
+  icon: fa-solid fa-camera
+  percentage: 60
+  color: bg-success
+
+- name: Astronomy
+  icon: fa-solid fa-meteor
+  percentage: 5
+  color: bg-danger

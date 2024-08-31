@@ -1,7 +1,3 @@
-- name: Adobe Photoshop
-  percentage: 95
-  color: info
-
-- name: Adobe Illustrator
-  percentage: 90
-  color: success
+- name: Gestion switchs et routeurs
+  percentage: 20
+  color: bg-info

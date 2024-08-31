@@ -3,8 +3,61 @@
   from: 09/2023
   to: present
   description: Administration systèmes dans le domaine bancaire.
-              Exploitation Mainframe, gestion de l'environnement, des comptes et des habilitations hors-production
+              Exploitation Mainframe, gestion de l'environnement, des comptes et des habilitations hors-production<br />
               Exploitation Outils de Sécurité, analyse de logs, gestion antivirus, gouvernance
+
+- title: POEI Administration Systèmes et Réseaux / Bancaire, IB Cegos, distanciel
+  icon: fa-solid fa-graduation-cap
+  from: 06/2023
+  to: 09/2023
+  description: Formation de 3 mois pour connaître les bases de l'administration Linux, Windows et Mainframe
+
+- title: Formation Technicien Systèmes et Réseaux / Analyste SOC, Simplon, Rennes, FR
+  icon: fa-solid fa-graduation-cap
+  from: 10/2022
+  to: 05/2023
+  description: Formation de 6 mois en centre + 12 mois en alternance visant un titre RNCP de niveau 5 TSSR<br />
+              Certification supplémentaire analyste SOC également prévue<br />
+              Découverte de Linux, des outils réseau (switch, routeurs)<br />
+              Introduction à la cybersécurité et aux pentests<br />
+              <b>Formation non menée à son terme faute d'avoir trouvé une alternance</b>
+
+- title: Ingénieur motoriste, Bertrandt France, Toulouse, FR
+  icon: fa-solid fa-user-tie
+  from: 08/2017
+  to: 10/2021
+  description: Développement et amélioration de fonctions implémentées dans le calculateur<br />
+              Réalisation d'essais sur simulateur et sur véhicule afin de valider le bon fonctionnement
+
+- title: Master 2 ECE (Energie, Combustion, Environnement), UFR Orléans, Orléans, FR
+  icon: fa-solid fa-graduation-cap
+  from: 09/2015
+  to: 06/2016
+  description: Formation orientée recherche sur la combustion, la formation des polluants, et les dégagements d'énergie<br />
+              <b>1 seule année car double-diplôme</b>
+
+- title: Ingénieur TEAM (Technologies pour l'Energie, l'Aérospatial, et la Motorisation), Polytech' Orléans, Orléans, FR
+  icon: fa-solid fa-graduation-cap
+  from: 09/2013
+  to: 06/2016
+  description: Formation d'ingénieur TEAM, mon choix s'est porté sur les modules de motorisation<br />
+              Apprentissage des technologies de propulsion des véhicules terrestres, et aérospatiaux<br />
+              Modélisation et méthodes de calcul<br />
+              <b>Diplôme non obtenu faute d'une expérience à l'international absente</b>
+
+- title: Classe préparatoire ATS (Adaptation Technicien Supérieur), Lycée Livet, Nantes, FR
+  icon: fa-solid fa-graduation-cap
+  from: 09/2012
+  to: 06/2013
+  description: Classe préparatoire en une année pour les personnes ayant un diplôme bac +2<br />
+              L'objectif est de faire une remise à niveau avant d'intégrer une grande école
+
+- title: Brevet de Technicien Supérieur MCI (Moteurs à Combustion Interne), Lycée Vauban, Brest, FR
+  icon: fa-solid fa-graduation-cap
+  from: 09/2010
+  to: 06/2012
+  description: Approfondissement des connaissances en mécanique vues lors du baccalauréat<br />
+              Réalisation d'essais sur bancs moteur, calibration essence et diesel
 
 - title: Baccalauréat, Lycée Vauban, Brest, FR
   icon: fa-solid fa-graduation-cap
