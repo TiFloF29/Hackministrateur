@@ -18,13 +18,13 @@
       {%- if forloop.first -%}
         <div class="carousel-item active">
           <a href="{{ image_url[1] }}" target="_blank">
-            <img src="{{ image_url[0] }}" class="{{include.class}}" width="90%"/>
+            <img src="{{ image_url[0] }}" class="{{include.class}}"/>
           </a>
         </div>
       {%- else -%}
         <div class="carousel-item">
           <a href="{{ image_url[1] }}" target="_blank">
-            <img src="{{ image_url[0] }}" class="{{include.class}}" width="90%"/>
+            <img src="{{ image_url[0] }}" class="{{include.class}}"/>
           </a>
         </div>
       {%- endif -%} 
@@ -58,15 +58,15 @@
     {% for image in images %}
       {%- assign image_url = image | split: '|' -%}
       {%- if forloop.first -%}
-        <div class="carousel-item active">
+        <div class="carousel-item active row text-center">
           <a href="{{ image_url[1] }}" target="_blank">
-            <img src="{{ image_url[0] }}" class="d-block w-90" width="90%"/>
+            <img src="{{ image_url[0] }}" class="img-fluid"/>
           </a>
         </div>
       {%- else -%}
-        <div class="carousel-item">
+        <div class="carousel-item row text-center">
           <a href="{{ image_url[1] }}" target="_blank">
-            <img src="{{ image_url[0] }}" class="d-block w-90" width="90%"/>
+            <img src="{{ image_url[0] }}" class="img-fluid"/>
           </a>
         </div>
       {%- endif -%} 
