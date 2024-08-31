@@ -13,6 +13,8 @@ Bien qu'ayant étudié dans le domaine de l'automobile jusqu'en 2016, puis trava
 
 Pour un apprentissage plus global de l'informatique, je pratique également la programmation sur la plateforme [CodinGame](https://www.codingame.com/).
 
+Professionnellement, j'utilise également des plateformes comme Coursera et Udemy grâce à un plan de formation mis à disposition par l'entreprise pour laquelle je travaille actuellement.
+
 Et puisque ça ne suffisait pas, j'ai dû découvrir Github, Jekyll, HTML, CSS pour mettre en place ce site. Certes, le thème utilisé a été développé par [Yousinix](https://github.com/yousinix/portfolYOU), mais il m'a fallu tordre quelques fichiers pour que le site ressemble à ce que voulait réellement. C'est aussi ça la magie de l'*open-source* : pouvoir partir d'un projet existant, et l'adapter à ses goûts (dans le respect des licences, et du matériel original bien entendu).
 
 Terminons cette présentation par remercier celui sans qui ce site aurait été moins personnalisé : ChatGPT 4o !
@@ -22,8 +24,13 @@ Terminons cette présentation par remercier celui sans qui ce site aurait été 
 > Après tout, il s'agit d'un blog orienté cybersécurité, commencer par ne pas dévoiler une adresse personnelle au monde entier est un bon début <i class="fas fa-user-secret fa-beat-fade" style="--fa-animation-duration: 2s;"></i>
 
 <div class="row">
+{% include about/skills.html title="Systèmes" source=site.data.computer-skills %}
 {% include about/skills.html title="Programmation" source=site.data.programming-skills %}
+</div>
+
+<div class="row">
 {% include about/skills.html title="Autres Compétences" source=site.data.other-skills %}
+{% include about/skills.html title="Passions" source=site.data.passions %}
 </div>
 
 <div class="row">
