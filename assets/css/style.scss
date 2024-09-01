@@ -44,15 +44,47 @@
     color: $htb !important;
     border: 1px solid $htb !important;
 }
+
 .border-htba {
-    background-color: transparent;
-    color: #cccccc !important;
-    border: 2px solid #cccccc !important;
+    background-color: $bg-htba;
+    color: $htba !important;
+    border: 2px solid $htba !important;
 }
 
 .border-htba:hover {
-    background-color: #cccccc !important;
-    color: #fff !important;
+    background-color: $htba;
+    color: $bg-htba !important;
+}
+
+.bg-htba {
+    background-color: $htba !important;
+    color: $bg-htba !important;
+}
+.bg-htba:hover {
+    background-color: $bg-htba !important;
+    color: $htba !important;
+    border: 1px solid $htba !important;
+}
+
+.border-rootme {
+    background-color: $bg-rootme;
+    color: $rootme !important;
+    border: 2px solid $rootme !important;
+}
+
+.border-rootme:hover {
+    background-color: $rootme;
+    color: $bg-rootme !important;
+}
+
+.bg-rootme {
+    background-color: $rootme !important;
+    color: $bg-rootme !important;
+}
+.bg-rootme:hover {
+    background-color: $bg-rootme !important;
+    color: $rootme !important;
+    border: 1px solid $rootme !important;
 }
 
 .red {
@@ -63,4 +95,9 @@
 .teal {
     background-color: teal;
     color: teal;
+}
+
+.purple {
+    background-color: purple;
+    color: purple;
 }
