@@ -1,12 +1,14 @@
 ### Site Settings ###
-title               : portfolYOU
+title               : Hackmin
+date_locale: fr
 description         : >-
-                      I turn coffee :coffee: into code,
-                      use tabs over spaces
-                      and never broke production.
+                      Attaque ou défense, pourquoi choisir ?<br>
+                      On ne peut pas protéger efficacement si on ne connaît pas les vulnérabilités !<br>
+                      Moitié <b><u>Hack</u></b>er (éthique bien entendu) / Moitié ad<b><u>min</u></b>istrateur<br>
+                      100% <b>HACKMIN</b>
 baseurl             : "/Hackmin"            # Change to empty quotes if you are hosting your site at <your-username>.github.io directly
-repository          : TiFloF29      # Change to <your-username>/<your-username>.github.io (or remove it if you don't need remote projects)
-remote_theme        : yousinix/portfolYOU
+repository          : TiFloF29/Hackmin      # Change to <your-username>/<your-username>.github.io (or remove it if you don't need remote projects)
+remote_theme        : yousinix/portfolYOU@v2.3.0
 open_new_tab        : false                    # Opens external URLs in new tab (works for posts, projects and navbar only)
 
 
@@ -14,21 +16,23 @@ open_new_tab        : false                    # Opens external URLs in new tab 
 plugins:
   - jemoji
 
-
 ### Navbar Settings ###
 nav_exclude:                                            # The following paths are excluded from navbar
   - pages/tags.html
   - pages/404.html
   - pages/index.md
+  - pages/TryHackMe.html
+  - pages/HackTheBox.html
+  - pages/HTBAcademy.html
 
 
 ### Author Info ###
 author:
-  name              : Florian Fuentes
+  name              : Florian F
   image             : assets/avatar.jpeg
 #  behance           : your_username
 # dribbble          : your_username
-  email             : fuentesflorian@gmail.com
+  email             : dandy-crummy-brim@duck.com
   #facebook          : your_username
   github            : TiFloF29
 # gitlab            : your_username
@@ -48,7 +52,7 @@ author:
 
 
 ### Posts ###
-permalink: /blog/:title
+permalink: /comptes-rendus/:title
 
 
 ### Collections ###

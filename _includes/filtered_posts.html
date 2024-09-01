@@ -1,0 +1,9 @@
+<!--Permet de filtrer les postes en fonction d'un tag-->
+
+<div class="card-group mt-2">
+  {% assign filtered_posts = site.posts | where: "tags", page.tags %}
+  
+  {% for post in filtered_posts %}
+    {% include blog/post-card.html %}
+  {% endfor %}
+</div>

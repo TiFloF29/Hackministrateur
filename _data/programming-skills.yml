@@ -1,11 +1,9 @@
-- name: HTML5/CSS3
-  percentage: 90
-  color: danger
-
-- name: Go
-  percentage: 80
-  color:
+- name: Bash
+  icon: fa-brands fa-linux
+  percentage: 45
+  color: bg-secondary
 
 - name: Python
-  percentage: 70
-  color: secondary
+  icon: fa-brands fa-python
+  percentage: 50
+  color: bg-warning

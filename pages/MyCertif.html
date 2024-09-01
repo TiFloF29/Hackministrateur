@@ -1,0 +1,19 @@
+---
+layout: default
+title: Certificats
+weight: 3
+permalink: /Certificats
+---
+<h1>Certificats</h1>
+{% capture list_items %}
+Coursera
+{% endcapture %}
+{% include elements/list.html title="Accès rapide" type="toc" %}
+
+<h2 id="coursera">Certificats Coursera</h2>
+{% capture carousel_images %}
+images/Certificats/Coursera/20230926-Coursera.png|https://coursera.org/verify/LJVS3MWCK4VY
+images/Certificats/Coursera/20231009-Coursera.png|https://coursera.org/verify/CSNERZCMGY9Q
+images/Certificats/Coursera/20231229-Coursera.png|https://coursera.org/verify/JAWEACS8WZJ8
+{% endcapture %}
+{% include elements/carousel-click.html carousel_id="1" %}
