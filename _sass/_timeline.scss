@@ -4,11 +4,10 @@
   padding: 5px 0;
 
   &:after {
-    // Left Border
     content: "";
     width: 4px;
     height: 100%;
-    background-color: $primary;
+    background-color: var(--bs-primary); // Utiliser les variables CSS Bootstrap
     position: absolute;
     left: -4px;
     top: 0;
@@ -18,13 +17,12 @@
     position: relative;
 
     &:after {
-      // Circle
       content: "";
       width: 20px;
       height: 20px;
       border-radius: 50%;
-      border: 4px solid $primary;
-      background-color: $light;
+      border: 4px solid var(--bs-primary); // Utiliser les variables CSS Bootstrap
+      background-color: var(--bs-light); // Utiliser les variables CSS Bootstrap
       position: absolute;
       left: -12px;
       top: 8px;
@@ -34,12 +32,12 @@
     .content {
       margin: 40px;
       padding-bottom: 20px;
-      border-bottom: 1px dashed $dark;
+      border-bottom: 1px dashed var(--bs-dark); // Utiliser les variables CSS Bootstrap
 
       .date {
         margin-top: -5px;
         margin-bottom: 15px;
-        color: #6c757d;
+        color: var(--bs-muted); // Utiliser la couleur mutée Bootstrap
       }
     }
   }
