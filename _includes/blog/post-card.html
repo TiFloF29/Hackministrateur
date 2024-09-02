@@ -1,15 +1,14 @@
 {%- comment -%} Default Styles {%- endcomment -%}
 {%- assign card_style  = '' -%}
 {%- assign text_style  = 'text-themed' -%}
-{%- assign badge_style = 'badge-dark' -%}
+{%- assign badge_style = 'bg-dark' -%}
 
 {%- comment -%} Update Styles {%- endcomment -%}
 {%- if post.style == 'fill' -%}
   {%- assign card_style = post.color | prepend: 'bg-' -%}
   {%- if post.color != 'light' -%}
     {%- assign text_style  = 'text-white' -%}
-    {%- assign badge_style = 'badge-light text-' -%}
-    {%- assign badge_style = post.color | prepend: 'border border-' -%}
+    {%- assign badge_style = 'bg-light text-' -%}
   {%- endif -%}
 {%- else -%}
   {%- assign card_style = post.color | prepend: 'border border-' -%}
@@ -24,14 +23,14 @@
 {%- else -%}
   {%- assign post_url = post.url | relative_url -%}
 {%- endif -%}
-    
+
 <div class="col-lg-6 my-3 wow animated fadeIn" data-wow-delay=".15s">
   <a href="{{ post_url }}" class="post card {{ card_style }}" {%- if post.external_url and site.open_new_tab -%} target="_blank" {%- endif -%}>
     <div class="card-body {{ text_style }}">
       <h3 class="card-title">{{ post.title }}</h3>
       <p class="card-text">
         {% for tag in post.tags %}
-        <span class="badge {{ badge_style }}">{{ tag }}</span>
+        <span class="badge rounded-pill {{ badge_style }}">{{ tag }}</span>
         {% endfor %}
       </p>
       <p class="card-text">
@@ -43,7 +42,7 @@
       </p>
     </div>
     <div class="card-footer {{ text_style }}">
-      {{ post.date | date_to_long_string }}
+      {{ post.date | localize: '%d %B %Y' }}
     </div>
   </a>
 </div>

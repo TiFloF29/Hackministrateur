@@ -1,6 +1,6 @@
 <!--Permet de filtrer les postes en fonction d'un tag-->
 
-<div class="card-group mt-2">
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 m-4 mt-5">
   {% assign filtered_posts = site.posts | where: "tags", page.tags %}
   
   {% for post in filtered_posts %}
