@@ -1,11 +1,11 @@
+// Upgrade Bootstrap 5.3
 .markdown-body {
-  h1,
-  h2 {
+  h1, h2 {
     margin-top: 32px;
   }
 
   hr {
-    background: $secondary;
+    background: var(--bs-secondary); // Utilisation des variables CSS Bootstrap
   }
 
   img:not(.emoji) {
@@ -32,7 +32,7 @@
     text-decoration: none;
 
     &:hover {
-      color: $primary;
+      color: var(--bs-primary);
     }
 
     &::after {
@@ -41,7 +41,7 @@
       height: 0.15em;
       margin-top: -0.15em;
       width: 0;
-      background: $primary;
+      background: var(--bs-primary);
       transition: width 0.35s;
     }
 
@@ -51,9 +51,9 @@
   }
 
   pre {
-    background: $light;
+    background: var(--bs-light);
     border: 1px solid #ddd;
-    color: $dark;
+    color: var(--bs-dark);
     font-family: monospace;
     font-size: 14px;
     line-height: 20px;
@@ -67,16 +67,16 @@
   }
 
   code.highlighter-rouge {
-    background-color: $light;
-    color: $dark;
+    background-color: var(--bs-light);
+    color: var(--bs-dark);
     border-radius: 3px;
     margin: 0;
     padding: 0.2em 0.65em;
   }
 
   blockquote {
-    border-left: 0.25em solid $primary;
-    color: $secondary;
+    border-left: 0.25em solid var(--bs-primary);
+    color: var(--bs-secondary);
     padding: 0 1em;
   }
 
@@ -106,7 +106,7 @@
       padding-bottom: 12px;
       font-weight: 500;
       text-align: left;
-      background-color: $primary;
+      background-color: var(--bs-primary);
       color: white;
     }
 

@@ -2,6 +2,11 @@
 ---
 @import 'portfolYOU';
 
+.transparent-list-group-item {
+    background-color: transparent !important; /* Fond transparent */
+    border: none !important; /* Supprime les bordures */
+}
+
 .border-thm {
     background-color: $bg-thm;
     color: $thm !important;

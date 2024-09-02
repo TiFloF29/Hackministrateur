@@ -1,10 +1,14 @@
+<!-- Upgrade Bootstrap 5.3 -->
 <div class="col mt-4">
     <div class="timeline-body bg-themed">
         {% for item in site.data.timeline %}
-        <div class="timeline-item">
+        <div class="timeline-item mb-4"> <!-- Ajout de mb-4 pour espacer les items -->
             <div class="content">
-                <h2><i class="{{ item.icon }}" style="margin-right: 8px;"></i>{{ item.title }}</h2>
-                <h6 class="date">{{ item.from }} — {{ item.to }}</h6>
+                <h2>
+                    <i class="{{ item.icon }}" style="margin-right: 8px;"></i>
+                    {{ item.title }}
+                </h2>
+                <h6 class="date text-secondary">{{ item.from }} — {{ item.to }}</h6> <!-- Ajout de text-secondary pour la date -->
                 <p>{{ item.description }}</p>
             </div>
         </div>
