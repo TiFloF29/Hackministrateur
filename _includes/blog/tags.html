@@ -23,7 +23,7 @@
       {%- endif -%}
       <li class="list-group-item transparent-list-group-item">
         <a href="{{ url }}">{{ post.title }}</a>
-        <small class="text-secondary"> - {{ post.date | localize: '%d %B %Y' }}</small>
+        <small class="text-secondary"> - {{ post.date | date: '%d %B %Y' }}</small>
       </li>
     {%- endif -%}
   {% endfor %}

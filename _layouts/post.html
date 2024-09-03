@@ -6,9 +6,9 @@ layout: page
 
 <p class="post-metadata text-secondary">  
     {%- if page.modified -%}
-        Créé le {{ page.date | localize: '%d %B %Y' }} -  Mis à jour le {{ page.modified | localize: '%d %B %Y' }}
+        Créé le {{ page.date | date: '%d %B %Y' }} -  Mis à jour le {{ page.modified | date: '%d %B %Y' }}
     {%- else -%}
-        Créé le {{ page.date | localize: '%d %B %Y' }} 
+        Créé le {{ page.date | date: '%d %B %Y' }} 
     {%- endif -%}
     <br />
   <b>
