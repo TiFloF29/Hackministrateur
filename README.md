@@ -3,6 +3,12 @@
 
 Ce projet est basé sur le thème [portfolYOU](https://github.com/yousinix/portfolYOU) et modifier pour correspondre à mes attentes
 
+> [!IMPORTANT]
+>
+> * 2024/08/22 : Mise à jour de ***Font Awesome*** de v5.15.4 vers v6.6.0
+> * 2024/09/01 : Mise à jour de ***Bootstrap*** de v4.6.0 vers v5.3.0
+> * 2024/09/03 : Remplacement des animations WOW par AOS ***Animate On Scroll***
+
 > [!NOTE]
 >
 > * Filtrer les posts par activités
@@ -12,9 +18,3 @@ Ce projet est basé sur le thème [portfolYOU](https://github.com/yousinix/portf
 
 > [!CAUTION]
 > * Passage des dates vers le Français (fonction en local, pas sur Github)
-
-> [!IMPORTANT]
->
-> * 2024/08/22 : Mise à jour de ***Font Awesome*** de v5.15.4 vers v6.6.0
-> * 2024/09/01 : Mise à jour de ***Bootstrap*** de v4.6.0 vers v5.3.0
-> * 2024/09/03 : Remplacement des animations WOW par AOS ***Animate On Scroll***
