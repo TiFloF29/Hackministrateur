@@ -10,7 +10,7 @@ Ce projet est basé sur le thème [portfolYOU](https://github.com/yousinix/portf
 > * Possibilité d'utiliser plusieurs carrousels par page
 > * Possibilité d'utiliser des couleurs personnalisées
 
-> [!ERROR]
+> [!CAUTION]
 > * Passage des dates vers le Français (fonction en local, pas sur Github)
 
 > [!IMPORTANT]
