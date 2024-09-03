@@ -29,7 +29,25 @@ Je me suis donc lancé dans la personnalisation de l'aspect de mon projet. Créa
 
 ## 3. Nouvelles pages et système de filtre
 
+Le thème initial [portfolYOU](https://github.com/yousinix/portfolYOU) dispose d'une page pour des projets, et d'une autre recensant les posts de blog. Je cherchais un moyen de filtrer les posts grâce aux tags et faciliter la recherche des comptes-rendus en fonction des plateformes (THM, HTB, RootMe...).
+
+Puisque la simple recherche par tags ne fonctionnait pas malgré l'aide de l'IA, j'ai opté pour l'adaptation de la page de blog originale pour permettre de n'afficher que les posts disposant du même tag que la page.
+
+Les pages filtrées sont accessibles par un système de boutons.
+
+Les sites hébergés par Github fonctionnant avec le moteur Jekyll, le langage Liquid est pris en compte. Le bloc permettant de filtrer le contenu est :
+
+```html
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 m-4 mt-5">
+  {% assign filtered_posts = site.posts | where: "tags", page.tags %}
+  
+  {% for post in filtered_posts %}
+    {% include blog/post-card.html %}
+  {% endfor %}
+</div>
+```
+
 <div class="text-center">
-<i class="fa-solid fa-2xl">Redaction en cours</i>
-<i class="fa-solid fa-spinner fa-spin-pulse fa-2xl"></i>
+<i class="fa-solid fa-1xl text-info">Redaction en cours</i><br />
+<i class="fa-solid fa-spinner fa-spin-pulse fa-2xl text-info mt-3"></i>
 </div>
