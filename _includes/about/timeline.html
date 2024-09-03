@@ -2,7 +2,7 @@
 <div class="col mt-4">
     <div class="timeline-body bg-themed">
         {% for item in site.data.timeline %}
-        <div class="timeline-item mb-4"> <!-- Ajout de mb-4 pour espacer les items -->
+        <div class="timeline-item mb-4" data-aos="fade-up" data-aos-offset="100"> <!-- Ajout de mb-4 pour espacer les items -->
             <div class="content">
                 <h2>
                     <i class="{{ item.icon }}" style="margin-right: 8px;"></i>
