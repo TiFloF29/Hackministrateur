@@ -9,7 +9,9 @@ Ce projet est basé sur le thème [portfolYOU](https://github.com/yousinix/portf
 > * Rendre les images du carrousel cliquables
 > * Possibilité d'utiliser plusieurs carrousels par page
 > * Possibilité d'utiliser des couleurs personnalisées
-> * Passage des dates vers le Français
+
+> [!ERROR]
+> * Passage des dates vers le Français (fonction en local, pas sur Github)
 
 > [!IMPORTANT]
 >
