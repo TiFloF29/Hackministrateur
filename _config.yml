@@ -4,10 +4,10 @@ date_locale: fr
 description         : >-
                       Attaque ou défense, pourquoi choisir ?<br>
                       On ne peut pas protéger efficacement si on ne connaît pas les vulnérabilités !<br>
-                      Moitié <b><u>Hack</u></b>er (éthique bien entendu) / Moitié ad<b><u>min</u></b>istrateur<br>
-                      100% <b>HACKMIN</b>
+                      Moitié <b><u>Hack</u></b>er (éthique bien entendu) / Moitié ad<b><u>ministrateur</u></b><br>
+                      100% <b>HACKMINISTRATEUR</b>
 baseurl             : "/Hackmin"            # Change to empty quotes if you are hosting your site at <your-username>.github.io directly
-repository          : TiFloF29/Hackmin      # Change to <your-username>/<your-username>.github.io (or remove it if you don't need remote projects)
+repository          : TiFloF29/Hackministrateur      # Change to <your-username>/<your-username>.github.io (or remove it if you don't need remote projects)
 remote_theme        : yousinix/portfolYOU@v2.3.0
 open_new_tab        : false                    # Opens external URLs in new tab (works for posts, projects and navbar only)
 
