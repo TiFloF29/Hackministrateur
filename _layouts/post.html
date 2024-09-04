@@ -6,17 +6,17 @@ layout: page
 
 <p class="post-metadata text-secondary">  
     {%- if page.modified -%}
-        Créé le {{ page.date | date: '%d %B %Y' }} -  Mis à jour le {{ page.modified | date: '%d %B %Y' }}
+        Créé le {%- include date-translate.liquid dateString=page.date language='French' -%} -  Mis à jour le {%- include date-translate.liquid dateString=page.modified language='French' -%}
     {%- else -%}
-        Créé le {{ page.date | date: '%d %B %Y' }} 
+        Créé le {% include date-translate.liquid dateString=page.date language='French' %}
     {%- endif -%}
     <br />
   <b>
   {%- assign words = content | number_of_words -%}
   {%- if words < 360 -%}
-    less than 1 min read time
+    Moins d'une minute de lecture
   {%- else -%}
-    {{ words | divided_by: 180 }} mins read time
+    {{ words | divided_by: 180 }} minutes de lecture
   {%- endif -%}
   </b>
 

@@ -43,7 +43,7 @@
       </p>
     </div>
     <div class="card-footer {{ text_style }}">
-      {{ post.date | date: '%d %B %Y' }}
+      {%- include date-translate.liquid dateString=post.date language='French' -%}
     </div>
   </a>
 </div>
