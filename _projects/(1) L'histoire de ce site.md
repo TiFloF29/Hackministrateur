@@ -35,19 +35,9 @@ Puisque la simple recherche par tags ne fonctionnait pas malgré l'aide de l'IA,
 
 Les pages filtrées sont accessibles par un système de boutons.
 
-Les sites hébergés par Github fonctionnant avec le moteur Jekyll, le langage Liquid est pris en compte. Le bloc permettant de filtrer le contenu est :
-
-```html
-<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 m-4 mt-5">
-  {% assign filtered_posts = site.posts | where: "tags", page.tags %}
-  
-  {% for post in filtered_posts %}
-    {% include blog/post-card.html %}
-  {% endfor %}
-</div>
-```
+Le partage du code via un bloc ne semble pas fonctionner correctement avec le langage Liquid, donc je vous partage le lien vers la [fonction de filtrage](https://github.com/TiFloF29/Hackmin/blob/main/_includes/blog/filtered_posts.html) dans Github
 
 <div class="text-center">
-<i class="fa-solid fa-1xl text-info">Redaction en cours</i><br />
-<i class="fa-solid fa-spinner fa-spin-pulse fa-2xl text-info mt-3"></i>
+    <i class="fa-solid fa-1xl text-info">Redaction en cours</i><br />
+    <i class="fa-solid fa-spinner fa-spin-pulse fa-2xl text-info mt-3"></i>
 </div>
