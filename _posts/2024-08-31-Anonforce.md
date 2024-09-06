@@ -5,6 +5,7 @@ style: border
 color: thm
 comments: false
 description: Une configuration non sécurisée, et des mots de passe faibles
+modified: 06/09/2024
 ---
 Lien vers l'épreuve : <https://tryhackme.com/r/room/bsidesgtanonforce>
 
@@ -13,10 +14,10 @@ Lien vers l'épreuve : <https://tryhackme.com/r/room/bsidesgtanonforce>
 ## Sommaire <!-- omit in toc -->
 
 * [1. Reconnaissance](#1-reconnaissance)
-* [2. Serveur FTP](#2-serveur-ftp)
+* [2. Serveur {% include dictionary.html word="FTP" %}](#2-serveur--include-dictionaryhtml-wordftp-)
 * [3. Accès au serveur](#3-accès-au-serveur)
   * [3.1 Récupération du fichier Shadow](#31-récupération-du-fichier-shadow)
-  * [3.2 Force brute avec Hydra](#32-force-brute-avec-hydra)
+  * [3.2 Force brute avec {% include dictionary.html word="Hydra" %}](#32-force-brute-avec--include-dictionaryhtml-wordhydra-)
   * [3.3 Contenu chiffré](#33-contenu-chiffré)
   * [3.4 Craquer le mot de passe](#34-craquer-le-mot-de-passe)
 * [4. Connexion à la machine](#4-connexion-à-la-machine)
@@ -74,9 +75,9 @@ PORT   STATE SERVICE VERSION
 Service Info: OSs: Unix, Linux; CPE: cpe:/o:linux:linux_kernel
 ```
 
-Le scan NMAP lancé sur la machine indique la présence d'un serveur FTP sur le port 21. Le service n'est pas protégé et n'importe quel utilisateur peut s'y connecter anonymement. Le scan révèle la présence d'une arborescence similaire à une machine Linux
+Le scan {% include dictionary.html word="NMAP" %} lancé sur la machine indique la présence d'un serveur {% include dictionary.html word="FTP" %} sur le port 21. Le service n'est pas protégé et n'importe quel utilisateur peut s'y connecter anonymement. Le scan révèle la présence d'une arborescence similaire à une machine Linux
 
-## 2. Serveur FTP
+## 2. Serveur {% include dictionary.html word="FTP" %}
 
 Nous pouvons nous connecter au serveur et explorer son contenu.
 
@@ -145,9 +146,9 @@ local: shadow remote: shadow
 550 Failed to open file.
 ```
 
-### 3.2 Force brute avec Hydra
+### 3.2 Force brute avec {% include dictionary.html word="Hydra" %}
 
-Nous tentons donc de trouver le mot de passe de l'utilisateur "melodias" par la force brute et l'outil Hydra sur le service SSH sans grand succès.
+Nous tentons donc de trouver le mot de passe de l'utilisateur "melodias" par la force brute et l'outil {% include dictionary.html word="Hydra" %} sur le service {% include dictionary.html word="SSH" %} sans grand succès.
 
 ```bash
 hydra -l 'melodias' -P /usr/share/wordlists/rockyou.txt 10.10.106.181 ssh -v
@@ -167,7 +168,7 @@ Hydra (https://github.com/vanhauser-thc/thc-hydra) starting at 2024-08-31 15:33:
 
 ### 3.3 Contenu chiffré
 
-En analysant davantage le serveur FTP, un dossier nous interpelle : **notread**. Il contient des données chiffrées, et une clé GPG privée.
+En analysant davantage le serveur {% include dictionary.html word="FTP" %}, un dossier nous interpelle : **notread**. Il contient des données chiffrées, et une clé {% include dictionary.html word="GPG" %} privée.
 
 ```bash
 ls
@@ -212,7 +213,7 @@ gpg --import-keys private.asc
 │ créée le 2019-08-12.                                                      |
 ```
 
-Pour cela nous aurons besoin de l'outil *John The Ripper* et `gpg2john` afin de convertir la clé privée en hash compréhensible par John.
+Pour cela nous aurons besoin de l'outil *<abbr title="Logiciel de craquage de mot de passe">John The Ripper</abbr>* et `gpg2john` afin de convertir la clé privée en hash compréhensible par John.
 
 ```bash
 gpg2john private.asc > key_hash.txt
@@ -231,7 +232,7 @@ Use the "--show" option to display all of the cracked passwords reliably
 Session completed.
 ```
 
-Nous pouvons ajouter la clé privée à notre trousseau avec le mot de passe que nous venons de craquer, et déchiffrer le contenu de l'archive chiffrée `backup.pgp`. Le contenu s'avère être un fichier texte renfermant entre autres les hashes de mot de passe des comptes root et melodias (une copie du fichier shadow que nous espérions récupérer depuis le serveur FTP plus tôt)
+Nous pouvons ajouter la clé privée à notre trousseau avec le mot de passe que nous venons de craquer, et déchiffrer le contenu de l'archive chiffrée `backup.pgp`. Le contenu s'avère être un fichier texte renfermant entre autres les hashes de mot de passe des comptes root et melodias (une copie du fichier shadow que nous espérions récupérer depuis le serveur {% include dictionary.html word="FTP" %} plus tôt)
 
 ```bash
 gpg --import private.asc
@@ -244,11 +245,12 @@ melodias:$1$xDhc6S6G$IQHU[...expurgé...]jEQtL1:18120:0:99999:7:::
 
 ### 3.4 Craquer le mot de passe
 
-En lançant Hashcat sur les 2 hashes en parallèle, nous obtenons un résultat pour le compte root.
+En lançant {% include dictionary.html word="Hashcat" %} sur les 2 hashes en parallèle, nous obtenons un résultat pour le compte root.
 
 ```bash
 hashcat -m 1800 '$6$07nYFaYf$F4V[...expurgé...]BtaMZMNd2tV4uob5RVM0' /usr/share/wordlists/rockyou.txt
 [...expurgé pour brièveté...]
+
 $6$07nYFaYf$F4V[...expurgé...]BtaMZMNd2tV4uob5RVM0:h[...expurgé...]i
 
 Session..........: hashcat
@@ -275,7 +277,7 @@ Stopped: Sat Aug 31 18:31:11 2024
 
 ## 4. Connexion à la machine
 
-Nous pouvons donc nous connecter en SSH à la machine avec le compte root et le mot de passe que nous venons de craquer. Ne reste plus qu'à récupérer le flag root pour terminer cet exercice.
+Nous pouvons donc nous connecter en {% include dictionary.html word="SSH" %} à la machine avec le compte root et le mot de passe que nous venons de craquer. Ne reste plus qu'à récupérer le flag root pour terminer cet exercice.
 
 ```bash
 ssh root@10.10.106.181
