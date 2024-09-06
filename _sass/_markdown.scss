@@ -76,7 +76,8 @@
 
   blockquote {
     border-left: 0.25em solid var(--bs-primary);
-    color: var(--bs-secondary);
+    color: var(--bs-primary-bg-subtle);
+    background-color: var(--bs-primary-text-emphasis);
     padding: 0 1em;
   }
 
