@@ -1,0 +1,20 @@
+<!-- Assigner toutes les définitions-->
+{%- assign HTTP = "HyperText Transfer Protocol" -%}
+{%- assign NMAP = "Network Mapper : outil permettant de scanner le réseau ou des machines" -%}
+{%- assign SSH = "Secure Shell : Protocole de communication permettant de créer des sessions à distance chiffrées"}
+{%- assign WAR = "Web Application Archive : archive permettant de déployer une application web sur un serveur" -%}
+{%- assign reverse-shell = "Technique permettant d'initier une connexion depuis un serveur distant vers notre machine, à l'inverse de SSH" -%}
+{%- assign Netcat = "Outil permettant d'ouvrir des connexions réseau" -%}
+{%- assign FTP = "File Transfer Protocol : Protocole de communication destiné au partage de fichiers sur un réseau" -%}
+{%- assign Hydra = "Logiciel permettant de craquer des informations d'authentification sur plusieurs types de protocoles" -%}
+{%- assign GPG = "GNU Privacy Guard" : Outil permettant de chiffrer et signer des messages afin de garantir leurs authenticité, intégrité et confidentialité -%}
+{%- assign Hashcat = "Logiciel de craquage de mot de passe" -%}
+{%- assign gobuster = "Outil permettant notamment de lister les pages, les dossiers et les sous-domaines d'un site internet" -%}
+{%- assign PHP = "Hypertext Preprocessor : langage permettant de créer des sites web dynamiques" -%}
+{%- assign sudo = "SuperUser Do : Commande existant principalement dans le monde Unix permettant d'exécuter une autre commande en tant que super utilisateur (root)" -%}
+
+
+
+{%- assign word = include.word -%}
+
+<abbr title="{{ [word] }}">{{ word }}</abbr>
