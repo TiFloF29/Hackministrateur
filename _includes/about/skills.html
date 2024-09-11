@@ -16,10 +16,7 @@
     </div>
   
     <div class="progress mb-4 bg-themed" style="height: 8px;">
-      <div class="progress-bar {{ skill.color | default: "bg-primary" }}"
-        data-aos="fade-right"
-        data-aos-delay="150"
-        data-aos-duration="1000"
+      <div class="progress-bar {{ skill.color | default: "bg-primary" }} animate__animated animate__slideInLeft"
         role="progressbar"
         style="width: {{ skill.percentage }}%;"
         aria-valuenow="{{ skill.percentage }}"
