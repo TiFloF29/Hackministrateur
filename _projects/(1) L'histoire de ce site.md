@@ -37,7 +37,19 @@ Puisque la simple recherche par tags ne fonctionnait pas malgré l'aide de l'IA,
 
 Les pages filtrées sont accessibles par un système de boutons.
 
-Le partage du code via un bloc ne semble pas fonctionner correctement avec le langage Liquid, donc je vous partage le lien vers la [fonction de filtrage](https://github.com/TiFloF29/Hackmin/blob/main/_includes/blog/filtered_posts.html) dans Github
+Le code est le suivant :
+
+```html
+{% raw %}
+<div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4 m-4 mt-5">
+  {% assign filtered_posts = site.posts | where: "tags", page.tags %}
+  
+  {% for post in filtered_posts %}
+    {% include blog/post-card.html %}
+  {% endfor %}
+</div>
+{% endraw %}
+```
 
 ## 4. Amélioration du carrousel
 
