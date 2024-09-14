@@ -5,7 +5,6 @@ style: border
 color: htb
 comments: false
 description: En attente de la fin de la saison le 03 décembre 2024
-created: 14/09/2024
 ---
 
 <div class="text-center">
