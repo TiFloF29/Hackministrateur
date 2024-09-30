@@ -1,6 +1,6 @@
 ---
 title: Anonforce (Guatemala CTF)
-tags: [TryHackMe, Facile, FTP, Force brute, John The Ripper, Hashcat]
+tags: [TryHackMe, Facile, Linux, FTP, Force brute, John The Ripper, Hashcat]
 style: border
 color: thm
 comments: false

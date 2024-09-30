@@ -1,6 +1,6 @@
 ---
 title: Sightless
-tags: [HackTheBox, Facile, SQLPad, Froxlor, Docker, En attente]
+tags: [HackTheBox, Facile, Linux, SQLPad, Froxlor, Docker, En attente]
 style: border
 color: htb
 comments: false
