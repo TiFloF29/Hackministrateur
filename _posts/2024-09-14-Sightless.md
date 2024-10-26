@@ -4,7 +4,7 @@ tags: [HackTheBox, Facile, Linux, SQLPad, Froxlor, Docker, En attente]
 style: border
 color: htb
 comments: false
-description: En attente de la fin de la saison le 03 décembre 2024
+description: En attente de la fin de la saison le 03 novembre 2024
 ---
 
 <div class="text-center">
