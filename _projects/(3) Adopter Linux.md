@@ -11,6 +11,7 @@ description: Se séparer de Windows et passer à Linux
 * [Pourquoi utiliser Windows ?](#pourquoi-utiliser-windows-)
 * [Pourquoi quitter Windows ?](#pourquoi-quitter-windows-)
 * [Pourquoi passer sur Linux ?](#pourquoi-passer-sur-linux-)
+* [Installation sur le PC portable](#installation-sur-le-pc-portable)
 
 ## Pourquoi utiliser Windows ?
 
@@ -44,6 +45,16 @@ Grâce au site [DistroSea](https://distrosea.com/fr/) j'ai pu tester quelques di
 * [Garuda Linux](https://garudalinux.org/) : Basée sur Arch Linux, elle est récente, moderne, et orientée vers les joueurs
 
 Mon intention est d'installer LMDE et Garuda en dual-boot sur mon PC portable (pourquoi se limiter à une seule ?) et installer Garuda à côté de Windows dans un premier temps sur mon PC fixe afin d'évaluer Garuda sur une utilisation quotidienne en gardant Windows "au cas où".
+
+## Installation sur le PC portable
+
+Dans mon cas, le PC portable est secondaire, et n'est utile qu'en cas de déplacement ou vacances. Mais puisqu'il est voué à être déplacé, la sécurité des données est primordiale. J'ai donc souhaité faire une installation chiffrée, et séparer les dossiers importants comme `/home` et `/usr` dans des partitions différentes.
+
+J'avais donc commencé utiliser [LVM (*Logical Volume Manager*)](https://en.wikipedia.org/wiki/Logical_Volume_Manager_(Linux)) par définir un *volume group* chiffré correspondant au SSD, dans lequel je pourrais créer des *logical volumes* qui auraient servi à installer les différentes partitions.
+
+**SAUF QUE** les distributions Linux nécessitent d'avoir une partition particulière `/boot/efi` **non chiffrée**.
+
+Retour sur [GParted](https://gparted.org/) pour revoir les partitions.
 
 <div class="text-center">
     <i class="fa-solid fa-1xl text-info">Redaction en cours</i><br />
