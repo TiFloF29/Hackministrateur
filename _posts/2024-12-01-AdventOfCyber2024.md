@@ -18,7 +18,7 @@ Lien vers l'épreuve : <https://tryhackme.com/r/room/adventofcyber2024>
 * [Jour 2 : Le faux positif d'une personne, est le pot-pourri d'un autre](#jour-2--le-faux-positif-dune-personne-est-le-pot-pourri-dun-autre)
 * [Jour 3 : Même si je voulais y aller, leurs vulnérabilités ne le permettraient pas](#jour-3--même-si-je-voulais-y-aller-leurs-vulnérabilités-ne-le-permettraient-pas)
 * [Jour 4 : Je suis tout atomique à l'intérieur](#jour-4--je-suis-tout-atomique-à-lintérieur)
-* [Jour 5 : *SCO-mas XX-what-ee?*](#jour-5--sco-mas-xx-what-ee)
+* [Jour 5 : *SOC-mas XX-what-ee?*](#jour-5--soc-mas-xx-what-ee)
 * [Jour 6 : Si je ne peux pas trouver un gentil malware à utiliser, je ne le ferai pas](#jour-6--si-je-ne-peux-pas-trouver-un-gentil-malware-à-utiliser-je-ne-le-ferai-pas)
 
 ## Jour 1 : Peut-être que la musique de SOC-mas, pensait-il, ne vient pas d'un magasin ?
@@ -257,7 +257,104 @@ Nous pouvons lire le contenu du fichier pour conclure ce troisième jour.
 
 ![Atomic Red Team](https://img.shields.io/badge/Atomic%20Red%20Team-453368?logo=tryhackme)
 
-## Jour 5 : *SCO-mas XX-what-ee?*
+![Jour 4](https://tryhackme-images.s3.amazonaws.com/user-uploads/5fc2847e1bbebc03aa89fbf2/room-content/5fc2847e1bbebc03aa89fbf2-1730709355879.png)
+
+Les objectifs du jour sont d'identifier des techniques malicieuses avec le framework [MITRE ATT&CK](https://attack.mitre.org/), utiliser les tests [*Atomic Red Team*](https://www.atomicredteam.io/) pour mener des simulations d'attaques et créer des règles d'alerte et de détection basées sur ces tests.
+
+Pour mener à bien les exercices du jour, il faut suivre la documentation afin de découvrir le fonctionnement des outils comme *Atomic Red Team*
+
+La première étape consiste à vérifier si nous avons les bons prérequis pour exécuter notre premier test.
+
+```txt
+Invoke-AtomicTest T1566.001 -TestNumbers 1 -CheckPrereq
+PathToAtomicsFolder = C:\Tools\AtomicRedTeam\atomics
+CheckPrereq's for: T1566.001-1 Download Macro-Enabled Phishing Attachment
+Prerequisites met: T1566.001-1 Download Macro-Enabled Phishing Attachment
+```
+
+Après avoir nettoyer les logs de l'outil [Sysmon](https://learn.microsoft.com/fr-fr/sysinternals/downloads/sysmon), nous lançons le test.
+
+De retour dans l'outil Event Viewer, dans le dossier Sysmon, nous observons la présence d'un événement ayant créé deux fichiers, dont un est le flag de la première question.
+
+{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-04_sysmon.png" caption="Logs de la création des outils de phishing" %}
+
+Nous récupérons le contenu du fichier texte créé :
+
+```txt
+Get-Content 'C:\Users\Administrator\AppData\Local\temp\PhishingAttachment.txt'
+THM{[...expurgé...]}
+```
+
+Pour trouver quel identifiant ATT&CK est en jeu, nous nous rendons dans la section [*Command and Scripting Interpreter](https://attack.mitre.org/techniques/T1059/)
+
+{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-04_mitre.png" caption="Sélection de la catégorie MITRE" %}
+
+Le numéro de la catégorie apparaît dans l'encadré récapitulant la technique :
+
+{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-04_CSI.png" caption="Informations sur la technique Command and Scripting Interpreter" %}
+
+En ouvrant les différentes sous-techniques associées nous trouvons celle qui est dédiée à Windows Command Shell :
+
+{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-04_subtechnique.png" caption="Sous-technique applicable à Windows Command Shell" %}
+
+Pour trouver le nom du test Atomic à simuler, nous utilisons la commande `Invoke-AtomicTest` avec le flag `-ShowDetailsBrief`
+
+```txt
+Invoke-AtomicTest T[...expurgé...] -ShowDetailsBrief
+PathToAtomicsFolder = C:\Tools\AtomicRedTeam\atomics
+
+[...expurgé...]-1 Create and Execute Batch Script
+[...expurgé...]-2 Writes text to a file and displays it.
+[...expurgé...]-3 Suspicious Execution via Windows Command Shell
+[...expurgé...]-4 [...expurgé...]
+[...expurgé...]-5 Command Prompt read contents from CMD file and execute
+```
+
+McSkidy souhaitant mettre en place un test imitant un *ransomware*, le test numéro **4** est celui qui sera joué.
+
+En regardant les détails de ce test, nous pouvons trouver le nom du fichier qui sera nécessaire :
+
+```txt
+Invoke-AtomicTest T[...expurgé...] -TestNumbers 4 -ShowDetails
+PathToAtomicsFolder = C:\Tools\AtomicRedTeam\atomics
+
+[********BEGIN TEST*******]
+Technique: Command and Scripting Interpreter: Windows Command Shell T[...expurgé...]
+Atomic Test Name: [...expurgé...]
+Atomic Test Number: 4
+Atomic Test GUID: 6b2903ac-8f36-450d-9ad5-b220e8a2dcb9
+Description: This test attempts to open a file a specified number of times in Wordpad, then prints the contents.  It is designed to mimic BlackByte ransomware's print bombing technique, where tree.dll, which contains the ransom note, is opened in Wordpad 75 times and then printed.  See https://redcanary.com/blog/blackbyte-ransomware/.
+
+Attack Commands:
+Executor: powershell
+ElevationRequired: False
+Command:
+cmd /c "for /l %x in (1,1,#{max_to_print}) do start wordpad.exe /p #{file_to_print}" | Out-null
+Command (with inputs):
+cmd /c "for /l %x in (1,1,1) do start wordpad.exe /p C:\Tools\AtomicRedTeam\atomics\T[...expurgé...]\src\[...expurgé...].txt" | Out-null
+
+Cleanup Commands:
+Command:
+stop-process -name wordpad -force -erroraction silentlycontinue
+
+Dependencies:
+Description: File to print must exist on disk at specified location (C:\Tools\AtomicRedTeam\atomics\T[...expurgé...]\src\[...expurgé...].txt)
+Check Prereq Command:
+if (test-path "#{file_to_print}"){exit 0} else {exit 1}
+Check Prereq Command (with inputs):
+if (test-path "C:\Tools\AtomicRedTeam\atomics\T[...expurgé...]\src\[...expurgé...].txt"){exit 0} else {exit 1}
+Get Prereq Command:
+new-item #{file_to_print} -value "This file has been created by T[...expurgé...] Test 4" -Force | Out-Null
+Get Prereq Command (with inputs):
+new-item C:\Tools\AtomicRedTeam\atomics\T[...expurgé...]\src\[...expurgé...].txt -value "This file has been created by T[...expurgé...] Test 4" -Force | Out-Null
+[!!!!!!!!END TEST!!!!!!!] 
+```
+
+Nous lançons la simulation, et à la fin nous avons un prompt nous proposant d'enregistrer un fichier PDF. Lorsque nous l'ouvrons, nous obtenons le dernier flag pour ce jour.
+
+{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-04_flag.png" caption="Drapeau trouvé dans le fichier PDF créé à la fin du test" %}
+
+## Jour 5 : *SOC-mas XX-what-ee?*
 
 ![XXE](https://img.shields.io/badge/XXE-4d354a?logo=tryhackme)
 
