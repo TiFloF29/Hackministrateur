@@ -553,7 +553,7 @@ En analysant le document créé à la recherche des lettres `THM` nous trouvons 
 
 ```powershell
 Get-Content C:\Users\Administrator\Desktop\malstring.txt | Select-String THM
-THM{HiddenClue}
+THM{[...expurgé...]}
 ```
 
 ## Jour 7 : *Oh no. I'M SPEAKING IN CLOUDTRAIL!*
@@ -648,5 +648,5 @@ grep -E '([0-9]{4}\s){3}[0-9]{4}' rds.log | grep -i 'mayor'
 2024-11-28T15:23:02.792Z 2024-11-28T15:23:02.792161Z      263 Query	INSERT INTO wareville_bank_transactions (account_number, account_owner, amount) VALUES ('[...expurgé...]', 'Mayor Malware', 998.13)
 2024-11-28T15:23:02.976Z 2024-11-28T15:23:02.976943Z      263 Query	INSERT INTO wareville_bank_transactions (account_number, account_owner, amount) VALUES ('[...expurgé...]', 'Mayor Malware', 865.75)
 2024-11-28T15:23:03.161Z 2024-11-28T15:23:03.161700Z      263 Query	INSERT INTO wareville_bank_transactions (account_number, account_owner, amount) VALUES ('[...expurgé...]', 'Mayor Malware', 409.54)
-[...expurgé...]
+[...expurgé pour brièveté...]
 ```
