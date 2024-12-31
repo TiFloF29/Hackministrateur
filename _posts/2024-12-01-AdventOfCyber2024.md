@@ -38,6 +38,8 @@ Lien vers l'épreuve : <https://tryhackme.com/r/room/adventofcyber2024>
 * [Jour 20 : Si tu prononces ne serait-ce qu'un seul paquet](#jour-20--si-tu-prononces-ne-serait-ce-quun-seul-paquet)
 * [Jour 21 : *HELP ME...I'm REVERSE ENGINEERING*](#jour-21--help-meim-reverse-engineering)
 * [Jour 22 : *It's because I'm kubed, isn't it?*](#jour-22--its-because-im-kubed-isnt-it)
+* [Jour 23 : *You wanna know what happens to your hashes?*](#jour-23--you-wanna-know-what-happens-to-your-hashes)
+* [Jour 24 : Tu ne peux pas faire de mal à SOC-mas, Mayor Malware](#jour-24--tu-ne-peux-pas-faire-de-mal-à-soc-mas-mayor-malware)
 
 ## Jour 1 : Peut-être que la musique de SOC-mas, pensait-il, ne vient pas d'un magasin ?
 
@@ -1791,6 +1793,149 @@ private static void UploadFileToServer(string zipFilePath)
 ![Kubernetes DFIR](https://img.shields.io/badge/Kubernetes%20DFIR-314267?logo=tryhackme)
 
 ![Jour 22](https://tryhackme-images.s3.amazonaws.com/user-uploads/6228f0d4ca8e57005149c3e3/room-content/6228f0d4ca8e57005149c3e3-1730975047352.png)
+
+```bash
+tail -n 6 pod_apache2_access.log 
+127.0.0.1 - - [29/Oct/2024:12:38:45 +0000] "GET /[...expurgé...].php?cmd=whoami HTTP/1.1" 200 224 "-" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0"
+127.0.0.1 - - [29/Oct/2024:12:38:53 +0000] "GET /[...expurgé...].php?cmd=whoami HTTP/1.1" 200 224 "-" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0"
+127.0.0.1 - - [29/Oct/2024:12:38:59 +0000] "GET /[...expurgé...].php?cmd=ls HTTP/1.1" 200 386 "-" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0"
+127.0.0.1 - - [29/Oct/2024:12:39:16 +0000] "GET /[...expurgé...].php?cmd=cat+[...expurgé...].php HTTP/1.1" 200 463 "-" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0"
+127.0.0.1 - - [29/Oct/2024:12:39:38 +0000] "GET /[...expurgé...].php?cmd=whoami HTTP/1.1" 200 224 "-" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0"
+127.0.0.1 - - [29/Oct/2024:12:39:46 +0000] "GET /[...expurgé...].php?cmd=which+[...expurgé...] HTTP/1.1" 200 215 "-" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0"
+```
+
+```bash
+grep -i "head" docker-registry-logs.log | cut -d " " -f1 | sort -n | uniq -c
+     32 1[...expurgé...]3
+     81 172.17.0.1
+```
+
+```bash
+grep "1[...expurgé...]3" docker-registry-logs.log | head -n 5
+1[...expurgé...]3 - - [...expurgé...        +0000] "GET /v2/ HTTP/1.1" 401 87 "" "docker/19.03.12 go/go1.13.10 git-commit/48a66213fe kernel/4.15.0-213-generic os/linux arch/amd64 UpstreamClient(Docker-Client/19.03.12 \\(linux\\))"
+1[...expurgé...]3 - - [29/Oct/2024:10:06:33 +0000] "GET /v2/ HTTP/1.1" 200 2 "" "docker/19.03.12 go/go1.13.10 git-commit/48a66213fe kernel/4.15.0-213-generic os/linux arch/amd64 UpstreamClient(Docker-Client/19.03.12 \\(linux\\))"
+1[...expurgé...]3 - - [29/Oct/2024:10:07:01 +0000] "GET /v2/ HTTP/1.1" 401 87 "" "docker/19.03.12 go/go1.13.10 git-commit/48a66213fe kernel/4.15.0-213-generic os/linux arch/amd64 UpstreamClient(Docker-Client/19.03.12 \\(linux\\))"
+1[...expurgé...]3 - - [29/Oct/2024:10:07:01 +0000] "GET /v2/wishlistweb/manifests/latest HTTP/1.1" 404 96 "" "docker/19.03.12 go/go1.13.10 git-commit/48a66213fe kernel/4.15.0-213-generic os/linux arch/amd64 UpstreamClient(Docker-Client/19.03.12 \\(linux\\))"
+1[...expurgé...]3 - - [29/Oct/2024:10:35:03 +0000] "GET /v2/ HTTP/1.1" 401 87 "" "docker/19.03.12 go/go1.13.10 git-commit/48a66213fe kernel/4.15.0-213-generic os/linux arch/amd64 UpstreamClient(Docker-Client/19.03.12 \\(linux\\))"
+```
+
+```bash
+grep "1[...expurgé...]3" docker-registry-logs.log | grep -i "patch" | head -n 5
+1[...expurgé...]3 - - [...expurgé...        +0000] "PATCH /v2/wishlistweb/blobs/uploads/[...expurgé...]"
+1[...expurgé...]3 - - [29/Oct/2024:12:34:31 +0000] "PATCH /v2/wishlistweb/blobs/uploads/[...expurgé...]"
+```
+
+```bash
+kubectl get secret pull-creds -n wareville -o jsonpath='{.data.\.dockerconfigjson}' | base64 --decode
+{"auths":{"http://docker-registry.nicetown.loc:5000":{"username":"[...expurgé...]","password":"[...expurgé...]","auth":"[...expurgé...]"}}}
+```
+
+## Jour 23 : *You wanna know what happens to your hashes?*
+
+![Hash cracking](https://img.shields.io/badge/Hash%20craking-4d354a?logo=tryhackme)
+
+![Jour 23](https://tryhackme-images.s3.amazonaws.com/user-uploads/5f04259cf9bf5b57aed2c476/room-content/5f04259cf9bf5b57aed2c476-1731561346191.svg)
+
+```bash
+john --format=raw-sha256 -w=/usr/share/wordlists/rockyou.txt hash1.txt --rules=wordlist
+Using default input encoding: UTF-8
+Loaded 1 password hash (Raw-SHA256 [SHA256 256/256 AVX2 8x])
+Warning: poor OpenMP scalability for this hash type, consider --fork=2
+Will run 2 OpenMP threads
+Note: Passwords longer than 18 [worst case UTF-8] to 55 [ASCII] rejected
+Press 'q' or Ctrl-C to abort, 'h' for help, almost any other key for status
+Enabling duplicate candidate password suppressor
+[...expurgé...]      (?)     
+1g 0:00:00:16 DONE (2024-12-30 21:48) 0.06165g/s 2391Kp/s 2391Kc/s 2391KC/s markie182..cherrylee2
+Use the "--show --format=Raw-SHA256" options to display all of the cracked passwords reliably
+Session completed.
+```
+
+Bonus : Avec `hashcat`
+
+```bash
+hashcat -m 1400 'd956a72c83a895cb767bb5be8dba791395021dcece002b689cf3b5bf5aaa20ac' /usr/share/wordlists/rockyou.txt -r rules/Hashcat/best64.rule
+hashcat (v6.2.6) starting
+
+[...expurgé pour brièveté...]
+
+Dictionary cache hit:
+* Filename..: /usr/share/wordlists/rockyou.txt
+* Passwords.: 14344384
+* Bytes.....: 139921497
+* Keyspace..: 1104517568
+
+d956a72c83a895cb767bb5be8dba791395021dcece002b689cf3b5bf5aaa20ac:[...expurgé...]
+
+Session..........: hashcat
+Status...........: Cracked
+Hash.Mode........: 1400 (SHA2-256)
+[...expurgé pour brièveté...]
+Guess.Base.......: File (/usr/share/wordlists/rockyou.txt)
+Guess.Mod........: Rules (rules/Hashcat/best64.rule)
+[...expurgé pour brièveté...]
+
+Started: Mon Dec 30 23:50:55 2024
+Stopped: Mon Dec 30 23:50:58 2024
+```
+
+```bash
+pdf2john.pl private.pdf > pdf.hash
+```
+
+```bash
+john --list=formats | grep -oi  pdf
+430 formats
+PDF
+(151 dynamic formats shown as just "dynamic_n" here)
+
+john --format=PDF -w=wordlist.txt pdf.hash --rules=single 
+Using default input encoding: UTF-8
+Loaded 1 password hash (PDF [MD5 SHA2 RC4/AES 32/64])
+Cost 1 (revision) is 3 for all loaded hashes
+Will run 2 OpenMP threads
+Note: Passwords longer than 10 [worst case UTF-8] to 32 [ASCII] rejected
+Press 'q' or Ctrl-C to abort, 'h' for help, almost any other key for status
+Enabling duplicate candidate password suppressor
+[...expurgé...]     (private.pdf)     
+1g 0:00:00:00 DONE (2024-12-30 22:00) 4.167g/s 5066p/s 5066c/s 5066C/s mayored..afluffy
+Use the "--show --format=PDF" options to display all of the cracked passwords reliably
+Session completed.
+```
+
+```bash
+pdftotext private.pdf -upw [...expurgé...]
+```
+
+```bash
+head -n 5 private.txt 
+transactions
+
+THM{[...expurgé...]}
+date
+transaction_ref
+```
+
+## Jour 24 : Tu ne peux pas faire de mal à SOC-mas, Mayor Malware
+
+![Communication protocols](https://img.shields.io/badge/Communication%20protocols-314267?logo=tryhackme)
+
+![Jour 24](https://tryhackme-images.s3.amazonaws.com/user-uploads/5f04259cf9bf5b57aed2c476/room-content/5f04259cf9bf5b57aed2c476-1731490380964.svg)
+
+Analyse des paquets {% include dictionary.html word="MQTT" %}
+
+{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-24_mqtt.png" caption="Paquets MQTT contenant un topic et un message" %}
+
+En regardant le message en détail, nous constatons qu'il s'agit du texte `on` en héxadécimal.
+
+{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-24_challenge.png" caption="Le défi consiste à allumer la lumière en envoyant la bonne requête MQTT via Mosquitto" %}
+
+```bash
+mosquitto_pub -h localhost -t "d2FyZXZpbGxl/Y2hyaXN0bWFzbGlnaHRz" -m "6f6e" #N'a pas fonctionné
+mosquitto_pub -h localhost -t "d2FyZXZpbGxl/Y2hyaXN0bWFzbGlnaHRz" -m "on"
+```
+
+{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-24_flag.png" caption="Le flag apparaît lorsque le message est correctement envoyé" %}
 
 <div class="text-center">
     <i class="fa-solid fa-1xl text-info">La suite est pour bientot !</i><br />
