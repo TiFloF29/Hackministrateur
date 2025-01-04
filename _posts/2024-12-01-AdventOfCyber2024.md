@@ -8,7 +8,7 @@ description: Calendrier de l'avent de la Cyber 2024
 ---
 Lien vers l'épreuve : <https://tryhackme.com/r/room/adventofcyber2024>
 
->04/01/2025 : Ce compte-rendu est actuellement à l'état de brouillon. A partir du jour 12, la méthodologie n'est pas rédigée.
+>04/01/2025 : Ce compte-rendu est actuellement à l'état de brouillon. A partir du jour 15, la méthodologie n'est pas rédigée.
 
 <div class="container">
     <div class="row">
@@ -39,7 +39,7 @@ Lien vers l'épreuve : <https://tryhackme.com/r/room/adventofcyber2024>
 * [Jour 12 : Si je ne peux pas voler leur argent, je volerais leur argent](#jour-12--si-je-ne-peux-pas-voler-leur-argent-je-volerais-leur-argent)
 * [Jour 13 : C'est arrivé sans mémoire tampon ! C'est arrivé sans lag](#jour-13--cest-arrivé-sans-mémoire-tampon--cest-arrivé-sans-lag)
 * [Jour 14 : Même si nous sommes horriblement mal gérés, il n'y aura pas de visage triste durant SOC-mas](#jour-14--même-si-nous-sommes-horriblement-mal-gérés-il-ny-aura-pas-de-visage-triste-durant-soc-mas)
-* [Jour 15 : Aussi odieux soit-il, il n'y a pas d'endroit comme le Contrôleur de Domaine.](#jour-15--aussi-odieux-soit-il-il-ny-a-pas-dendroit-comme-le-contrôleur-de-domaine)
+* [Jour 15 : Aussi odieux soit-il, il n'y a pas d'endroit comme le Contrôleur de Domaine](#jour-15--aussi-odieux-soit-il-il-ny-a-pas-dendroit-comme-le-contrôleur-de-domaine)
 * [Jour 16 : *The Wareville’s Key Vault grew three sizes that day.*](#jour-16--the-warevilles-key-vault-grew-three-sizes-that-day)
 * [Jour 17 : Il a analysé et analysé jusqu'à ce que l'analyseur soit douloureux](#jour-17--il-a-analysé-et-analysé-jusquà-ce-que-lanalyseur-soit-douloureux)
 * [Jour 18 : Je pourrais utiliser de l'interaction avec l'IA](#jour-18--je-pourrais-utiliser-de-linteraction-avec-lia)
@@ -1106,11 +1106,6 @@ Read 273 packets.
 
 ![Jour 12](https://tryhackme-images.s3.amazonaws.com/user-uploads/62a7685ca6e7ce005d3f3afe/room-content/62a7685ca6e7ce005d3f3afe-1730353204089.png)
 
-<div class="text-center">
-    <i style="font-size: 24px" class="text-info">Rédaction en cours</i><br />
-    <i class="fa-solid fa-spinner fa-spin-pulse fa-2xl text-info mt-3"></i>
-</div>
-
 Nous commençons par ouvrir le site a attaqué, et nous arrivons sur une page de connexion.
 
 {% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-12_login.png" caption="Page de connexion" %}
@@ -1146,7 +1141,7 @@ account_number=111&amount=500
 
 Nous envoyons cette attaque en créant un groupe contenant cette même requête dix fois en parallèle.
 
-Lorsque nous rafraîchissons notre tableau de bord, nous contatons que toutes les requêtes ont abouti, et que le solde du compte de test est maintenant -4500$
+Lorsque nous rafraîchissons notre tableau de bord, nous contatons que toutes les requêtes ont abouti, et que le solde du compte de test est maintenant **-4500$**
 
 {% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-12_tester_balance.png" caption="Les transferts ont tous abouti avec BurpSuite" %}
 
@@ -1180,9 +1175,13 @@ Nous réactivons l'interception du trafic, puis nous envoyons le message ci-dess
 
 ![Jour 14](https://tryhackme-images.s3.amazonaws.com/user-uploads/5f04259cf9bf5b57aed2c476/room-content/5f04259cf9bf5b57aed2c476-1731812568781.svg)
 
+Lorsque nous ouvrons le site, nous avons un avertissement nous indiquant que le certificat est autosigné. Bien que ce soit fréquent sur des sites intranet d'entreprise, cette pratique peut représenter un danger si le site est exposé au public, ce qui est le cas ici
+
 {% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-14_selfsigned.png" caption="Le certificat est autosigné et n'est pas reconnu par le navigateur" %}
 
 {% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-14_crt_ca.png" caption="Le certificat est signé par la même organisation que le détenteur du site" %}
+
+Nous allons nous insérer dans le trafic en nous faisant passer pour la passerelle de Wareville afin d'intercepter les informations de connexion des utilisateurs.
 
 {% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-14_middle.png" caption="On s'insère au milieu du trafic de Wareville" %}
 
@@ -1222,15 +1221,20 @@ Connection: keep-alive
 username=marta_mayware&password=[...expurgé...]
 ```
 
-Nous accédons ainsi à la page d'administration :
+Nous accédons ainsi à la page d'administration, récupérons le flag, et pouvons même tenter d'annuler G-day (la tentation était trop forte) :
 
 {% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-14_admin_flag.png" caption="Connexion avec les identifiants d'un administrateur" %}
 
-## Jour 15 : Aussi odieux soit-il, il n'y a pas d'endroit comme le Contrôleur de Domaine.
+## Jour 15 : Aussi odieux soit-il, il n'y a pas d'endroit comme le Contrôleur de Domaine
 
 ![Active Directory](https://img.shields.io/badge/Active%20Directory-314267?logo=tryhackme)
 
 ![Jour 15](https://tryhackme-images.s3.amazonaws.com/user-uploads/5fc2847e1bbebc03aa89fbf2/room-content/5fc2847e1bbebc03aa89fbf2-1731939602671.png)
+
+<div class="text-center">
+    <i style="font-size: 24px" class="text-info">Rédaction en cours</i><br />
+    <i class="fa-solid fa-spinner fa-spin-pulse fa-2xl text-info mt-3"></i>
+</div>
 
 {% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-15_filter.png" caption="Filtre sur les événements 4624 (logon)" %}
 
@@ -1250,7 +1254,7 @@ ifconfig
 ipconfig
 ping 1.2.3.4
 ping 1.1.1.1
-#[...expurgé...]
+[...expurgé...]
 ```
 
 {% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-15_password.png" caption="Mot de passe de Glitch dans les logs PowerShell" %}
