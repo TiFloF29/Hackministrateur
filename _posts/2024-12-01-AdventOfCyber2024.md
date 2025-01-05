@@ -8,7 +8,7 @@ description: Calendrier de l'avent de la Cyber 2024
 ---
 Lien vers l'épreuve : <https://tryhackme.com/r/room/adventofcyber2024>
 
->04/01/2025 : Ce compte-rendu est actuellement à l'état de brouillon. A partir du jour 15, la méthodologie n'est pas rédigée.
+>05/01/2025 : Ce compte-rendu est actuellement à l'état de brouillon. A partir du jour 17, la méthodologie n'est pas rédigée.
 
 <div class="container">
     <div class="row">
@@ -1231,18 +1231,19 @@ Nous accédons ainsi à la page d'administration, récupérons le flag, et pouvo
 
 ![Jour 15](https://tryhackme-images.s3.amazonaws.com/user-uploads/5fc2847e1bbebc03aa89fbf2/room-content/5fc2847e1bbebc03aa89fbf2-1731939602671.png)
 
-<div class="text-center">
-    <i style="font-size: 24px" class="text-info">Rédaction en cours</i><br />
-    <i class="fa-solid fa-spinner fa-spin-pulse fa-2xl text-info mt-3"></i>
-</div>
+Afin d'y voir plus clair, nous commençons par filtrer les logs de sécurité afin de ne conserver que les événements de logon (4624)
 
 {% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-15_filter.png" caption="Filtre sur les événements 4624 (logon)" %}
 
+Puis nous utilisons l'outil de recherche pour n'obtenir que les événements de connexion de l'utilisateur glitch
+
 {% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-15_find.png" caption="Recherche du terme 'glitch'" %}
+
+Nous trouvons finalement les informations sur l'authentication de Glitch_Malware
 
 {% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-15_glitch_logon.png" caption="Informations sur le logon de l'utilisateur Glitch" %}
 
-Nous ouvrons à présent le fichier contenant l'historique PowerShell du compte Administrator.
+Nous ouvrons à présent le fichier contenant l'historique PowerShell du compte `Administrator`.
 
 ```powershell
 Get-Content 'C:\Users\Administrator\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt'
@@ -1257,7 +1258,11 @@ ping 1.1.1.1
 [...expurgé...]
 ```
 
+Nous nous intéressons maintenant aux logs PowerShell récupérés avec Sysmon pour tenter de retrouver le mot de passe de Glitch_Malware.
+
 {% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-15_password.png" caption="Mot de passe de Glitch dans les logs PowerShell" %}
+
+Enfin nous analysons les {% include dictionary.html word="GPO" %} en place pour découvrir les résultats de la compromission.
 
 ```powershell
 Get-GPO -All | Where-Object { $_.ModificationTime } | Select-Object DisplayName, ModificationTime
@@ -1277,7 +1282,9 @@ Malicious GPO - [...expurgé...]            10/30/2024 9:01:36 AM
 
 ![Jour 16](https://tryhackme-images.s3.amazonaws.com/user-uploads/6228f0d4ca8e57005149c3e3/room-content/6228f0d4ca8e57005149c3e3-1730822609983.png)
 
-Mot de passe dans `officeLocation`
+Le défi du jour consiste à exploiter le terminal Azure afin d'accroître nos privilèges et trouver des données sensibles.
+
+Nous trouvons dans un premier temps ce qui semble être un mot de passe dans `officeLocation` :
 
 ```bash
 az ad user list --filter "startsWith('wvusr-', displayName)"
@@ -1300,7 +1307,7 @@ az ad user list --filter "startsWith('wvusr-', displayName)"
 ]
 ```
 
-Groupe contenant potentiellement des secrets intéressants
+En poursuivant l'analyse, nous trouvons un groupe possédant potentiellement des droits intéressants
 
 ```bash
 az ad group list
@@ -1320,7 +1327,7 @@ az ad group list
 ]
 ```
 
-Le compte `wvusr-backupware` fait partie du groupe `Secret Recovery Group`
+Nous trouvons que le compte `wvusr-backupware` fait partie du groupe `Secret Recovery Group` et la rubrique `officeLocation` indique également le même mot de passe qu'observé au début de notre reconnaissance.
 
 ```bash
 az ad group member list --group "Secret Recovery Group"
@@ -1348,7 +1355,7 @@ Nous pivotons avec succès sur le compte `wvusr-backupware`
 az account clear
 Logout successful. Re-login to your initial Cloud Shell identity with 'az login --identity'. Login with a new identity with 'az login'.
 
-az login -u wvusr-backupware@aoc2024.onmicrosoft.com -p R3c0v3r_s3cr3ts!
+az login -u wvusr-backupware@aoc2024.onmicrosoft.com -p R[...expurgé...]s!
 Authentication with username and password in the command line is strongly discouraged. Use one of the recommended authentication methods based on your requirements. For more details, see https://go.microsoft.com/fwlink/?linkid=2276314
 Cloud Shell is automatically authenticated under the initial account signed-in with. Run 'az login' only if you need to use a different account
 [
@@ -1371,10 +1378,10 @@ Cloud Shell is automatically authenticated under the initial account signed-in w
 ]
 ```
 
-Possibilité de récupérer les clés du *Vault*
+En vérifiant les droits du compte, nous pouvons constater qu'il a la possibilité de récupérer les clés du *Vault*
 
 ```bash
-az role assignment list --assignee 7d96660a-02e1-4112-9515-1762d0cb66b7 --all
+az role assignment list --assignee 7d96660a[...expurgé...]1762d0cb66b7 --all
 [
   {
     [...expurgé pour brièveté...]
@@ -1395,7 +1402,7 @@ az role assignment list --assignee 7d96660a-02e1-4112-9515-1762d0cb66b7 --all
 ]
 ```
 
-`wvusr-backupware` a accès au secret `warevillesecrets`
+En poursuivant l'énumération des droits, il apparaît que `wvusr-backupware` a accès au coffre-fort (*vault*) `warevillesecrets`.
 
 ```bash
 az keyvault list
@@ -1410,6 +1417,8 @@ az keyvault list
   }
 ]
 ```
+
+Nous pouvons ainsi récupérer le nom du secret et enfin son contenu.
 
 ```bash
 az keyvault secret list --vault-name warevillesecrets
@@ -1444,6 +1453,11 @@ az keyvault secret show --vault-name warevillesecrets --name [...expurgé...]
 ![Log analysis](https://img.shields.io/badge/Log%20analysis-314267?logo=tryhackme)
 
 ![Jour 17](https://tryhackme-images.s3.amazonaws.com/user-uploads/5ed5961c6276df568891c3ea/room-content/5ed5961c6276df568891c3ea-1731684332887.svg)
+
+<div class="text-center">
+    <i style="font-size: 24px" class="text-info">Rédaction en cours</i><br />
+    <i class="fa-solid fa-spinner fa-spin-pulse fa-2xl text-info mt-3"></i>
+</div>
 
 {% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-17_login_successful.png" caption="Nombre de connexions réussies capturées" %}
 
