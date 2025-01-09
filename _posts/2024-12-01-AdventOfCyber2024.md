@@ -8,7 +8,7 @@ description: Calendrier de l'avent de la Cyber 2024
 ---
 Lien vers l'épreuve : <https://tryhackme.com/r/room/adventofcyber2024>
 
->05/01/2025 : Ce compte-rendu est actuellement à l'état de brouillon. A partir du jour 17, la méthodologie n'est pas rédigée.
+>09/01/2025 : Ce compte-rendu est actuellement à l'état de brouillon. A partir du jour 18, la méthodologie n'est pas rédigée.
 
 <div class="container">
     <div class="row">
@@ -1454,18 +1454,25 @@ az keyvault secret show --vault-name warevillesecrets --name [...expurgé...]
 
 ![Jour 17](https://tryhackme-images.s3.amazonaws.com/user-uploads/5ed5961c6276df568891c3ea/room-content/5ed5961c6276df568891c3ea-1731684332887.svg)
 
-<div class="text-center">
-    <i style="font-size: 24px" class="text-info">Rédaction en cours</i><br />
-    <i class="fa-solid fa-spinner fa-spin-pulse fa-2xl text-info mt-3"></i>
-</div>
+Le défi du jour consiste à naviguer dans les logs grâce à l'outil [Splunk](https://www.splunk.com/fr_fr/products/splunk-enterprise.html).
+
+Nous commençons par vérifier le nombre d'événements de connexions réussies dans l'index `cctv_feed`.
 
 {% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-17_login_successful.png" caption="Nombre de connexions réussies capturées" %}
 
+Puis nous recherchons des traces de suppression d'enregistrements, et nous obtenons un identifiant de session qui nous devrait nous permettre de remonter vers le responsable.
+
 {% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-17_DeleteRecording.png" caption="Logs de la suppression d'enregistrements" %}
+
+En pivotant sur l'index `web_logs` avec cet identifiant, nous trouvons l'adresse IP mise en cause.
 
 {% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-17_ip_address.png" caption="Adresse IP liée à la suppression des enregistrements" %}
 
+Cette adresse IP est liée à d'autres sessions :
+
 {% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-17_other_session.png" caption="On observe d'autres identifiants de sessions liés à cette adresse IP" %}
+
+En retournant sur l'index `cctv_feed`, l'une des sessions nous permet de retrouver le nom de l'utilisateur à l'origine de la suppression des enregistrements.
 
 {% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-17_user.png" caption="Nom de l'utilisateur qui a supprimé les enregistrements" %}
 
@@ -1474,6 +1481,11 @@ az keyvault secret show --vault-name warevillesecrets --name [...expurgé...]
 ![Prompt injection](https://img.shields.io/badge/Prompt%20injection-4d354a?logo=tryhackme)
 
 ![Jour 18](https://tryhackme-images.s3.amazonaws.com/user-uploads/5de96d9ca744773ea7ef8c00/room-content/5de96d9ca744773ea7ef8c00-1732101035669.png)
+
+<div class="text-center">
+    <i style="font-size: 24px" class="text-info">Rédaction en cours</i><br />
+    <i class="fa-solid fa-spinner fa-spin-pulse fa-2xl text-info mt-3"></i>
+</div>
 
 {% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-18_test.png" caption="Nous disposons de quelques exemples pour comprendre le fonctionnement" %}
 
