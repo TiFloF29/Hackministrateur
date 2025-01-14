@@ -2,9 +2,9 @@
   icon: fa-solid fa-user-tie
   from: 09/2023
   to: present
-  description: Administration systèmes dans le domaine bancaire.
+  description: Administration systèmes dans le domaine bancaire.<br />
               Exploitation Mainframe, gestion de l'environnement, des comptes et des habilitations hors-production<br />
-              Exploitation Outils de Sécurité, analyse de logs, gestion antivirus, gouvernance
+              Exploitation Outils de Sécurité, analyse de logs, gestion antivirus, gouvernance, rejeux de pentests
 
 - title: POEI Administration Systèmes et Réseaux / Bancaire, IB Cegos, distanciel
   icon: fa-solid fa-graduation-cap
