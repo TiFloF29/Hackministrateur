@@ -11,3 +11,9 @@
 - name: Mainframe
   percentage: 50
   color: teal
+  icon: fa-solid fa-server
+
+- name: Gestion switchs et routeurs
+  percentage: 20
+  color: bg-info
+  icon: fa-solid fa-network-wired

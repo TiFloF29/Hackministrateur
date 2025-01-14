@@ -1,0 +1,14 @@
+- name: Splunk
+  percentage: 30
+  color: orange
+  icon: fa-solid fa-chevron-right
+
+- name: Kibana
+  percentage: 30
+  color: bg-info
+  icon: fa-solid fa-magnifying-glass
+
+- name: Burp Suite (Community)
+  percentage: 45
+  color: cyan
+  icon: fa-regular fa-file-code
