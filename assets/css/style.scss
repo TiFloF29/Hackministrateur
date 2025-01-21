@@ -116,3 +116,13 @@
     background-color: cyan;
     color: cyan;
 }
+
+/* Styling embedded gists */
+.blob-code, .blob-num {      
+font-size: 16px !important;
+}
+/* End styling embedded gists */
+
+body {
+    font-size: 18px;
+}
