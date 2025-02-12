@@ -5,10 +5,11 @@ style: border
 color: thm
 comments: false
 description: Calendrier de l'avent de la Cyber 2024
+modified: 12/02/2025
 ---
 Lien vers l'épreuve : <https://tryhackme.com/r/room/adventofcyber2024>
 
->09/01/2025 : Ce compte-rendu est actuellement à l'état de brouillon. A partir du jour 18, la méthodologie n'est pas rédigée.
+>12/02/2025 : Ce compte-rendu est actuellement à l'état de brouillon. A partir du jour 19, la méthodologie n'est pas rédigée.
 
 <div class="container">
     <div class="row">
@@ -1482,16 +1483,15 @@ En retournant sur l'index `cctv_feed`, l'une des sessions nous permet de retrouv
 
 ![Jour 18](https://tryhackme-images.s3.amazonaws.com/user-uploads/5de96d9ca744773ea7ef8c00/room-content/5de96d9ca744773ea7ef8c00-1732101035669.png)
 
-<div class="text-center">
-    <i style="font-size: 24px" class="text-info">Rédaction en cours</i><br />
-    <i class="fa-solid fa-spinner fa-spin-pulse fa-2xl text-info mt-3"></i>
-</div>
+Ce défi consiste à trouver les failles d'un *chatbot* alimenté à l'intelligence artificielle afin de gagner un accès illégitime.
 
 {% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-18_test.png" caption="Nous disposons de quelques exemples pour comprendre le fonctionnement" %}
 
+En interceptant les paquets ICMP (ping) avec `tcpdump` depuis notre machine d'attaque, nous pouvons tenter d'envoyer un ping vers notre machine depuis le *chatbot* :
+
 {% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-18_injection_test.png" caption="Il est possible d'injecter un prompt non prévu" %}
 
-Paquets capturés
+L'injection de code a fonctionné, nous observons le trafic suivant :
 
 ```bash
 tcpdump -ni ens5 icmp
@@ -1508,7 +1508,11 @@ listening on ens5, link-type EN10MB (Ethernet), capture size 262144 bytes
 21:30:38.075084 IP 10.10.72.125 > 10.10.176.254: ICMP echo reply, id 1, seq 4, length 64
 ```
 
+Nous mettons notre machine d'attaque en écoute avec {% include dictionary.html word="netcat" %}, nous injectons du code permettant d'obtenir un *{% include dictionary.html word="reverse-shell" %}*
+
 {% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-18_revshell.png" caption="Injection d'un reverse shell" %}
+
+Nous obtenons ainsi un accès en tant que root sur la machine hébergeant le *chatbot*
 
 ```bash
 rlwrap nc -lvnp 9000
@@ -1518,7 +1522,11 @@ whoami
 root
 ```
 
+Nous améliorons d'abord le shell obtenu.
+
 {% gist ab3c791e25baa7b437d0324f6d3195af %}
+
+Puis nous partons à la recherche du flag.
 
 ```bash
 find / -iname flag.txt -type f 2>/dev/null
@@ -1534,7 +1542,12 @@ THM{[...expurgé...]}
 
 ![Jour 19](https://tryhackme-images.s3.amazonaws.com/user-uploads/5ed5961c6276df568891c3ea/room-content/5ed5961c6276df568891c3ea-1732331833645.svg)
 
-[Frida](https://frida.re/)
+<div class="text-center">
+    <i style="font-size: 24px" class="text-info">Rédaction en cours</i><br />
+    <i class="fa-solid fa-spinner fa-spin-pulse fa-2xl text-info mt-3"></i>
+</div>
+
+Au programme du jour : hacker un jeu vidéo en interceptant les requêtes API avec [Frida](https://frida.re/).
 
 ```bash
 frida-trace ./TryUnlockMe -i 'libaocgame.so!*'
