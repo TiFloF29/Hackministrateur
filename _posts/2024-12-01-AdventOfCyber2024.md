@@ -7,7 +7,7 @@ comments: false
 description: Calendrier de l'avent de la Cyber 2024
 modified: 13/02/2025
 ---
-Lien vers l'épreuve : <https://tryhackme.com/r/room/adventofcyber2024>
+Lien vers l'épreuve : <https://tryhackme.com/room/adventofcyber2024>
 
 >13/02/2025 : Ce compte-rendu est actuellement à l'état de brouillon. A partir du jour 19, la méthodologie n'est pas rédigée.
 

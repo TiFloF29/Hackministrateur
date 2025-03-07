@@ -7,7 +7,7 @@ comments: false
 description: Une configuration non sécurisée, et des mots de passe faibles
 modified: 06/09/2024
 ---
-Lien vers l'épreuve : <https://tryhackme.com/r/room/bsidesgtanonforce>
+Lien vers l'épreuve : <https://tryhackme.com/room/bsidesgtanonforce>
 
 ![Easy](https://img.shields.io/badge/Difficulté-Facile-Green?logo=tryhackme)
 

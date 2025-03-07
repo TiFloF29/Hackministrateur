@@ -6,7 +6,7 @@ color: thm
 comments: false
 description: Exploitation d'un serveur web Apache
 ---
-Lien vers l'épreuve : <https://tryhackme.com/r/room/cowboyhacker>
+Lien vers l'épreuve : <https://tryhackme.com/room/cowboyhacker>
 
 ![Logo box](https://tryhackme-images.s3.amazonaws.com/room-icons/9ad38a2cc31d6ae0030c888aca7fe646.jpeg)
 
