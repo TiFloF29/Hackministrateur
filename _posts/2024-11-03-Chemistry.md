@@ -6,6 +6,7 @@ color: htb
 comments: false
 description: Douzième semaine de la saison 6 "HEIST"
 created: 26/10/2024
+modified: 18/03/2025
 ---
 
 ## Sommaire <!-- omit in toc -->
@@ -20,7 +21,10 @@ created: 26/10/2024
 ## Reconnaissance
 
 ```bash
-nmap -A -T4 chemistry.htb   
+nmap -A -T4 chemistry.htb
+```
+
+{% capture spoil %}
 Starting Nmap 7.94SVN ( https://nmap.org ) at 2024-10-26 11:14 CEST
 Warning: 10.10.11.38 giving up on port because retransmission cap hit (6).
 Nmap scan report for chemistry.htb (10.10.11.38)
@@ -34,48 +38,6 @@ PORT      STATE    SERVICE        VERSION
 |_  256 94:42:1b:78:f2:51:87:07:3e:97:26:c9:a2:5c:0a:26 (ED25519)
 [...expurgé pour brièveté...]
 5000/tcp  open     upnp?
-| fingerprint-strings: 
-|   GetRequest: 
-|     HTTP/1.1 200 OK
-|     Server: Werkzeug/3.0.3 Python/3.9.5
-|     Date: Sat, 26 Oct 2024 09:16:24 GMT
-|     Content-Type: text/html; charset=utf-8
-|     Content-Length: 719
-|     Vary: Cookie
-|     Connection: close
-|     <!DOCTYPE html>
-|     <html lang="en">
-|     <head>
-|     <meta charset="UTF-8">
-|     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-|     <title>Chemistry - Home</title>
-|     <link rel="stylesheet" href="/static/styles.css">
-|     </head>
-|     <body>
-|     <div class="container">
-|     class="title">Chemistry CIF Analyzer</h1>
-|     <p>Welcome to the Chemistry CIF Analyzer. This tool allows you to upload a CIF (Crystallographic Information File) and analyze the structural data contained within.</p>
-|     <div class="buttons">
-|     <center><a href="/login" class="btn">Login</a>
-|     href="/register" class="btn">Register</a></center>
-|     </div>
-|     </div>
-|     </body>
-|   RTSPRequest: 
-|     <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN"
-|     "http://www.w3.org/TR/html4/strict.dtd">
-|     <html>
-|     <head>
-|     <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
-|     <title>Error response</title>
-|     </head>
-|     <body>
-|     <h1>Error response</h1>
-|     <p>Error code: 400</p>
-|     <p>Message: Bad request version ('RTSP/1.0').</p>
-|     <p>Error code explanation: HTTPStatus.BAD_REQUEST - Bad request syntax or unsupported method.</p>
-|     </body>
-|_    </html>
 [...expurgé pour brièveté...]
 1 service unrecognized despite returning data. If you know the service/version, please submit the following fingerprint at https://nmap.org/cgi-bin/submit.cgi?new-service :
 SF-Port5000-TCP:V=7.94SVN%I=7%D=10/26%Time=671CB332%P=x86_64-pc-linux-gnu%
@@ -97,7 +59,8 @@ HOP RTT      ADDRESS
 
 OS and Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
 Nmap done: 1 IP address (1 host up) scanned in 162.53 seconds
-```
+{% endcapture %}
+{% include elements/spoil.html %}
 
 L'analyse du serveur avec {% include dictionary.html word="NMAP" %} nous indique la présence d'un service {% include dictionary.html word="SSH" %} sur le port 22, et d'un serveur Web Python sur le port 5000 avec *Werkzeug*, un outil de debugging pour Flask.
 
@@ -107,11 +70,11 @@ En recherchant des exploitations sur l'outil Werkzeug, le site [Hacktricks](http
 
 Nous nous intéressons donc au contenu du site hébergé sur le port 5000
 
-{% include elements/figure.html image="/images/HTB/20241026/Capture_ecran_2024-10-26_website.png" caption="Accueil du site" %}
+{% include elements/figure_spoil.html image="/images/HTB/20241026/Capture_ecran_2024-10-26_website.png" caption="Accueil du site" %}
 
 Nous sommes inviter à créer notre propre compte, puis nous avons accès à une interface permettant d'uploader des fichiers CIF :
 
-{% include elements/figure.html image="/images/HTB/20241026/Capture_ecran_2024-10-26_account.png" caption="Une fois connecté, nous pouvons uploader des fichiers" %}
+{% include elements/figure_spoil.html image="/images/HTB/20241026/Capture_ecran_2024-10-26_account.png" caption="Une fois connecté, nous pouvons uploader des fichiers" %}
 
 Nous récupérons le fichier d'exemple en cliquant sur `here` et nous tentons de le téléverser sur notre compte.
 
@@ -137,7 +100,7 @@ loop_
 
 Le fichier apparaît désormais dans notre tableau de bord, et nous pouvons l'ouvrir.
 
-{% include elements/figure.html image="/images/HTB/20241026/Capture_ecran_2024-10-26_cif.png" caption="Le fichier d'entrée est traduit avant affichage" %}
+{% include elements/figure_spoil.html image="/images/HTB/20241026/Capture_ecran_2024-10-26_cif.png" caption="Le fichier d'entrée est traduit avant affichage" %}
 
 En recherchant les outils Python permettant ce genre d'analyse, nous trouvons l'outil [pymatgen](https://pymatgen.org/pymatgen.core.html) qui semble connaître une vulnérabilité critique permettant l'exécution de code à distance. Le PoC est disponible sur [Github](https://github.com/advisories/GHSA-vgv8-5cpj-qj2f).
 
@@ -249,7 +212,7 @@ Nous pouvons ouvrir et naviguer dans la base de données grâce à l'outil `sqli
 sqlite3 database.db
 ```
 
-```sql
+```txt
 .tables
 structure  user
 select * from user;
@@ -279,6 +242,9 @@ Puis nous utiliserons {% include dictionary.html word="Hashcat" %} pour tenter d
 
 ```bash
 hashcat -m 0 '63ed[...expurgé...]251a5' /usr/share/wordlists/rockyou.txt
+```
+
+{% capture spoil %}
 hashcat (v6.2.6) starting
 
 [...expurgé pour brièveté...]
@@ -321,7 +287,8 @@ Hardware.Mon.#1..: Util: 32%
 
 Started: Sat Oct 26 12:33:29 2024
 Stopped: Sat Oct 26 12:33:55 2024
-```
+{% endcapture %}
+{% include elements/spoil.html %}
 
 Le mot de passe trouvé dans la base de données correspond également au mot de passe permettant de se connecter en {% include dictionary.html word="SSH" %} sur le serveur.
 

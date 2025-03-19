@@ -6,6 +6,7 @@ color: htb
 comments: false
 description: Sixième semaine de la saison 6 "HEIST"
 created: 14/09/2024
+modified: 18/03/2025
 ---
 > **IMPORTANT** : Ce compte-rendu a été rédigé la semaine où la machine était active durant la saison, mais publié à la fin de la saison afin de ne pas impacter son déroulement conformément aux [règles de la plateforme](https://help.hackthebox.com/en/articles/5188925-streaming-writeups-walkthrough-guidelines)
 
@@ -24,6 +25,9 @@ Lien vers l'épreuve : <https://app.hackthebox.com/machines/Sightless>
 
 ```bash
 nmap -T4 -A sightless.htb
+```
+
+{% capture spoil %}
 Starting Nmap 7.94SVN ( https://nmap.org ) at 2024-09-14 15:21 CEST
 Nmap scan report for sightless.htb (10.10.11.32)
 Host is up (0.027s latency).
@@ -52,7 +56,8 @@ Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
 
 Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
 Nmap done: 1 IP address (1 host up) scanned in 70.56 seconds
-```
+{% endcapture %}
+{% include elements/spoil.html %}
 
 Le scan {% include dictionary.html word="NMAP" %} indique qu'il y a un serveur {% include dictionary.html word="FTP" %} sur le port 21 (qui ne semble pas accessible par les utilisateurs anonymes), un serveur {% include dictionary.html word="SSH" %} sur le port 22 et un serveur Nginx sur le port 80
 
@@ -60,7 +65,7 @@ Le scan {% include dictionary.html word="NMAP" %} indique qu'il y a un serveur {
 
 Une rapide analyse du site nous indique que le serveur utilise SQLPad et Froxlor. Nous allons pouvoir chercher des vulnérabilités sur ces outils
 
-{% include elements/figure.html image="/images/HTB/20240914/Capture_ecran_2024-09-14_sightless.png" caption="Les services proposés" %}
+{% include elements/figure_spoil.html image="/images/HTB/20240914/Capture_ecran_2024-09-14_sightless.png" caption="Les services proposés" %}
 
 En explorant SQLPad, il n'apparaît pas de nécessité de connexion pour y accéder. La version utilisée 6.10.0 est vulnérable à l'injection de code, documentée dans le [CVE-2022-0944](https://huntr.com/bounties/46630727-d923-4444-a421-537ecd63e7fb).
 
@@ -160,13 +165,13 @@ Nous ouvrons donc une connexion {% include dictionary.html word="SSH" %} avec re
 
 Le service ouvert est Froxlor, et nécessite des identifiants
 
-{% include elements/figure.html image="/images/HTB/20240914/Capture_ecran_2024-09-14_Froxlor.png" caption="Accueil de Froxlor" %}
+{% include elements/figure_spoil.html image="/images/HTB/20240914/Capture_ecran_2024-09-14_Froxlor.png" caption="Accueil de Froxlor" %}
 
 Nous tentons d'utiliser la payload du [CVE-2024-34070](https://github.com/advisories/GHSA-x525-54hf-xr53) sans succès, sûrement dû à l'absence d'interaction par un administrateur.
 
 En tentant d'exploiter une faille de Google Chrome / Chromium avec la commande `chrome://inspect/#devices` et en ajoutant les ports ouverts (et forwardés) dans le menu *Configure* nous observons des actions de connexion sur l'outil Froxlor :
 
-{% include elements/figure.html image="/images/HTB/20240914/Capture_ecran_2024-09-14_Chromium.png" caption="Chromium nous permet d'observer des actions sur l'outil Froxlor" %}
+{% include elements/figure_spoil.html image="/images/HTB/20240914/Capture_ecran_2024-09-14_Chromium.png" caption="Chromium nous permet d'observer des actions sur l'outil Froxlor" %}
 
 En cliquant sur "inspect" nous pouvons accéder aux outils d'analyse du réseau de Chromium où nous trouvons une page `index.php` qui contient en *payload* les données de connexions pour Froxlor :
 
@@ -178,7 +183,7 @@ dologin:
 
 Nous pouvons enfin accéder à l'outil :
 
-{% include elements/figure.html image="/images/HTB/20240914/VirtualBox_Kali Hack_14_09_2024_19_26_26.png" caption="Interface de l'outil Froxlor" %}
+{% include elements/figure_spoil.html image="/images/HTB/20240914/VirtualBox_Kali Hack_14_09_2024_19_26_26.png" caption="Interface de l'outil Froxlor" %}
 
 Depuis l'onglet PHP / PHP-FPM versions nous pouvons ajouter une commande lors du redémarrage de php-fpm. Dans le but de devenir root sur la machine, nous optons pour `chmod 4777 /bin/bash` afin de permettre de devenir root en exécutant `/bin/bash -p` en étant connecter en tant que Michael.
 
