@@ -5,11 +5,11 @@ style: border
 color: thm
 comments: false
 description: Calendrier de l'avent de la Cyber 2024
-modified: 20/03/2025
+modified: 26/04/2025
 ---
 Lien vers l'épreuve : <https://tryhackme.com/room/adventofcyber2024>
 
->20/03/2025 : Ce compte-rendu est actuellement à l'état de brouillon. A partir du jour 19, la méthodologie n'est pas rédigée.
+>26/04/2025 : Ce compte-rendu est actuellement à l'état de brouillon. A partir du jour 21, la méthodologie n'est pas rédigée.
 
 <div class="container">
     <div class="row">
@@ -1623,14 +1623,13 @@ THM{[...expurgé...]}
 
 ![Jour 19](https://tryhackme-images.s3.amazonaws.com/user-uploads/5ed5961c6276df568891c3ea/room-content/5ed5961c6276df568891c3ea-1732331833645.svg)
 
-<div class="text-center">
-    <i style="font-size: 24px" class="text-info">Rédaction en cours</i><br />
-    <i class="fa-solid fa-spinner fa-spin-pulse fa-2xl text-info mt-3"></i>
-</div>
-
 Au programme du jour : hacker un jeu vidéo en interceptant les requêtes API avec [Frida](https://frida.re/).
 
-```bash
+En lançant le jeu, nous nous retrouvons confrontés à un premier défi : rentrer un code OTP. Nous allons devoir trouver comment ce code est généré pour pouvoir avancer.
+
+Nous relançons donc le jeu, cette fois en interceptant les fonctionnalités à l'aide de **Frida**
+
+```txt
 frida-trace ./TryUnlockMe -i 'libaocgame.so!*'
 Instrumenting...                                                        
 [...expurgé pour brièveté...]
@@ -1639,7 +1638,11 @@ Started tracing 4 functions. Web UI available at http://localhost:1337/
  73825 ms  _Z7set_otpi()
 ```
 
+Nous trouvons la première fonction `_Z7set_otpi` qui permet de générer le code OTP attendu.
+
 {% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-19_set-otp.png" caption="Fonction servant à générer le code OTP" %}
+
+Nous modifions cette fonction afin de récupérer la valeur du code OTP avec Frida.
 
 ```js
 defineHandler({
@@ -1654,7 +1657,7 @@ defineHandler({
 
 On relance la discussion avec le pingouin :
 
-```bash
+```txt
 frida-trace ./TryUnlockMe -i 'libaocgame.so!*'
 Instrumenting...
 [...expurgé pour brièveté...]
@@ -1666,9 +1669,9 @@ Instrumenting...
 
 {% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-19_first_flag.png" caption="Le pingouin nous fourni le premier flag" %}
 
-Second pingouin :
+Nous pouvons avancé jusqu'au second pingouin qui propose d'acheter le flag pour la modique somme de 1 Millions de Dollars !
 
-```bash
+```txt
 frida-trace ./TryUnlockMe -i 'libaocgame.so!*'
 Instrumenting...                                                        
 [...expurgé pour brièveté...]
@@ -1679,7 +1682,11 @@ Instrumenting...
 1441061 ms  _Z17validate_purchaseiii() #Nouveau fichier à analyser
 ```
 
+Grâce à l'outil Frida, nous sommes en mesure d'identifier la fonction permettant d'interagir avec le pingouin ~~escroc~~ *vendeur*
+
 {% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-19_purchase.png" caption="Script gérant l'achat d'items" %}
+
+Nous commençons par récupérer la valeurs des arguments utiles dans la fonction afin d'en comprendre le fonctionnement.
 
 ```js
 defineHandler({
@@ -1695,7 +1702,9 @@ defineHandler({
 });
 ```
 
-```bash
+En relançant la conversation, nous constatons que le prix de l'objet est stocké à la deuxième place dans le tableau des arguments :
+
+```txt
 frida-trace ./TryUnlockMe -i 'libaocgame.so!*'
 Instrumenting...                                                        
 [...expurgé pour brièveté...]
@@ -1710,6 +1719,8 @@ Instrumenting...
 2649372 ms  Parameter 3: 1 #Argent disponible
 ```
 
+Nous forçons donc la valeur de cet arguments à la valeur 0.
+
 ```js
 defineHandler({
   onEnter(log, args, state) {
@@ -1722,11 +1733,13 @@ defineHandler({
 });
 ```
 
+> Il ne faudra rien acheter d'autre car l'argent disponible devra être au-dessus de 0 (par exemple en achetant l'*advice* on se retrouvera avec -4 pièces, il faudra utiliser l'ordinateur pour en récupérer)
+
 {% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-19_second_flag.png" caption="Deuxième flag" %}
 
-Troisième pingouin
+En parlant avec le troisième pingouin, celui-ci nous demande de prouver notre identité en écrasant notre clavier de la même manière que Mayor Malware afin de vérifier la biométrie.
 
-```bash
+```txt
 frida-trace ./TryUnlockMe -i 'libaocgame.so!*'
 Instrumenting...                                                        
 [...expurgé pour brièveté...]
@@ -1743,12 +1756,15 @@ Instrumenting...
 3119459 ms  _Z16check_biometricsPKc()
 ```
 
+Nous ouvrons la fonction contrôlant la biométrie :
+
 {% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-19_biometric.png" caption="Script répondant à la validation de la biométrie" %}
 
 ```js
 defineHandler({
   onEnter(log, args, state) {
     log('_Z16check_biometricsPKc()');
+    log("PARAMETER: " + Memory.readCString(args[0]))
   },
 
   onLeave(log, retval, state) {
@@ -1757,7 +1773,7 @@ defineHandler({
 });
 ```
 
-```bash
+```txt
 frida-trace ./TryUnlockMe -i 'libaocgame.so!*'
 Instrumenting...                                                        
 [...expurgé pour brièveté...]
@@ -1773,8 +1789,11 @@ Instrumenting...
 2984000 ms  _Z17validate_purchaseiii()
 3119459 ms  _Z16check_biometricsPKc()
 3634020 ms  _Z16check_biometricsPKc()
+3634020 ms  PARAMETER: PVQeivR9rO59kOeOdSRtZzSIgEVdv0eKV4wEyNLnlQwWnasQ1JHaHjrvvMYrKABq
 3634020 ms  The return value is: 0x0 #Valeur retournée nulle
 ```
+
+Bien que nous ne puissions vraisemblablement pas interagir avec la valeur du paramètre que nous avons récupéré dans la première partie de la fonction (qui semble être la valeur attendue si nous devions taper sur la clavier), nous allons forcer la valeur de sortie à **VRAI** (ou **1** en binaire) afin de contourner la procédure de sécurité.
 
 ```js
 defineHandler({
@@ -1787,6 +1806,8 @@ defineHandler({
   }
 });
 ```
+
+Nous parvenons à tromper la vigilance du dernier pingouin qui nous fourni le dernier flag de ce défi.
 
 {% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-19_third_flag.png" caption="Troisième et dernier flag" %}
 
@@ -1883,6 +1904,11 @@ Le chiffrement AES-ECB étant reversible, il est possible de déchiffrer les inf
 ![Reverse engineering](https://img.shields.io/badge/Reverse%20engineering-314267?logo=tryhackme)
 
 ![Jour 21](https://tryhackme-images.s3.amazonaws.com/user-uploads/62a7685ca6e7ce005d3f3afe/room-content/62a7685ca6e7ce005d3f3afe-1732165566749.png)
+
+<div class="text-center">
+    <i style="font-size: 24px" class="text-info">Rédaction en cours</i><br />
+    <i class="fa-solid fa-spinner fa-spin-pulse fa-2xl text-info mt-3"></i>
+</div>
 
 En décompilant `WarevilleApp.exe` nous y trouvons la fonction téléchargeant et exécutant un programme :
 
