@@ -3,7 +3,7 @@
   percentage: 60
   color: bg-success
 
-- name: Astronomy
+- name: Astronomie
   icon: fa-solid fa-meteor
   percentage: 5
   color: bg-danger
