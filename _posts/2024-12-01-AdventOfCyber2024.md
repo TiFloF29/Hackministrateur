@@ -1,6 +1,6 @@
 ---
 title: Advent Of Cyber 2024
-tags: [TryHackMe, Facile, Avent, Défi, Brouillon]
+tags: [TryHackMe, Facile, Avent, Défis]
 style: border
 color: thm
 comments: false
@@ -8,8 +8,6 @@ description: Calendrier de l'avent de la Cyber 2024
 modified: 26/04/2025
 ---
 Lien vers l'épreuve : <https://tryhackme.com/room/adventofcyber2024>
-
->26/04/2025 : Ce compte-rendu est actuellement à l'état de brouillon. A partir du jour 21, la méthodologie n'est pas rédigée.
 
 <div class="container">
     <div class="row">
