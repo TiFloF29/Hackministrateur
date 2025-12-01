@@ -12,6 +12,10 @@ description: Se séparer de Windows et passer à Linux
 * [Pourquoi quitter Windows ?](#pourquoi-quitter-windows-)
 * [Pourquoi passer sur Linux ?](#pourquoi-passer-sur-linux-)
 * [Installation sur le PC portable](#installation-sur-le-pc-portable)
+* [Pourquoi se contenter d'un Linux de base ?](#pourquoi-se-contenter-dun-linux-de-base-)
+  * [Starship](#starship)
+  * [Les alternatives Rust](#les-alternatives-rust)
+    * [Lire un fichier avec batcat](#lire-un-fichier-avec-batcat)
 
 ## Pourquoi utiliser Windows ?
 
@@ -44,13 +48,13 @@ Grâce au site [DistroSea](https://distrosea.com/fr/) j'ai pu tester quelques di
 * [LMDE](https://linuxmint.com/download_lmde.php) (Linux Mint Debian Edition) : Réputée fiable, stable et légère
 * [Garuda Linux](https://garudalinux.org/) : Basée sur Arch Linux, elle est récente, moderne, et orientée vers les joueurs
 
-Mon intention est d'installer LMDE et Garuda en dual-boot sur mon PC portable (pourquoi se limiter à une seule ?) et installer Garuda à côté de Windows dans un premier temps sur mon PC fixe afin d'évaluer Garuda sur une utilisation quotidienne en gardant Windows "au cas où".
+Mon intention est d'installer Garuda sur mon PC portable pour m'assurer que la distribution corresponde bien à mes besoins, puis d'installer Garuda à côté de Windows dans un premier temps sur mon PC fixe afin d'évaluer Garuda sur une utilisation quotidienne en gardant Windows "au cas où".
 
 ## Installation sur le PC portable
 
 Dans mon cas, le PC portable est secondaire, et n'est utile qu'en cas de déplacement ou vacances. Mais puisqu'il est voué à être déplacé, la sécurité des données est primordiale. J'ai donc souhaité faire une installation chiffrée, et séparer les dossiers importants comme `/home` et `/usr` dans des partitions différentes.
 
-J'avais donc commencé utiliser [LVM (*Logical Volume Manager*)](https://en.wikipedia.org/wiki/Logical_Volume_Manager_(Linux)) par définir un *volume group* chiffré correspondant au SSD, dans lequel je pourrais créer des *logical volumes* qui auraient servi à installer les différentes partitions.
+J'avais donc utiliser [LVM (*Logical Volume Manager*)](https://en.wikipedia.org/wiki/Logical_Volume_Manager_(Linux)) et commencer par définir un *volume group* chiffré correspondant au SSD, dans lequel je pourrais créer des *logical volumes* qui auraient servi à installer les différentes partitions.
 
 **SAUF QUE** les distributions Linux nécessitent d'avoir une partition particulière `/boot/efi` **non chiffrée**.
 
@@ -60,3 +64,25 @@ Retour sur [GParted](https://gparted.org/) pour revoir les partitions.
     <i class="fa-solid fa-1xl text-info">Redaction en cours</i><br />
     <i class="fa-solid fa-spinner fa-spin-pulse fa-2xl text-info mt-3"></i>
 </div>
+
+## Pourquoi se contenter d'un Linux de base ?
+
+Ce que j'entends par Linux "de base" c'est la distribution telle qu'elle est une fois l'installation terminée.
+
+C'est fonctionnel, mais on peut faire mieux.
+
+### Starship
+
+On peut améliorer l'apparence du terminal avec [starship](https://starship.rs) pour commencer. Certes l'utilisateur lambda n'aura peut-être pas grand-chose à y gagner, mais quand on s'intéresse à l'administration du système avoir un terminal amélioré peut faciliter l'utilisation en ligne de commande.
+
+### Les alternatives Rust
+
+Les commandes habituelles de Linux font vraiment partie du passage obligatoire pour un administrateur. `ls`, `grep` ou `cat` sont des incontournables.
+
+Des projets open-source ont entrepris de moderniser ces commandes, le plus souvent en optant pour le langage [Rust](https://rust-lang.org/fr/) augmentant à la fois la rapidité d'exécution et la stabilité par rapport aux commandes historiques développées en C.
+
+Ces outils sont également développés dans l'optique d'être plus ergonomique : plus de couleurs pour différencier les résultats ou rendre le code plus lisible, icônes (nécessite l'installation de [Nerd Fonts](https://www.nerdfonts.com/)).
+
+Puisque des images valent mieux qu'un long discours, voici quelques exemples et comparaisons des commandes que j'utilise désormais au quotidien
+
+#### Lire un fichier avec [batcat](https://github.com/sharkdp/bat)
