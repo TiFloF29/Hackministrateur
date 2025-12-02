@@ -8,23 +8,12 @@ description: Calendrier de l'avent de la Cyber 2025
 ---
 Lien vers l'épreuve : <https://tryhackme.com/room/adventofcyber2025>
 
-<div class="container">
-    <div class="row">
-        <div class="col-md-6 mt-5">
-            <img src="https://tryhackme-images.s3.amazonaws.com/room-icons/62c435d1f4d84a005f5df811-1728982657816" class="img-fluid" alt="Logo Événement">
-        </div>
-        <div class="col-md-6">
-            <!--img src="https://assets.tryhackme.com/img/badges/aoc5.svg" class="img-fluid" alt="Badge AoC2025"-->
-        </div>
-    </div>
-</div>
-
 ![Easy](https://img.shields.io/badge/Difficulté-Facile-Green?logo=tryhackme)
 
 ## Sommaire <!-- omit in toc -->
 
 * [Jour 1 : Linux CLI - *Shells Bells*](#jour-1--linux-cli---shells-bells)
-* [Jour 2](#jour-2)
+* [Jour 2 : Phishing - Merry Clickmas](#jour-2--phishing---merry-clickmas)
 
 ## Jour 1 : [Linux CLI - *Shells Bells*](https://tryhackme.com/room/linuxcli-aoc2025-o1fpqkvxti)
 
@@ -43,6 +32,8 @@ ls -hl
 ```
 
 {% capture spoil %}
+
+```txt
 total 44K
 drwxr-xr-x 2 mcskidy mcskidy 4.0K Oct 29 20:44 Desktop
 drwxr-xr-x 2 mcskidy mcskidy 4.0K Oct 29 20:48 Documents
@@ -55,6 +46,8 @@ drwxr-xr-x 2 mcskidy mcskidy 4.0K Oct  8 13:09 Public
 drwx------ 3 mcskidy mcskidy 4.0K Oct 23 13:16 snap
 drwxr-xr-x 2 mcskidy mcskidy 4.0K Oct  8 13:09 Templates
 drwxr-xr-x 2 mcskidy mcskidy 4.0K Oct  8 13:09 Video
+```
+
 {% endcapture %}
 {% include elements/spoil.html %}
 
@@ -67,7 +60,11 @@ ls -hl
 ```
 
 {% capture spoil %}
+
+```txt
 total 0
+```
+
 {% endcapture %}
 {% include elements/spoil.html %}
 
@@ -78,8 +75,12 @@ ls -hAl
 ```
 
 {% capture spoil %}
+
+```txt
 total 4.0K
 -rw-rw-r-- 1 mcskidy mcskidy 506 Oct 29 20:46 .guide.txt
+```
+
 {% endcapture %}
 {% include elements/spoil.html %}
 
@@ -90,6 +91,8 @@ cat .guide.txt
 ```
 
 {% capture spoil %}
+
+```txt
 I think King Malhare from HopSec Island is preparing for an attack.
 Not sure what his goal is, but Eggsploits on our servers are not good.
 Be ready to protect Christmas by following this Linux guide:
@@ -98,9 +101,11 @@ Check /var/log/ and grep inside, let the logs become your guide.
 Look for eggs that want to hide, check their shells for what's inside!
 
 P.S. Great job finding the guide. Your flag is:
-\-----------------------------------------------
+-----------------------------------------------
 THM{[...expurgé...]}
-\-----------------------------------------------
+-----------------------------------------------
+```
+
 {% endcapture %}
 {% include elements/spoil.html %}
 
@@ -121,14 +126,18 @@ find / -iname eggstrike* -type f 2>/dev/null -exec cat {} \;
 Cette commande permet de lister sur l'ensemble de la machine (`/`) les fichiers (`-type f`) commençant par "eggstrike" sans prendre en compte la casse (`-iname eggstrike*`) et n'affiche pas de message d'erreur (`2>/dev/null`), et en lit le contenu (`-exec cat {} \;`).
 
 {% capture spoil %}
-\# Eggstrike v0.3
-\# © 2025, Sir Carrotbane, HopSec
+
+```txt
+# Eggstrike v0.3
+# © 2025, Sir Carrotbane, HopSec
 cat wishlist.txt | sort | uniq > /tmp/dump.txt
 rm wishlist.txt && echo "Chistmas is fading..."
 mv eastmas.txt wishlist.txt && echo "EASTMAS is invading!"
 
-\# Your flag is:
-\# THM{[...expurgé...]}
+# Your flag is:
+# THM{[...expurgé...]}
+```
+
 {% endcapture %}
 {% include elements/spoil.html %}
 
@@ -151,11 +160,15 @@ ls -hal
 ```
 
 {% capture spoil %}
+
+```txt
 total 80
 drwx------ 11 root root  4096 Nov 13 16:52 ./
 drwxr-xr-x 22 root root  4096 Dec  1 17:22 ../
 -rw-------  1 root root   282 Dec  1 18:07 .bash_history
 [...expurgé pour brièveté...]
+```
+
 {% endcapture %}
 {% include elements/spoil.html %}
 
@@ -164,6 +177,8 @@ cat .bash_history
 ```
 
 {% capture spoil %}
+
+```txt
 whoami
 cd ~
 ll
@@ -175,6 +190,8 @@ pkill tbfcedr
 cat /etc/shadow
 cat /etc/hosts
 ls -hal
+```
+
 {% endcapture %}
 {% include elements/spoil.html %}
 
@@ -188,6 +205,8 @@ cat read-me-please.txt
 ```
 
 {% capture spoil %}
+
+```txt
 From: mcskidy
 To: whoever finds this
 
@@ -226,6 +245,8 @@ to decrypt the message I left. Be careful — I had to be quick,
 and I left only enough to get help.
 
 ~ McSkidy
+```
+
 {% endcapture %}
 {% include elements/spoil.html %}
 
@@ -244,10 +265,14 @@ env
 ```
 
 {% capture spoil %}
+
+```txt
 SHELL=/bin/bash
 PASSFRAG1=3ast3r
 GTK_MODULES=appmenu-gtk-module
 [...expurgé pour brièveté...]
+```
+
 {% endcapture %}
 {% include elements/spoil.html %}
 
@@ -258,6 +283,8 @@ ls -hAl
 ```
 
 {% capture spoil %}
+
+```txt
 total 112K
 -rw-r--r--  1 eddi_knapp eddi_knapp  220 Feb 25  2020 .bash_logout
 -rw-r--r--  1 eddi_knapp eddi_knapp 3797 Nov 11 16:24 .bashrc
@@ -276,6 +303,8 @@ drwxrwxr-x  2 eddi_knapp eddi_knapp 4096 Dec  1 08:32 .secret/
 drwx------  3 eddi_knapp eddi_knapp 4096 Nov 11 12:07 .secret_git/
 drwx------  3 eddi_knapp eddi_knapp 4096 Oct  9 17:20 .secret_git.bak/
 [...expurgé pour brièveté...]
+```
+
 {% endcapture %}
 {% include elements/spoil.html %}
 
@@ -315,11 +344,15 @@ cat secret_note.txt
 ```
 
 {% capture spoil %}
-\========================================
+
+```txt
+========================================
 Private note from mcskiddy
-\========================================
+========================================
 We hid things to buy time.
 PASSFRAG2: -1s-
+```
+
 {% endcapture %}
 {% include elements/spoil.html %}
 
@@ -332,6 +365,8 @@ cat .easter_egg
 ```
 
 {% capture spoil %}
+
+```txt
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
@@ -358,6 +393,8 @@ cat .easter_egg
 
 ~~ HAPPY EASTER ~~~
 PASSFRAG3: c0M1nG
+```
+
 {% endcapture %}
 {% include elements/spoil.html %}
 
@@ -372,6 +409,8 @@ cat mcskidy_note.txt
 ```
 
 {% capture spoil %}
+
+```txt
 Congrats — you found all fragments and reached this file.
 
 Below is the list that should be live on the site. If you replace the contents of
@@ -406,6 +445,8 @@ openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 -salt -base64 -in /tmp/website_
 cat /tmp/decoded_message.txt
 
 Sorry to be so convoluted, I couldn't risk making this easy while King Malhare watches. — McSkidy
+```
+
 {% endcapture %}
 {% include elements/spoil.html %}
 
@@ -416,6 +457,8 @@ cat message.txt
 ```
 
 {% capture spoil %}
+
+```txt
 Well done — the glitch is fixed. Amazing job going the extra mile and saving the site. Take this flag THM{w3lcome_2_A0c_2025}
 
 NEXT STEP:
@@ -424,6 +467,8 @@ If you fancy something a little...spicier....use the FLAG you just obtained as t
 
 That hidden directory has been archived and encrypted with the FLAG.
 Inside it you'll find the sidequest key.
+```
+
 {% endcapture %}
 {% include elements/spoil.html %}
 
@@ -433,4 +478,80 @@ Le déchiffrement de l'archive compressée chiffrée nous permet de récupérer 
 
 </div></details>
 
-## Jour 2
+## Jour 2 : [Phishing - Merry Clickmas](https://tryhackme.com/room/phishing-aoc2025-h2tkye9fzUhttps://tryhackme.com/room/phishing-aoc2025-h2tkye9fzU)
+
+L'objectif de cette journée est de créer un mail de phishing afin de récupérer des identifiants.
+
+Pour se faire, on nous fournis un script permettant de faire fonctionner un serveur web en Python invitant à entrer des identifiants
+
+{% include elements/figure_spoil.html image="images/THM/AoC2025/20251202_webserver.png" caption="Fausse page web, vrai danger !" %}
+
+Nous allons utiliser l'outil `setoolkit` pour générer et envoyer le mail à notre victime.
+
+```txt
+
+         .M"""bgd `7MM"""YMM MMP""MM""YMM
+        ,MI    "Y   MM    `7 P'   MM   `7
+        `MMb.       MM   d        MM
+          `YMMNq.   MMmmMM        MM
+        .     `MM   MM   Y  ,     MM
+        Mb     dM   MM     ,M     MM
+        P"Ybmmd"  .JMMmmmmMMM   .JMML.
+
+[---]        The Social-Engineer Toolkit (SET)         [---]
+[---]        Created by: David Kennedy (ReL1K)         [---]
+                      Version: 8.0.3
+                    Codename: 'Maverick'
+[---]        Follow us on Twitter: @TrustedSec         [---]
+[---]        Follow me on Twitter: @HackingDave        [---]
+[---]       Homepage: https://www.trustedsec.com       [---]
+        Welcome to the Social-Engineer Toolkit (SET).
+         The one stop shop for all of your SE needs.
+
+   The Social-Engineer Toolkit is a product of TrustedSec.
+
+           Visit: https://www.trustedsec.com
+
+   It's easy to update using the PenTesters Framework! (PTF)
+Visit https://github.com/trustedsec/ptf to update all your tools!
+
+
+ Select from the menu:
+
+   1) Social-Engineering Attacks
+   2) Penetration Testing (Fast-Track)
+   3) Third Party Modules
+   4) Update the Social-Engineer Toolkit
+   5) Update SET configuration
+   6) Help, Credits, and About
+
+  1)  Exit the Social-Engineer Toolkit
+```
+
+Après avoir suivi la procédure de mise en place du mail frauduleux, nous sommes amené à le rédiger. Voici ce qui sera envoyé :
+
+```txt
+Dear customers,
+Due to unfortunate circumstances, we need to update our shipping schedule.
+To avoid any mistakes, please login to your account to discover the new schedule.
+Your link to login:http://10.80.127.128:8000
+Kind regards, the Flying Deer Team
+```
+
+Après quelques instants, nous obtenons un résultat dans les logs de notre serveur web.
+
+{% capture spoil %}
+
+```txt
+10.80.188.139 - - [02/Dec/2025 17:27:13] "GET / HTTP/1.1" 200 -
+[2025-12-02 17:27:13] Captured -> username: admin    password: un[...expurgé...]them    from: 10.80.188.139
+10.80.188.139 - - [02/Dec/2025 17:27:13] "POST /submit HTTP/1.1" 303 -
+10.80.188.139 - - [02/Dec/2025 17:27:13] "GET / HTTP/1.1" 200 -
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
+Nous pouvons nous connecter à la boîte mail `factory` grâce au mot de passe capturé, et ainsi trouver les informations concernant le transport de jouets.
+
+{% include elements/figure_spoil.html image="images/THM/AoC2025/20251202_mail.png" caption="Quelques jouets sont en attente d'expédition" %}

