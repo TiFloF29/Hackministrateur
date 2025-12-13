@@ -21,6 +21,9 @@ Lien vers l'épreuve : <https://tryhackme.com/room/adventofcyber2025>
 * [Jour 7 : Network Discovery - Scan-ta Clause](#jour-7--network-discovery---scan-ta-clause)
 * [Jour 8 : Prompt Injection - Sched-yule conflict](#jour-8--prompt-injection---sched-yule-conflict)
 * [Jour 9: Passwords - A Cracking Christmas](#jour-9-passwords---a-cracking-christmas)
+* [Jour 10 : SOC Alert Triaging - Tinsel Triage](#jour-10--soc-alert-triaging---tinsel-triage)
+* [Jour 11 : XSS - Merry XSSMas](#jour-11--xss---merry-xssmas)
+* [Jour 12 : Phishing - Phishmas Greetings](#jour-12--phishing---phishmas-greetings)
 
 ## Jour 1 : [Linux CLI - *Shells Bells*](https://tryhackme.com/room/linuxcli-aoc2025-o1fpqkvxti)
 
@@ -1726,5 +1729,249 @@ Nous extrayons la base de données, afin de l'ouvrir dans une session visuelle a
 Il n'y a qu'une seule entrée, dans laquelle nous trouvons une image dans les données avancées
 
 {% include elements/figure_spoil.html image="images/THM/AoC2025/sq2.png" caption="Easter egg du jour 9" %}
+
+</div></details>
+
+## Jour 10 : [SOC Alert Triaging - Tinsel Triage](https://tryhackme.com/room/azuresentinel-aoc2025-a7d3h9k0p2)
+
+![AoC 2025 jour 10](https://tryhackme-images.s3.amazonaws.com/user-uploads/5dbea226085ab6182a2ee0f7/room-content/5dbea226085ab6182a2ee0f7-1761798411436.svg)
+
+> :warning: L'exercice n'a pas été traité le jour même (13 décembre).
+> Pour obtenir les logs sur Microsoft Sentinel, sélectionner la date entre le 11 décembre 2025 12:00AM et le 12 décembre 2025 12:00AM
+
+La première étape consiste à analyser l'impact des tentatives d'élévation de privilège sur Linux avec Polkit.
+
+{% include elements/figure_spoil.html image="images/THM/AoC2025/20251210_Sentinel1.png" caption="Nombre d'entités impacté par les tentatives d'exploitation Polkit" %}
+
+Concernant la sévérité de l'accès `sudo` au fichier `/etc/shadow` (contenant les hashs de mots de passe, cibles privilégiées pour craquer les mots de passe), elle se trouve facilement à différents endroits du tableau de bord.
+
+{% include elements/figure_spoil.html image="images/THM/AoC2025/20251210_Sentinel2.png" caption="Accès au fichier /etc/shadow" %}
+
+Enfin, pour trouver le nombre de comptes ajoutés au groupe `sudo`, intéressons nous aux "entités" listées dans l'alerte.
+
+{% include elements/figure_spoil.html image="images/THM/AoC2025/20251210_Sentinel3.png" caption="Ajout au groupe sudo (image altérée pour éviter le comptage)" %}
+
+Plongeons maintenant dans le cas d'altération du noyau du serveur web. Celui-ci présente un module non standard, voire malicieux à en croire son nom.
+
+{% include elements/figure_spoil.html image="images/THM/AoC2025/20251210_Sentinel4.png" caption="Module installé dans le kernel de websrv-01" %}
+
+A présent, nous modifions la requête en utilisant le langage [KQL](https://learn.microsoft.com/fr-fr/kusto/query/?view=microsoft-fabric) afin de trouver la commande utilisée par l'utilisateur 'ops'.
+
+```kql
+// The query_now parameter represents the time (in UTC) at which the scheduled analytics rule ran to produce this alert.
+set query_now = datetime(2025-12-12T03:28:52.0545899Z);
+Syslog_CL
+| where host_s == 'websrv-01' and Message has 'ops'
+| project TimeGenerated, host_s, Message
+```
+
+Cette commande nous permet de trouver une commande qui permet de réaliser un {% include dictionary.html word="reverse-shell" %}.
+
+{% include elements/figure_spoil.html image="images/THM/AoC2025/20251210_Sentinel5.png" caption="Commande de reverse-shell trouvée dans les logs" %}
+
+Nous modifions à présent la requête pour connaître les accès SSH sur storage-01. Le module permettant la connexion depuis l'extérieur s'appelle `sshd` (d pour [daemon](https://fr.wikipedia.org/wiki/Daemon_(informatique)))
+
+```kql
+// The query_now parameter represents the time (in UTC) at which the scheduled analytics rule ran to produce this alert.
+set query_now = datetime(2025-12-12T03:28:52.0545899Z);
+Syslog_CL
+| where host_s == 'storage-01' and Message has 'sshd'
+| project TimeGenerated, host_s, Message
+```
+
+{% include elements/figure_spoil.html image="images/THM/AoC2025/20251210_Sentinel6.png" caption="Connexion SSH réussie" %}
+
+Pour rechercher la connexion en tant que root depuis l'extérieur, nous retouchons légèrement la requête.
+
+```kql
+// The query_now parameter represents the time (in UTC) at which the scheduled analytics rule ran to produce this alert.
+set query_now = datetime(2025-12-12T03:28:52.0545899Z);
+Syslog_CL
+| where host_s == 'app-01' and Message has 'root'
+| project TimeGenerated, host_s, Message
+```
+
+{% include elements/figure_spoil.html image="images/THM/AoC2025/20251210_Sentinel7.png" caption="Connexion root depuis une adresse externe" %}
+
+Enfin, pour trouver le nom de l'utilisateur ajouté au groupe `sudo` nous recherchons la chaîne de caractères correspondante.
+
+```kql
+// The query_now parameter represents the time (in UTC) at which the scheduled analytics rule ran to produce this alert.
+set query_now = datetime(2025-12-12T03:28:52.0545899Z);
+Syslog_CL
+| where host_s == 'app-01' and Message has 'sudo'
+| project TimeGenerated, host_s, Message
+```
+
+{% include elements/figure_spoil.html image="images/THM/AoC2025/20251210_Sentinel8.png" caption="Utilisateur ajouté au groupe sudo" %}
+
+## Jour 11 : [XSS - Merry XSSMas](https://tryhackme.com/room/xss-aoc2025-c5j8b1m4t6)
+
+![AoC 2025 jour 11](https://tryhackme-images.s3.amazonaws.com/user-uploads/5f9c7574e201fe31dad228fc/room-content/5f9c7574e201fe31dad228fc-1763406635391.png)
+
+Nous commençons par utiliser la fonction de recherche du site. Entrer le mot "test" active une URL particulière : `hxxp[://]10[.]81[.]143[.]68/?search=test`
+
+La première étape sera de réaliser une XSS réfléchie en recherchant l'entrée suivante :
+
+```html
+<script>alert('XSS réfléchie')</script>
+```
+
+Le simple fait d'entrer ce contenu dans le champ de recherche fait apparaître un pop-up indiquant que cela fonctionne.
+
+{% include elements/figure_spoil.html image="images/THM/AoC2025/20251211_xssR1.png" caption="Cross-Site Scripting Réfléchi réussi" %}
+
+En refermant la fenêtre d'alerte, nous obtenons le premier flag dans les résultats de la recherche.
+
+{% include elements/figure_spoil.html image="images/THM/AoC2025/20251211_xssR2.png" caption="Flag XSS Réfléchie" %}
+
+Dans la fenêtre de logs nous constatons que l'événement a été détecté.
+
+Pour exploiter la vulnérabilité XSS stockée, nous utilisons le formulaire de contact avec le commentaire :
+
+```html
+<script>alert('XSS stockée')</script> + "Cher McSkidy, J'aimerais alerter sur l'existence d'une vulnérabilité"
+```
+
+Le flag apparaît ensuite dans les messages récents.
+
+{% include elements/figure_spoil.html image="images/THM/AoC2025/20251211_xssS1.png" caption="Flag XSS stockée" %}
+
+## Jour 12 : [Phishing - Phishmas Greetings](https://tryhackme.com/room/spottingphishing-aoc2025-r2g4f6s8l0)
+
+![AoC 2025 jour 12](https://tryhackme-images.s3.amazonaws.com/user-uploads/68dac5d6d4d4f23175b3296f/room-content/68dac5d6d4d4f23175b3296f-1761610887885.svg)
+
+Aujourd'hui, les systèmes de protection des emails, permettant de déterminer si le contenu est légitime ou non est en panne. Nous allons devoir analyser les mails à la main afin d'empêcher les tentatives de phishing.
+
+### Mail 1 <!-- omit in toc -->
+
+Le premier mail provient d'une source légitime : PayPal
+
+{% include elements/figure.html image="images/THM/AoC2025/20251212_mail1.png" caption="Premier mail" %}
+
+Il s'agit d'une facture, mais la note du vendeur est suspecte :
+
+```txt
+Fraud Alert, Didn't make this easter egg order? Call PayPal immediately at +1 (800) XMAS-1225
+```
+
+Un numéro de téléphone censé appartenir à PayPal est indiqué dans le message. Plutôt étrange pour une facture envoyé par PayPal.
+
+<details><summary>Décision</summary><div markdown = "1">
+
+Classification : Phishing / Fausse facture, Sentiment d'urgence, *Spoofing* (usurpation d'identité)
+
+>Le but est de récupérer des informations par téléphone prétextant une fausse facture pouvant créer la panique chez le destinataire qui n'a rien commandé.
+
+</div></details>
+
+### Mail 2 <!-- omit in toc -->
+
+Le second mail semble également provenir d'une source fiable, une adresse interne à l'entreprise TBFC.
+
+{% include elements/figure.html image="images/THM/AoC2025/20251212_mail2.png" caption="Deuxième mail" %}
+
+Cette fois, c'est la nature de la pièce jointe qui est suspecte : on devrait avoir un fichier son, mais l'extension réelle du fichier est **html**.
+
+```txt
+Play-Now.mp3-29a-otpqw-warq-29.html
+attachment; filename="Play-Now.mp3-29a-otpqw-warq-29.html"
+Type: application/octet-stream
+Size: 1.7 KB
+```
+
+Certaines entêtes suggèrent également le côté mal intentionné de l'expéditeur :
+
+| Header | Contenu |
+| :--: | :--: |
+| Authentication-Results | spf=fail (sender IP is 173[.]243[.]133[.]97) smtp.mailfrom=tbfc.com; dkim=fail (signature did not verify) header.d=tbfc.com;dmarc=fail action=none header.from=tbfc.com;compauth=none reason=405 |
+| Received-SPF | Fail (protection.outlook.com: domain of transitioning tbfc.com discourages use of 173[.]243[.]133[.]97 as permitted sender)Fail (protection.outlook.com: domain of transitioning tbfc.com discourages use of 173[.]243[.]133[.]97 as permitted sender) |
+| Authentication-Results-Original | gw3097[.]weakmail[.]com; spf=permerror (weakmail[.]com: 143.55.232.2 is neither permitted nor denied by domain of bounce+35b744[.]72834a-calls[.]com@tbfc[.]com) smtp[.]mailfrom=bounce+35b744[.]72834a-calls[.]com@tbfc[.]com; dkim=pass header.i=@tbfc[.]com; |
+| Return-Path | zxwsedr@easterbb[.]com |
+
+<details><summary>Décision</summary><div markdown = "1">
+
+Classification : Phishing / Imitation, *Spoofing* (usurpation d'identité), Pièce jointe malicieuse
+
+>Le but est de faire croire au destinataire que l'expéditeur est légitime pour l'amener à cliquer sur la pièce jointe infectée.
+
+</div></details>
+
+### Mail 3 <!-- omit in toc -->
+
+L'émetteur prétend être le responsable de la sécurité McSkidy et avoir un besoin d'accéder urgemment aux outils de l'entreprise pour enquêter sur un incident.
+
+{% include elements/figure.html image="images/THM/AoC2025/20251212_mail3.png" caption="Troisième mail" %}
+
+<details><summary>Décision</summary><div markdown = "1">
+
+Classification : Phishing / Imitation, Ingénierie sociale, Sentiment d'urgence
+
+>Le but est de faire croire qu'un responsable à un besoin **urgent** pour ne pas laisser le temps aux destinataires de réfléchir. Et inutile, d'après le mail, d'appeler l'émetteur puisqu'il est indiqué injoignable.
+
+</div></details>
+
+### Mail 4 <!-- omit in toc -->
+
+Le message est une notification Dropbox invitant à signer un accord d'augmentation. Comment résister ?!
+
+{% include elements/figure.html image="images/THM/AoC2025/20251212_mail4.png" caption="Quatrième mail" %}
+
+Si Dropbox est un organisme existant et légitime dans le cadre de stockage et partage de documents, plusieurs éléments attirent l'attention :
+
+En haut du mail, il est indiqué que l'expéditeur est peu commun au sein de l'entreprise. Les communications RH passent certainement par d'autres outils.
+
+L'adresse mail du propriétaire est également suspect : `hr[.]tbfc@outlook[.]com`. Pour une communication interne, on devrait s'attendre à une adresse en `@tbfc[.]com`
+
+Le message associé, et son "blablablabla" prouve également qu'il ne s'agit pas d'une communication professionnelle.
+
+```txt
+Hi there, You have a pending document to be signed regarding you recent Salary Raise Approval.
+You can copy and paste the URL below if you do not have a DropBox account:
+hxxps[://]www[.]dropbox[.]com/scl/fi/xzruzfwqa4w77ozxvq00i/annual-salary-raise-approval[.]pdf?blablablabla
+Thank you, TBFC HR Department
+```
+
+<details><summary>Décision</summary><div markdown = "1">
+
+Classification : Phishing / Imitation, Ingénierie sociale, Domaine d'expédition externe
+
+>Le but est d'amener le destinataire à télécharger un fichier potentiellement infecté en se faisant passer pour un organisme interne à l'entreprise.
+
+</div></details>
+
+### Mail 5 <!-- omit in toc -->
+
+Le cinquième mail semble envoyé par une autre entreprise, la *CandyCane Company*, pour aider la TBFC à gérer le pic d'activité durant les fêtes de SOC-mas.
+
+{% include elements/figure.html image="images/THM/AoC2025/20251212_mail5.png" caption="Cinquième mail" %}
+
+Dans les headers, le user-agent semble peu commun : `Nylas-Amplemarket/18.1.0`. Après recherche il semble s'agir d'un outil de prospection permettant de trouver des cibles à démarcher en identifiant des signaux grâce à l'intelligence artificielle.
+
+<details><summary>Décision</summary><div markdown = "1">
+
+Classification : Spam
+
+>Pas de caractère malveillant observé, simplement du démarchage.
+
+</div></details>
+
+### Mail 6 <!-- omit in toc -->
+
+Le sixième et dernier mail est une nouvelle fois un partage de fichier via une plateforme externe. Cette fois pour une amélioration de l'ordinateur à l'approche de Noël.
+
+{% include elements/figure.html image="images/THM/AoC2025/20251212_mail6.png" caption="Sixième mail" %}
+
+Le premier élément suspect est la présence d'un caractère étrange dans l'adresse mail
+
+{% include elements/figure_spoil.html image="images/THM/AoC2025/20251212_mail6_typo.png" caption="Punycode" %}
+
+Dans la liste des liens contenus dans le mail, il y a également un domaine qui ressemble à Microsoft, mais en y regardant de plus près un 'n' est devenu 'o' ("microsofto**o**line" à la place de "microsofto**n**line". C'est du *typosquatting*): `hxxps[://]microsoftooline[.]co/hxxps[://]microsoftooline[.]co/hxxps[://]microsoftooline[.]co/`.
+
+<details><summary>Décision</summary><div markdown = "1">
+
+Classification : Phishing / Imitation, Typosquatting/Punycodes, Ingénierie sociale
+
+>Le but de l'attaquant est d'imiter au mieux une adresse interne à l'entreprise et un site reconnu pour tromper la vigilance du destinataire.
 
 </div></details>
