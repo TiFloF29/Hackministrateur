@@ -24,6 +24,8 @@ Lien vers l'épreuve : <https://tryhackme.com/room/adventofcyber2025>
 * [Jour 10 : SOC Alert Triaging - Tinsel Triage](#jour-10--soc-alert-triaging---tinsel-triage)
 * [Jour 11 : XSS - Merry XSSMas](#jour-11--xss---merry-xssmas)
 * [Jour 12 : Phishing - Phishmas Greetings](#jour-12--phishing---phishmas-greetings)
+* [Jour 13 : YARA Rules - YARA mean one!](#jour-13--yara-rules---yara-mean-one)
+* [Jour 14 : Containers - DoorDasher's Demise](#jour-14--containers---doordashers-demise)
 
 ## Jour 1 : [Linux CLI - *Shells Bells*](https://tryhackme.com/room/linuxcli-aoc2025-o1fpqkvxti)
 
@@ -1975,3 +1977,151 @@ Classification : Phishing / Imitation, Typosquatting/Punycodes, Ingénierie soci
 >Le but de l'attaquant est d'imiter au mieux une adresse interne à l'entreprise et un site reconnu pour tromper la vigilance du destinataire.
 
 </div></details>
+
+## Jour 13 : [YARA Rules - YARA mean one!](https://tryhackme.com/room/yara-aoc2025-q9w1e3y5u7)
+
+![AoC 2025 jour 13](https://tryhackme-images.s3.amazonaws.com/user-uploads/674d9727a22822c1eb46cb31/room-content/674d9727a22822c1eb46cb31-1763550523374.png)
+
+La première règle YARA à mettre en place doit permettre de trouver la chaîne de caractères `TBFC` dans les fichiers images à notre disposition.
+
+En utilisant les [*Magic Numbers*](https://gist.github.com/leommoore/f9e57ba2aa4bf197ebc5) nous pouvons cibler spécifiquement les fichiers JPG dans le dossier.
+
+```yara
+rule Find_TBFC
+rule Find_TBFC
+{
+  meta:
+    author = "tiflo"
+    description = "Trouver les caracteres TBFC"
+    date = "2025-12-13"
+  strings:
+    $magic_number = {FF D8 FF E0} //Header pour fichier JPG
+    $tbfc = "tbfc" nocase ascii wide
+  condition:
+    all of them
+}
+```
+
+En lançant la recherche YARA, nous obtenons la liste des fichiers répondant aux critères.
+
+```bash
+yara -r rule1.yara /home/ubuntu/Downloads/easter/
+```
+
+{% capture spoil %}
+
+```txt
+Find_TBFC /home/ubuntu/Downloads/easter//easter46.jpg
+Find_TBFC /home/ubuntu/Downloads/easter//easter10.jpg
+Find_TBFC /home/ubuntu/Downloads/easter//easter16.jpg
+Find_TBFC /home/ubuntu/Downloads/easter//easter52.jpg
+Find_TBFC /home/ubuntu/Downloads/easter//easter25.jpg
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
+Ensuite, pour trouver toutes les chaînes de caractères commençant par "TBFC:" et suivi d'une chaîne de caractères ASCII, nous utiliserons une regex
+
+```yara
+rule Find_TBFC
+{
+  meta:
+    author = "tiflo"
+    description = "Trouver les caracteres TBFC suivis de n'importe quel suite de caracteres ASCII"
+    date = "2025-12-13"
+  strings:
+    $tbfc = /tbfc:[...expurgé...]+/ nocase ascii wide
+  condition:
+    all of them
+}
+```
+
+Pour lancer la nouvelle requête, il faut y ajouter le flag `-s` afin d'afficher la chaîne de caractères trouvée.
+
+```bash
+yara -r rule2.yara /home/ubuntu/Downloads/easter/
+```
+
+{% capture spoil %}
+
+```txt
+Find_TBFC /home/ubuntu/Downloads/easter//easter46.jpg
+0x0:$magic_number: FF D8 FF E0
+0x2f78a:$tbfc: TBFC:[...expurgé...]
+Find_TBFC /home/ubuntu/Downloads/easter//easter10.jpg
+0x0:$magic_number: FF D8 FF E0
+0x137da8:$tbfc: TBFC:[...expurgé...]
+Find_TBFC /home/ubuntu/Downloads/easter//easter16.jpg
+0x0:$magic_number: FF D8 FF E0
+0x3bb7f7:$tbfc: TBFC:[...expurgé...]
+Find_TBFC /home/ubuntu/Downloads/easter//easter52.jpg
+0x0:$magic_number: FF D8 FF E0
+0x2a2ad2:$tbfc: TBFC:[...expurgé...]
+Find_TBFC /home/ubuntu/Downloads/easter//easter25.jpg
+0x0:$magic_number: FF D8 FF E0
+0x42c778:$tbfc: TBFC:[...expurgé...]
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
+Il ne reste plus qu'à remettre le message dans l'ordre.
+
+## Jour 14 : [Containers - DoorDasher's Demise](https://tryhackme.com/room/container-security-aoc2025-z0x3v6n9m2)
+
+![AoC 2025 jour 14](https://tryhackme-images.s3.amazonaws.com/user-uploads/6228f0d4ca8e57005149c3e3/room-content/6228f0d4ca8e57005149c3e3-1763378735412.png)
+
+Commençons par lister les containers existants sur la machine.
+
+```bash
+docker ps
+```
+
+{% capture spoil %}
+
+```txt
+CONTAINER ID   IMAGE                    COMMAND                  CREATED         STATUS         PORTS                                         NAMES
+8e36ca49f2bb   dasherapp:latest         "python app.py"          3 minutes ago   Up 3 minutes   0.0.0.0:5001->5000/tcp, [::]:5001->5000/tcp   dasherapp
+5a30f56bfe17   wareville-times:latest   "/docker-entrypoint.…"   3 minutes ago   Up 3 minutes   0.0.0.0:5002->80/tcp, [::]:5002->80/tcp       wareville-times
+ac3b5eda45f5   uptime-checker:latest    "/docker-entrypoint.…"   3 minutes ago   Up 3 minutes   0.0.0.0:5003->80/tcp, [::]:5003->80/tcp       uptime-checker
+a1ef0fa68136   deployer:latest          "tail -f /dev/null"      3 minutes ago   Up 3 minutes                                                 deployer
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
+Entrons dans le container nommé `deployer` à la recherche du flag.
+
+```bash
+docker exec -it deployer bash
+```
+
+Pour trouver le flag, nous utilisons la commande `find`
+
+```bash
+find / -iname flag.txt -type f -exec ls -hl {} \; 2>/dev/null
+```
+
+```txt
+-rw------- 1 deployer deployer 27 Oct 17 11:58 /flag.txt
+```
+
+Cette recherche indique que le fichier appartient à l'utilisateur `deployer`, nous pouvons donc l'ouvrir.
+
+```bash
+cat /flag.txt
+```
+
+{% capture spoil %}
+
+```txt
+THM{[...expurgé...]}
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
+Bonus : on nous indique la présence d'un code secret sur site tournant sur le port 5002. En nous y connectant, quelques indices nous sautent aux yeux. Il ne reste plus qu'à assembler les morceaux
+
+{% include elements/figure_spoil.html image="images/THM/AoC2025/20251214_bonus.png" caption="Un code secret est caché !" %}
