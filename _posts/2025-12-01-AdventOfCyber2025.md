@@ -26,6 +26,12 @@ Lien vers l'épreuve : <https://tryhackme.com/room/adventofcyber2025>
 * [Jour 12 : Phishing - Phishmas Greetings](#jour-12--phishing---phishmas-greetings)
 * [Jour 13 : YARA Rules - YARA mean one!](#jour-13--yara-rules---yara-mean-one)
 * [Jour 14 : Containers - DoorDasher's Demise](#jour-14--containers---doordashers-demise)
+* [Jour 15 : Web Attack Forensics - Drone Alone](#jour-15--web-attack-forensics---drone-alone)
+* [Jour 16 : Forensics - Registry Furensics](#jour-16--forensics---registry-furensics)
+* [Jour 17 : CyberChef - Hoperation Save McSkidy](#jour-17--cyberchef---hoperation-save-mcskidy)
+* [Jour 18 : Obfuscation - The Egg Shell File](#jour-18--obfuscation---the-egg-shell-file)
+* [Jour 19 : ICS/Modbus - Claus for Concern](#jour-19--icsmodbus---claus-for-concern)
+* [Jour 20 : Race Conditions - Toy to The World](#jour-20--race-conditions---toy-to-the-world)
 
 ## Jour 1 : [Linux CLI - *Shells Bells*](https://tryhackme.com/room/linuxcli-aoc2025-o1fpqkvxti)
 
@@ -789,7 +795,7 @@ Par exemple :
 2. Je peux imaginer qu'il existe un comptage incrémental du nombre de commande, et qu'il existe une commande 1 et peut-être 3 et plus.
 3. Si je peux accéder à la commande en changeant un paramètre, nous sommes face à une vulnérabilité IDOR.
 
-En utilisant l'outil [Burp Suite](https://portswigger.net/burp) nous pouvons intercepter les communications entre notre machine et le serveur web.
+En utilisant l'outil [BurpSuite](https://portswigger.net/burp) nous pouvons intercepter les communications entre notre machine et le serveur web.
 
 Un endpoint particulier de l'API attire notre attention, car notre utilisateur est identifié comme ayant le `user_id=10`
 
@@ -1988,7 +1994,6 @@ En utilisant les [*Magic Numbers*](https://gist.github.com/leommoore/f9e57ba2aa4
 
 ```yara
 rule Find_TBFC
-rule Find_TBFC
 {
   meta:
     author = "tiflo"
@@ -2125,3 +2130,868 @@ THM{[...expurgé...]}
 Bonus : on nous indique la présence d'un code secret sur site tournant sur le port 5002. En nous y connectant, quelques indices nous sautent aux yeux. Il ne reste plus qu'à assembler les morceaux
 
 {% include elements/figure_spoil.html image="images/THM/AoC2025/20251214_bonus.png" caption="Un code secret est caché !" %}
+
+## Jour 15 : [Web Attack Forensics - Drone Alone](https://tryhackme.com/room/webattackforensics-aoc2025-b4t7c1d5f8)
+
+![AoC 2025 jour 15](https://tryhackme-images.s3.amazonaws.com/user-uploads/5f04259cf9bf5b57aed2c476/room-content/5f04259cf9bf5b57aed2c476-1763538536985.png)
+
+Nous commençons par analyser les logs du serveur Apache, et nous constatons la présence de commandes PowerShell, notamment un contenu chiffré en base64.
+
+```splunk
+index=windows_apache_access (cmd.exe OR powershell OR "powershell.exe" OR "Invoke-Expression") | table _time host clientip uri_path uri_query status
+```
+
+{% capture spoil %}
+
+```txt
+cmd=powershell.exe+-enc+VABoAGkAcwAgAGkAcwAgAG4AbwB3ACAATQBpAG4AZQAhACAATQBVAEEASABBAEEASABBAEEA
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
+En déchiffrant le contenu, nous nous retrouvons face à un défi.
+
+```bash
+echo "VABoAGkAcwAgAGkAcwAgAG4AbwB3ACAATQBpAG4AZQAhACAATQBVAEEASABBAEEASABBAEEA" | base64 -d
+```
+
+{% capture spoil %}
+
+```txt
+This is now Mine! MUAHAAHAA
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
+Puis dans les logs SysMon du serveur httpd, nous observons de nombreuses exécutions de `cmd.exe`.
+
+```splunk
+index=windows_sysmon (*cmd.exe* OR *powershell.exe*) ParentImage="C:\\Apache24\\bin\\httpd.exe"
+```
+
+En recherchant les occurrences de l'exécutable `cmd.exe` dans les logs SysMon, nous obtenons trouvons un exécutable malveillant en alternance avec le lancement du fichier `hello.bat`
+
+```splunk
+index=windows_sysmon *cmd.exe* | table _time,Image,CommandLine
+```
+
+{% include elements/figure_spoil.html image="images/THM/AoC2025/20251215_Splunk.png" caption="Exécutable de reconnaissance" %}
+
+## Jour 16 : [Forensics - Registry Furensics](https://tryhackme.com/room/registry-forensics-aoc2025-h6k9j2l5p8)
+
+![AoC 2025 jour 16](https://tryhackme-images.s3.amazonaws.com/user-uploads/6645aa8c024f7893371eb7ac/room-content/6645aa8c024f7893371eb7ac-1763317996813.svg)
+
+Pour déterminer le nom de l'application qui a été installé avant les événements anormaux, nous navigons vers la clé `C:\Users\Administrator\Desktop\Registry Hives\SOFTWARE: Microsoft\Windows\CurrentVersion\Uninstall`.
+
+Nous savons que l'activité suspecte date du 21 octobre 2025, donc en triant les désinstallations par *timestamps* nous obtenons le logiciel qui était initialement présent sur la machine.
+
+{% include elements/figure_spoil.html image="images/THM/AoC2025/20251216_Uninstall.png" caption="Désinstallation d'un logiciel le 21/10/2025" %}
+
+Nous navigons ensuite vers la clé `C:\Users\Administrator\Desktop\Registry Hives\NTUSER.DAT: Software\Microsoft\Windows NT\CurrentVersion\AppCompatFlags\Compatibility Assistant\Store` afin de trouver le chemin complet utilisé pour lancer la désinstallation de l'application précédemment identifiée.
+
+{% include elements/figure_spoil.html image="images/THM/AoC2025/20251216_Path.png" caption="Chemin vers l'exécutable utilisé" %}
+
+Enfin, pour identifier le moyen mis en œuvre pour maintenir la persistence au démarrage, nous analysons la clé `C:\Users\Administrator\Desktop\Registry Hives\SOFTWARE: Microsoft\Windows\CurrentVersion\Run`.
+
+{% include elements/figure_spoil.html image="images/THM/AoC2025/20251216_Persistence.png" caption="Commande utilisée pour la persistence" %}
+
+## Jour 17 : [CyberChef - Hoperation Save McSkidy](https://tryhackme.com/room/encoding-decoding-aoc2025-s1a4z7x0c3)
+
+![AoC 2025 jour 17](https://tryhackme-images.s3.amazonaws.com/user-uploads/68baea2454c82afe90fd7020/room-content/68baea2454c82afe90fd7020-1763533892160.png)
+
+L'objectif du jour est de trouver et déchiffrer des mots de passe afin de libérer McSkidy de la prison du roi Malhare.
+
+Ce défi sera réalisé à l'aide de [Burp Suite](https://portswigger.net/burp) pour récupérer les données du site, et [CyberChef](https://gchq.github.io/CyberChef/) pour déchiffrer les données cachées dans les fichiers du site.
+
+### Outer gate <!-- omit in toc -->
+
+En regardant le contenu de la page HTML `level1`, nous trouvons plusieurs informations intéressantes :
+
+* un header particulier : `X-Magic-Question: What is the password for this level?`
+* Un section cachée
+
+```html
+<div id="hint" class="hint hidden">
+  <strong>Hint:</strong>
+  <ul>
+    <li>Username: This will decode to <code>CottonTail</code>.</li>
+    <li>Password: Look at the level login logic and decode the guard reply.</li>
+  </ul>
+</div>
+```
+
+Dans le fichier de l'application `app.js` nous trouvons la logique implémentée pour trouver le mot de passe
+
+```js
+// Password login logic
+if (level === 1) {
+  // CyberChef: From Base64
+  passOk = btoa(pwd) === expectedConst;
+}
+```
+
+En renseignant le contenu du header `X-Magic-Question` au format `base64`, le chatbot nous répond :
+
+{% capture spoil %}
+
+```txt
+Here is the password: SWFtc29mbHVmZnk=
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
+Il ne reste plus qu'à renseigner le nom du garde au format base64 et le mot de passe déchiffré obtenu pour ouvrir la première porte.
+
+{% include elements/figure_spoil.html image="images/THM/AoC2025/20251217_Outergate.png" caption="Porte extérieure franchie" %}
+
+### Outer Wall <!-- omit in toc -->
+
+En répétant le repérage pour le défi suivant, nous obtenons :
+
+* Un nouveau header : `X-Magic-Question: Did you change the password?`
+* Un nouvel indice
+
+```html
+<div id="hint" class="hint hidden">
+  <strong>Hint:</strong>
+  <ul>
+    <li>Username: This will decode to <code>CarrotHelm</code>.</li>
+    <li>Password: Look at the level login logic and decode the guard reply.</li>
+  </ul>
+</div>
+```
+
+* Une nouvelle logique
+
+```js
+else if (level === 2) {
+  // CyberChef: Double From Base64
+  passOk = btoa(btoa(pwd)) === expectedConst;
+}
+```
+
+En posant la nouvelle question en base64, le chatbot nous répond :
+
+{% capture spoil %}
+
+```txt
+Here is the password: U1hSdmJHUjViM1YwYjJOb1lXNW5aV2wwSVE9PQ==
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
+Il faut cette fois déchiffrer 2 fois le code obtenu depuis base64 pour obtenir le mot de passe. Le nom d'utilisateur est toujours chiffré 1 fois en base64
+
+{% include elements/figure_spoil.html image="images/THM/AoC2025/20251217_Outerwall.png" caption="Mur extérieur franchi" %}
+
+### Guard House <!-- omit in toc -->
+
+Cette fois, pas de question magique à poser au garde pour obtenir le mot de passe. La clé pour déchiffrer une partie du mot de passe est fournie dans un header particulier : `X-Recipe-Key: cyberchef`
+
+En revanche, nous allons devoir appliquer une "recette Chef" pour obtenir le mot de passe, avec les informations fournies dans le code de l'application :
+
+```js
+else if (level === 3) {
+  // CyberChef: From Base64 => XOR(key=recipeKey)
+  const bytes = xorWithKey(toBytes(pwd), toBytes(recipeKey));
+  const b64 = bytesToBase64(bytes);
+  passOk = b64 === expectedConst;
+}
+```
+
+>Dans cette partie le chatbot peut être un peu lent. Un peu de patience
+
+Mais d'abord demandons poliment le mot de passe (en Anglais converti en base64 bien évidemment).
+
+```txt
+Please provide me the password
+```
+
+{% capture spoil %}
+
+```txt
+Here is the password: IQwFFjAWBgsf
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
+{% include elements/figure.html image="images/THM/AoC2025/20251217_Recipe.png" caption="Recette chef permettant de déchiffrer le mot de passe" %}
+
+{% include elements/figure_spoil.html image="images/THM/AoC2025/20251217_GuardHouse.png" caption="La maison du gardien franchie" %}
+
+### Inner Castle <!-- omit in toc -->
+
+Pour cette partie, il n'y a pas d'indice dans les headers de la réponse HTML.
+
+Côté application, nous sommes invités à utiliser le site [CrackStation](https://crackstation.net/) qui permet d'associer une empreinte (hash) à un mot de passe.
+
+```js
+else if (level === 4) {
+  // CrackStation: Hash lookup
+  passOk = (md5(pwd) === expectedConst);
+}
+```
+
+Nous obtenons une nouvelle fois le mot de passe en demandant gentillement au nouveau garde.
+
+{% capture spoil %}
+
+```txt
+Here is the password: b4c0be7d7e97ab74c13091b76825cf39
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
+Nous trouvons le mot de passe correspondant grâce à CrackStation, et nous pouvons passer à l'étape suivante.
+
+{% include elements/figure_spoil.html image="images/THM/AoC2025/20251217_InnerCastle.png" caption="Château intérieur franchi" %}
+
+### Prison Tower <!-- omit in toc -->
+
+Cette partie est plus complexe, et dépend d'un paramètre :
+
+```js
+else if (level === 5) {
+  const recipe =  recipeId || "R1";
+  let tp = pwd;
+  switch (recipe){
+    case "R1":
+      // CyberChef: From Base64 => Reverse => ROT13
+      tp = btoa(reverse(rot13(tp)));
+      break;
+    case "R2":
+      // CyberChef: From Base64 => FromHex => Reverse
+      tp = btoa(strToHex(reverse(tp)));
+      break;
+    case "R3":
+      // CyberChef: ROT13 => From Base64 => XOR(key=recipeKey)
+      const exed = bytesToBase64(xorWithKey(toBytes(tp), toBytes(recipeKey || "hare")));
+      tp = rot13(exed);
+      break;
+    case "R4":
+      // CyberChef: ROT13 => From Base64 => ROT47
+      tp = rot13(btoa(rot47(tp)));
+      break;
+    default:
+      tp = btoa(reverse(rot13(tp)));
+  }
+  passOk = (tp === expectedConst);
+}
+```
+
+L'information est stockée dans les headers de ce niveau :
+
+* `X-Recipe-ID: R4`
+* `X-Recipe-Key: cyberchef`
+
+Nous demandons une dernière fois le mot de passe au garde.
+
+{% capture spoil %}
+
+```txt
+Here is the password: MTOQpHAvLmD5pG1sAQkvDj==
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
+Puis nous appliquons la recette correspondant au numéro 4 : `ROT13 => From Base64 => ROT47`
+
+{% include elements/figure.html image="images/THM/AoC2025/20251217_Recipe2.png" caption="Recette chef permettant de déchiffrer le dernier mot de passe" %}
+
+{% include elements/figure_spoil.html image="images/THM/AoC2025/20251217_PrisonTower.png" caption="Tour de la prison franchie" %}
+
+Nous avons ainsi libéré McSkidy de la forteresse du Roi Malhare.
+
+{% include elements/figure_spoil.html image="images/THM/AoC2025/20251217_Flag.png" caption="Flag final" %}
+
+### Bonus <!-- omit in toc -->
+
+<details><summary>Pour l'instant pas de solution trouvée</summary>
+<div markdown = "1">
+
+Nous avons un lien vers une recette Chef, et le message suivant :
+
+```txt
+Hopper managed to use CyberChef to scramble the easter egg key image. He used this very recipe to do it. The scrambled version of the egg can be downloaded from: 
+
+https://tryhackme-images.s3.amazonaws.com/user-uploads/5ed5961c6276df568891c3ea/room-content/5ed5961c6276df568891c3ea-1765955075920.png
+
+Reverse the algorithm to get it back!
+```
+
+</div></details>
+
+## Jour 18 : [Obfuscation - The Egg Shell File](https://tryhackme.com/room/obfuscation-aoc2025-e5r8t2y6u9)
+
+![AoC 2025 jour 18](https://tryhackme-images.s3.amazonaws.com/user-uploads/63588b5ef586912c7d03c4f0/room-content/63588b5ef586912c7d03c4f0-1763750150780.png)
+
+La première étape du jour consiste à désobfusquer l'URL du serveur C2 (*Command & Control*) afin d'obtenir le premier flag.
+
+{% include elements/figure.html image="images/THM/AoC2025/20251218_Step1.png" caption="Désobfusquer l'URL" %}
+
+Deux options s'offrent à nous :
+
+* Utiliser la bonne [recette Chef](https://gchq.github.io/CyberChef/#recipe=From_Base64('A-Za-z0-9%2B/%3D',true,false)&input=YUhSMGNITTZMeTlqTWk1dWIzSjBhSEJ2YkdVdWRHaHRMMlY0Wm1scw)
+* Utiliser la commande Linux `echo "aHR0cHM6Ly9jMi5ub3J0aHBvbGUudGhtL2V4Zmls" | base64 -d`
+
+En lançant le script avec la bonne valeur, nous obtenons le premier flag.
+
+```Powershell
+.\SantaStealer.ps1
+```
+
+{% capture spoil %}
+
+```txt
+[i] incorrect XOR-obfuscated API hex.
+[i] Operator session started
+[*] Recon: collecting host and user context
+[*] Stealing Santas presents list
+[*] Preparing payload
+[*] Contacting C2 endpoint
+[i] Exfiltration attempted (no response)
+[*] Establishing foothold
+[*] Downloading payload...
+THM{[...expurgé...]}
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
+Pour la seconde partie, nous devons cette fois obfusquer la valeur de la clé d'API fournie grâce à la méthode XOR, puis en héxadecimal.
+
+{% include elements/figure.html image="images/THM/AoC2025/20251218_Step2.png" caption="Obfusquer la clé d'API" %}
+
+Celà peut se faire avec une [recette Chef](https://gchq.github.io/CyberChef/#recipe=XOR(%7B'option':'Hex','string':'0x37'%7D,'Standard',false)To_Hex('None',0)&input=Q0FORFktQ0FORS1BUEktS0VZ&oeol=CR).
+
+En relançant le script nous obtenons le nouveau flag.
+
+{% capture spoil %}
+
+```txt
+[i] incorrect XOR-obfuscated API hex.
+[i] Operator session started
+[*] Recon: collecting host and user context
+[*] Stealing Santas presents list
+[*] Preparing payload
+[*] Contacting C2 endpoint
+[i] Exfiltration attempted (no response)
+[*] Establishing foothold
+[*] Downloading payload...
+THM{[...expurgé...]}
+THM{[...expurgé...]}
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
+## Jour 19 : [ICS/Modbus - Claus for Concern](https://tryhackme.com/room/ICS-modbus-aoc2025-g3m6n9b1v4)
+
+![AoC 2025 jour 19](https://tryhackme-images.s3.amazonaws.com/user-uploads/63c131e50a24c3005eb34678/room-content/63c131e50a24c3005eb34678-1763818313841.png)
+
+Aujourd'hui nous allons devoir remettre en ordre le programme contrôlant les drônes de livraison, compromis par le Roi Malhare et livrant des œufs en chocolat de Pâques à la place des cadeaux de Noël.
+
+Tout commence par cette note découverte en salle de contrôle :
+
+```txt
+TBFC DRONE CONTROL - REGISTER MAP
+(For maintenance use only)
+
+HOLDING REGISTERS:
+HR0: Package Type Selection
+     0 = Christmas Gifts
+     1 = Chocolate Eggs
+     2 = Easter Baskets
+
+HR1: Delivery Zone (1-9 normal, 10 = ocean dump!)
+
+HR4: System Signature/Version
+     Default: 100
+     Current: ??? (check this!)
+
+COILS (Boolean Flags):
+C10: Inventory Verification
+     True = System checks actual stock
+     False = Blind operation
+
+C11: Protection/Override
+     True = Changes locked/monitored
+     False = Normal operation
+
+C12: Emergency Dump Protocol
+     True = DUMP ALL INVENTORY
+     False = Normal
+
+C13: Audit Logging
+     True = All changes logged
+     False = No logging
+
+C14: Christmas Restored Flag
+     (Auto-set when system correct)
+
+C15: Self-Destruct Status
+     (Auto-armed on breach)
+
+CRITICAL: Never change HR0 while C11=True!
+Will trigger countdown!
+
+- Maintenance Tech, Dec 19
+```
+
+Pour l'instant le contenu est énigmatique, mais pourrait s'avérer utile.
+
+En commençant par lancer un scan {% include dictionary.html word="NMAP" %} sur la machine, nous observons la présence d'un serveur {% include dictionary.html word="SSH" %}, d'un serveur {% include dictionary.html word="HTTP" %} pour la vidéo surveillance, et du serveur Modbus sur le port 502
+
+```bash
+nmap -T4 -A -p22,80,502 10.80.185.63
+```
+
+{% capture spoil %}
+
+```txt
+Starting Nmap 7.98 ( https://nmap.org ) at 2025-12-20 15:07 +0100
+Nmap scan report for 10.80.185.63
+Host is up (0.030s latency).
+
+PORT    STATE SERVICE VERSION
+22/tcp  open  ssh     OpenSSH 9.6p1 Ubuntu 3ubuntu13.11 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   256 3a:d5:f3:ed:5f:8e:8e:88:71:86:f3:f4:f1:b3:67:1b (ECDSA)
+|_  256 55:06:1e:92:fa:69:b7:0a:e6:90:bb:77:85:fb:8e:84 (ED25519)
+80/tcp  open  http    Werkzeug httpd 3.1.3 (Python 3.12.3)
+|_http-title: PLC CCTV Simulator
+|_http-server-header: Werkzeug/3.1.3 Python/3.12.3
+502/tcp open  modbus  Modbus TCP
+Warning: OSScan results may be unreliable because we could not find at least 1 open and 1 closed port
+Device type: general purpose
+Running: Linux 4.X
+OS CPE: cpe:/o:linux:linux_kernel:4.15
+OS details: Linux 4.15
+Network Distance: 3 hops
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+TRACEROUTE (using port 502/tcp)
+HOP RTT      ADDRESS
+1   30.28 ms 192.168.128.1
+2   ...
+3   30.75 ms 10.80.185.63
+
+OS and Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 50.61 seconds
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
+Nous utiliserons le script ci-dessous pour réaliser la reconnaissance et établir un profil de l'état actuel du système.
+
+<details><summary>Script de reconnaissance traduit en Français</summary>
+<div markdown = "1">
+
+```python
+#!/usr/bin/env python3
+from pymodbus.client import ModbusTcpClient
+
+PLC_IP = "10.80.185.63"
+PORT = 502
+UNIT_ID = 1
+
+# Connect to PLC
+client = ModbusTcpClient(PLC_IP, port=PORT)
+
+if not client.connect():
+    print("Echec de connexion au PLC")
+    exit(1)
+
+print("=" * 60)
+print("TBFC Drone System - Rapport de Reconnaissance")
+print("=" * 60)
+print()
+
+# Read holding registers
+print("HOLDING REGISTERS:")
+print("-" * 60)
+
+registers = client.read_holding_registers(address=0, count=5, slave=UNIT_ID)
+if not registers.isError():
+    hr0, hr1, hr2, hr3, hr4 = registers.registers
+    
+    print(f"HR0 (Package Type): {hr0}")
+    print(f"  0=Noel, 1=Oeufs, 2=Panier")
+    print()
+    
+    print(f"HR1 (Delivery Zone): {hr1}")
+    print(f"  1-9=Zone normale, 10=Largage de ocean")
+    print()
+    
+    print(f"HR4 (System Signature): {hr4}")
+    if hr4 == 666:
+        print(f"  ATTENTION: Signature de Eggsploit détectée")
+    print()
+
+# Read coils
+print("COILS (Boolean Flags):")
+print("-" * 60)
+
+coils = client.read_coils(address=10, count=6, slave=UNIT_ID)
+if not coils.isError():
+    c10, c11, c12, c13, c14, c15 = coils.bits[:6]
+    
+    print(f"C10 (Vérification inventaire): {c10}")
+    print(f"  Devrait etre vrai")
+    print()
+    
+    print(f"C11 (Protection/Override): {c11}")
+    if c11:
+        print(f"  ACTIF - Protection contre les modifications")
+    print()
+    
+    print(f"C12 (Largage urgence): {c12}")
+    if c12:
+        print(f"  CRITIQUE: Protocole Largage actif")
+    print()
+    
+    print(f"C13 (Audit Logging): {c13}")
+    print(f"  Devrait etre vrai")
+    print()
+    
+    print(f"C14 (Noel sauvé): {c14}")
+    print(f"  Auto-set quand le système est réparé")
+    print()
+    
+    print(f"C15 (Autodestruction activée): {c15}")
+    if c15:
+        print(f"  DANGER: Compte à rebours")
+    print()
+
+print("=" * 60)
+print("NIVEAU DE MENACE:")
+print("=" * 60)
+
+if hr4 == 666:
+    print("Eggsploit détecté")
+if c11:
+    print("Mécanisme de protection actif - piège")
+if hr0 == 1:
+    print("Type de paquets forcé sur Oeufs")
+if not c10:
+    print("Vérification inventaire désactivé")
+if not c13:
+    print("Audit logging désactivé")
+
+print()
+print("REMEDIATION REQUISE")
+print("=" * 60)
+
+client.close()
+```
+
+</div></details>
+
+Le résultat indique que le système a été modifié par un *Eggsploit*, que le mécanisme de protection (autodestruction) est actif, que le type de paquets est forcé sur "œufs", que l'inventaire n'est pas vérifié avant prise en charge, et que le système d'audit n'est pas actif.
+
+{% capture spoil %}
+
+```txt
+============================================================
+TBFC Drone System - Rapport de Reconnaissance
+============================================================
+
+HOLDING REGISTERS:
+------------------------------------------------------------
+HR0 (Package Type): 1
+  0=Noel, 1=Oeufs, 2=Panier
+
+HR1 (Delivery Zone): 5
+  1-9=Zone normale, 10=Largage de ocean
+
+HR4 (System Signature): 666
+  ATTENTION: Signature de Eggsploit détectée
+
+COILS (Boolean Flags):
+------------------------------------------------------------
+C10 (Vérification inventaire): False
+  Devrait etre vrai
+
+C11 (Protection/Override): True
+  ACTIF - Protection contre les modifications
+
+C12 (Largage urgence): False
+
+C13 (Audit Logging): False
+  Devrait etre vrai
+
+C14 (Noel sauvé): False
+  Auto-set quand le système est réparé
+
+C15 (Autodestruction activée): False
+
+============================================================
+NIVEAU DE MENACE:
+============================================================
+Eggsploit détecté
+Mécanisme de protection actif - piège
+Type de paquets forcé sur Oeufs
+Vérification inventaire désactivé
+Audit logging désactivé
+
+REMEDIATION REQUISE
+============================================================
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
+Après cette première analyse, nous pouvons tenter de réparer le système, étape par étape.
+
+<details><summary>Script de restauration non traduit</summary>
+<div markdown = "1">
+
+```python
+#!/usr/bin/env python3
+from pymodbus.client import ModbusTcpClient
+import time
+
+PLC_IP = "10.80.185.63"
+PORT = 502
+UNIT_ID = 1
+
+def read_coil(client, address):
+    result = client.read_coils(address=address, count=1, slave=UNIT_ID)
+    if not result.isError():
+        return result.bits[0]
+    return None
+
+def read_register(client, address):
+    result = client.read_holding_registers(address=address, count=1, slave=UNIT_ID)
+    if not result.isError():
+        return result.registers[0]
+    return None
+
+# Connect to PLC
+client = ModbusTcpClient(PLC_IP, port=PORT)
+
+if not client.connect():
+    print("Failed to connect to PLC")
+    exit(1)
+
+print("=" * 60)
+print("TBFC Drone System - Christmas Restoration")
+print("=" * 60)
+print()
+
+# Step 1: Check current state
+print("Step 1: Verifying current system state...")
+time.sleep(1)
+
+package_type = read_register(client, 0)
+protection = read_coil(client, 11)
+armed = read_coil(client, 15)
+
+print(f"  Package Type: {package_type} (1 = Eggs)")
+print(f"  Protection Active: {protection}")
+print(f"  Self-Destruct Armed: {armed}")
+print()
+
+# Step 2: Disable protection
+print("Step 2: Disabling protection mechanism...")
+time.sleep(1)
+
+result = client.write_coil(11, False, slave=UNIT_ID)
+if not result.isError():
+    print("  Protection DISABLED")
+    print("  Safe to proceed with changes")
+else:
+    print("  FAILED to disable protection")
+    client.close()
+    exit(1)
+
+print()
+time.sleep(1)
+
+# Step 3: Change package type to Christmas
+print("Step 3: Setting package type to Christmas presents...")
+time.sleep(1)
+
+result = client.write_register(0, 0, slave=UNIT_ID)
+if not result.isError():
+    print("  Package type changed to: Christmas Presents")
+else:
+    print("  FAILED to change package type")
+
+print()
+time.sleep(1)
+
+# Step 4: Enable inventory verification
+print("Step 4: Enabling inventory verification...")
+time.sleep(1)
+
+result = client.write_coil(10, True, slave=UNIT_ID)
+if not result.isError():
+    print("  Inventory verification ENABLED")
+else:
+    print("  FAILED to enable verification")
+
+print()
+time.sleep(1)
+
+# Step 5: Enable audit logging
+print("Step 5: Enabling audit logging...")
+time.sleep(1)
+
+result = client.write_coil(13, True, slave=UNIT_ID)
+if not result.isError():
+    print("  Audit logging ENABLED")
+    print("  Future changes will be logged")
+else:
+    print("  FAILED to enable logging")
+
+print()
+time.sleep(2)
+
+# Step 6: Verify restoration
+print("Step 6: Verifying system restoration...")
+time.sleep(1)
+
+christmas_restored = read_coil(client, 14)
+new_package_type = read_register(client, 0)
+emergency_dump = read_coil(client, 12)
+self_destruct = read_coil(client, 15)
+
+print(f"  Package Type: {new_package_type} (0 = Christmas)")
+print(f"  Christmas Restored: {christmas_restored}")
+print(f"  Emergency Dump: {emergency_dump}")
+print(f"  Self-Destruct Armed: {self_destruct}")
+print()
+
+if christmas_restored and new_package_type == 0 and not emergency_dump and not self_destruct:
+    print("=" * 60)
+    print("SUCCESS - CHRISTMAS IS SAVED")
+    print("=" * 60)
+    print()
+    print("Christmas deliveries have been restored")
+    print("The drones will now deliver presents, not eggs")
+    print("Check the CCTV feed to see the results")
+    print()
+    
+    # Read the flag from registers
+    flag_result = client.read_holding_registers(address=20, count=12, slave=UNIT_ID)
+    if not flag_result.isError():
+        flag_bytes = []
+        for reg in flag_result.registers:
+            flag_bytes.append(reg >> 8)
+            flag_bytes.append(reg & 0xFF)
+        flag = ''.join(chr(b) for b in flag_bytes if b != 0)
+        print(f"Flag: {flag}")
+    
+    print()
+    print("=" * 60)
+else:
+    print("Restoration incomplete - check system state")
+
+client.close()
+print()
+print("Disconnected from PLC")
+```
+
+</div></details>
+
+{% capture spoil %}
+
+```txt
+============================================================
+TBFC Drone System - Christmas Restoration
+============================================================
+
+Step 1: Verifying current system state...
+  Package Type: 1 (1 = Eggs)
+  Protection Active: True
+  Self-Destruct Armed: False
+
+Step 2: Disabling protection mechanism...
+  Protection DISABLED
+  Safe to proceed with changes
+
+Step 3: Setting package type to Christmas presents...
+  Package type changed to: Christmas Presents
+
+Step 4: Enabling inventory verification...
+  Inventory verification ENABLED
+
+Step 5: Enabling audit logging...
+  Audit logging ENABLED
+  Future changes will be logged
+
+Step 6: Verifying system restoration...
+  Package Type: 0 (0 = Christmas)
+  Christmas Restored: True
+  Emergency Dump: False
+  Self-Destruct Armed: False
+
+============================================================
+SUCCESS - CHRISTMAS IS SAVED
+============================================================
+
+Christmas deliveries have been restored
+The drones will now deliver presents, not eggs
+Check the CCTV feed to see the results
+
+Flag: THM{[...expurgé...]}
+
+============================================================
+
+Disconnected from PLC
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
+{% include elements/figure.html image="images/THM/AoC2025/20251219_Victoire.png" caption="Une défaite de plus pour le Roi Malhare" %}
+
+## Jour 20 : [Race Conditions - Toy to The World](https://tryhackme.com/room/race-conditions-aoc2025-d7f0g3h6j9)
+
+![AoC 2025 jour 20](https://tryhackme-images.s3.amazonaws.com/user-uploads/62a7685ca6e7ce005d3f3afe/room-content/62a7685ca6e7ce005d3f3afe-1763451486547.png)
+
+L'exercice du jour sera réaliser avec [BurpSuite](https://portswigger.net/burp).
+
+Il nous faut d'abord commander le nouveau jouet en édition limitée pour obtenir la requête {% include dictionary.html word="HTTP" %} correspondante.
+
+{% include elements/figure.html image="images/THM/AoC2025/20251220_Commande1.png" caption="Commande de jouet limité effectuée" %}
+
+Grâce à Burp, nous trouvons la requête de notre commande :
+
+```http
+POST /process_checkout HTTP/1.1
+Host: 10.81.163.174
+Content-Length: 44
+Accept-Language: fr-FR,fr;q=0.9
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/143.0.0.0 Safari/537.36
+Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryZbxL1P9I7mBAEaLH
+Accept: */*
+Origin: http://10.81.163.174
+Referer: http://10.81.163.174/checkout_page
+Accept-Encoding: gzip, deflate, br
+Cookie: session=eyJjYXJ0Ijp7InNsZWQtMTAxIjoxfSwidXNlciI6ImF0dGFja2VyIn0.aUmC4g.NPSCSFdgQhEukjVo7OGV1Gd5tUU
+Connection: keep-alive
+
+------WebKitFormBoundaryZbxL1P9I7mBAEaLH--
+```
+
+Nous envoyons cette requête dans la fonction *Repeater* de Burp afin de pouvoir la renvoyer plusieurs fois en parallèle et ainsi non seulement vider le stock, mais également dépasser la quantité de commande prévue.
+
+Nous répéterons l'opération 10 fois puisqu'après notre commande initiale il ne reste que 9 produits en stock.
+
+{% include elements/figure.html image="images/THM/AoC2025/20251220_Repeater1.png" caption="Paramétrage du Repeater" %}
+
+{% include elements/figure_spoil.html image="images/THM/AoC2025/20251220_Oversold1.png" caption="Le flag apparaît de retour sur la page principale" %}
+
+Nous répétons les mêmes opérations sur la peluche de lapin pour obtenir le second flag.
+
+{% include elements/figure_spoil.html image="images/THM/AoC2025/20251220_Oversold2.png" caption="Le flag apparaît de retour sur la page principale" %}
