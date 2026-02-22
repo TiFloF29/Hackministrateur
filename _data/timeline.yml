@@ -1,10 +1,11 @@
 - title: Administrateur Systèmes, Capgemini, Le Relecq-Kerhuon, FR
   icon: fa-solid fa-user-tie
   from: 09/2023
-  to: present
+  to: présent
   description: Administration systèmes dans le domaine bancaire.<br />
-              Exploitation Mainframe, gestion de l'environnement, des comptes et des habilitations hors-production<br />
-              Exploitation Outils de Sécurité, analyse de logs, gestion antivirus, gouvernance, rejeux de pentests
+              <ul><li>09/23 --> 01/24 - Exploitation Mainframe, gestion de l'environnement, des comptes et des habilitations hors-production</li>
+              <li>01/24 --> 03/26 - Exploitation Outils de Sécurité, analyse de logs, gestion antivirus, gouvernance, rejeux de pentests</li>
+              <li>03/26 --> en cours - Maintenance de logiciels, mapping de conversion de données SWIFT pour virements internationaux</li></ul>
 
 - title: POEI Administration Systèmes et Réseaux / Bancaire, IB Cegos, distanciel
   icon: fa-solid fa-graduation-cap
