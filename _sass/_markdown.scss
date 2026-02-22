@@ -4,6 +4,10 @@
     margin-top: 32px;
   }
 
+  h1 {
+    font-family: 'Glitch', sans-serif;
+  }
+
   hr {
     background: var(--bs-secondary); // Utilisation des variables CSS Bootstrap
   }
@@ -55,7 +59,7 @@
     border: 1px solid #ddd;
     color: var(--bs-dark);
     font-family: monospace;
-    font-size: 16px;
+    font-size: 14px;
     line-height: 20px;
     margin-bottom: 1.6em;
     max-width: 100%;
@@ -64,6 +68,10 @@
     page-break-inside: avoid;
     overflow: auto;
     word-wrap: break-word;
+  }
+
+  code {
+    font-family: 'Hack Nerd Font', monospace;
   }
 
   code.highlighter-rouge {
