@@ -19,6 +19,14 @@
     font-display: swap;
 }
 
+@font-face {
+    font-family: 'Noto';
+    src: url('../fonts/NotoSansNerdFont-Regular.ttf') format('truetype');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
 // Import partials from `sass_dir` (defaults to `_sass`)
 @import "variables",
         "404",
