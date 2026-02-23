@@ -11,11 +11,17 @@ description: Se séparer de Windows et passer à Linux
 * [Pourquoi utiliser Windows ?](#pourquoi-utiliser-windows-)
 * [Pourquoi quitter Windows ?](#pourquoi-quitter-windows-)
 * [Pourquoi passer sur Linux ?](#pourquoi-passer-sur-linux-)
-* [Installation sur le PC portable](#installation-sur-le-pc-portable)
+* [Choix et installation](#choix-et-installation)
+  * [PC Portable](#pc-portable)
+  * [PC Fixe](#pc-fixe)
 * [Pourquoi se contenter d'un Linux de base ?](#pourquoi-se-contenter-dun-linux-de-base-)
   * [Starship](#starship)
   * [Les alternatives Rust](#les-alternatives-rust)
     * [Lire un fichier avec batcat](#lire-un-fichier-avec-batcat)
+    * [Lister le contenu du PC avec LSDeluxe](#lister-le-contenu-du-pc-avec-lsdeluxe)
+    * [Retrouver mes données avec fdfind](#retrouver-mes-données-avec-fdfind)
+    * [Rechercher dans les fichiers avec ripgrep](#rechercher-dans-les-fichiers-avec-ripgrep)
+    * [Envoyer des requêtes HTTP avec xh](#envoyer-des-requêtes-http-avec-xh)
 
 ## Pourquoi utiliser Windows ?
 
@@ -43,22 +49,37 @@ Mais quelle distribution choisir ? C'est qu'il y en a quelques unes :
 
 {% include elements/figure.html image="https://upload.wikimedia.org/wikipedia/commons/1/1b/Linux_Distribution_Timeline.svg" caption="Chronologie des distributions Linux" %}
 
-Grâce au site [DistroSea](https://distrosea.com/fr/) j'ai pu tester quelques distributions, et j'en ai choisi deux qui me conviennent le plus :
+Grâce au site [DistroSea](https://distrosea.com/fr/) j'ai pu tester quelques distributions, et j'en ai retenu quelques unes qu'il va falloir départager :
 
 * [LMDE](https://linuxmint.com/download_lmde.php) (Linux Mint Debian Edition) : Réputée fiable, stable et légère
 * [Garuda Linux](https://garudalinux.org/) : Basée sur Arch Linux, elle est récente, moderne, et orientée vers les joueurs
+* [Nobara Linux](https://nobaraproject.org/) : Basée sur Fedora, optimisée pour le jeu vidéo ; mais originaire des États-Unis et je recherche une solution plus souveraine
+* [OpenSuse](https://www.opensuse.org/) : Originaire d'Allemagne, réputée pour sa fiabilité, disponible en version *stable* et *rolling* ; mais moins optimisée pour le jeu.
 
 Mon intention est d'installer Garuda sur mon PC portable pour m'assurer que la distribution corresponde bien à mes besoins, puis d'installer Garuda à côté de Windows dans un premier temps sur mon PC fixe afin d'évaluer Garuda sur une utilisation quotidienne en gardant Windows "au cas où".
 
-## Installation sur le PC portable
+## Choix et installation
 
-Dans mon cas, le PC portable est secondaire, et n'est utile qu'en cas de déplacement ou vacances. Mais puisqu'il est voué à être déplacé, la sécurité des données est primordiale. J'ai donc souhaité faire une installation chiffrée, et séparer les dossiers importants comme `/home` et `/usr` dans des partitions différentes.
+### PC Portable
 
-J'avais donc utiliser [LVM (*Logical Volume Manager*)](https://en.wikipedia.org/wiki/Logical_Volume_Manager_(Linux)) et commencer par définir un *volume group* chiffré correspondant au SSD, dans lequel je pourrais créer des *logical volumes* qui auraient servi à installer les différentes partitions.
+Dans mon cas, le PC portable est secondaire, et n'est utile qu'en cas de déplacement ou vacances. Mais puisqu'il est voué à être déplacé, la sécurité des données est primordiale. Ce PC n'a pas particulièrement besoin d'être stable, et peut servir de cobaye informatique pour tester différents outils, différentes configuration.
 
-**SAUF QUE** les distributions Linux nécessitent d'avoir une partition particulière `/boot/efi` **non chiffrée**.
+La distribution choisie sera **Garuda**. En cas de problème lors d'une configuration hasardeuse, il sera possible de revenir en arrière grâce aux snapshots de BTRFS.
 
-Retour sur [GParted](https://gparted.org/) pour revoir les partitions.
+<div class="text-center">
+    <i class="fa-solid fa-1xl text-info">Redaction en cours</i><br />
+    <i class="fa-solid fa-spinner fa-spin-pulse fa-2xl text-info mt-3"></i>
+</div>
+
+### PC Fixe
+
+Ce choix est plus complexe car il s'agit de la machine principale.
+
+Sur le papier, Nobara semble la meilleure solution. Mais dans un remplacer un outil américain par un autre perd malheureusement en intérêt.
+
+Garuda pourrait ne pas être assez stable pour une utilisation sans contrainte au quotidien.
+
+LMDE et OpenSuse sont stables, viennent de pays européens (Irlande et Allemagne respectivement), mais manquent d'optimisation pour les jeux vidéos qui est une des utilisations principales de cette machine.
 
 <div class="text-center">
     <i class="fa-solid fa-1xl text-info">Redaction en cours</i><br />
@@ -86,3 +107,21 @@ Ces outils sont également développés dans l'optique d'être plus ergonomique 
 Puisque des images valent mieux qu'un long discours, voici quelques exemples et comparaisons des commandes que j'utilise désormais au quotidien
 
 #### Lire un fichier avec [batcat](https://github.com/sharkdp/bat)
+
+Une alternative à la commande intégrer `cat`
+
+#### Lister le contenu du PC avec [LSDeluxe](https://github.com/lsd-rs/lsd)
+
+Un remplaçant plus élégant pour `ls`
+
+#### Retrouver mes données avec [fdfind](https://github.com/sharkdp/fd)
+
+Beaucoup plus rapide que `find`
+
+#### Rechercher dans les fichiers avec [ripgrep](https://github.com/BurntSushi/ripgrep)
+
+Plus rapide et plus simple que `grep`
+
+#### Envoyer des requêtes HTTP avec [xh](https://github.com/ducaale/xh)
+
+Plus simple et plus puissant que `curl` et met en forme les résultats

@@ -24,6 +24,8 @@ La question devenait donc :
 
 Travaillant déjà sur un ordinateur, un domaine numérique semblait le plus approprié. Mais ce n'était pas vraiment précis.
 
+Devant la recrudescence des attaques informatiques, il est plus que nécessaire que toutes les personnes motivées se mobilisent pour sécuriser les systèmes d'informations. C'est à ce moment que mon séjour dans la cybersécurité a démarré.
+
 <div class="text-center">
     <i class="fa-solid fa-1xl text-info">Redaction en cours</i><br />
     <i class="fa-solid fa-spinner fa-spin-pulse fa-2xl text-info mt-3"></i>
