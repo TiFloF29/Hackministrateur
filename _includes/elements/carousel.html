@@ -68,11 +68,11 @@
   <div class="carousel-inner">
     {% for image in images %} {%- if forloop.first -%}
     <div class="carousel-item active">
-      <img src="{{ image }}" class="img-fluid"/>
+      <img src="{{ image }}" class="img-fluid carousel-img"/>
     </div>
     {%- else -%}
     <div class="carousel-item">
-      <img src="{{ image }}" class="img-fluid"/>
+      <img src="{{ image }}" class="img-fluid carousel-img"/>
     </div>
     {%- endif -%} {% endfor %}
   </div>
@@ -98,3 +98,10 @@
   </a>
 </div>
 {%- endif -%}
+<style>
+  .carousel-img {
+    max-width: 75%;
+    margin: auto;
+    object-fit: contain;
+  }
+</style>
