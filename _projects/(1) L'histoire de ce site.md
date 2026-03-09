@@ -79,6 +79,12 @@ La dernière version du thème créé par [yousinix](https://github.com/yousinix
 
 J'ai donc entrepris de mettre à jour ma version du thème vers les dernières itérations de Bootstrap (v5.3.0) et Font Awesome (v6.0.0) et changer les animations de WOW par celles de AOS (*Animate On Scroll*), WOW étant "temporairement obsolète" d'après l'annonce sur son dépôt Github. Animate.css a été mis à jour vers la version 4.1.1.
 
+*Edit le 23/02/2026* : Passage à Bootstrap 5.3.8 et Font Awesome 7.1.0.
+
+## 9. Changement de polices
+
+Pour continuer la personnalisation du site, j'ai opté pour la police "Noto Nerd Font" pour l'ensemble du site, et "Hack Nerd Font" pour les blocs de code, toutes deux disponibles sur [Nerd Fonts](nerdfonts.com)
+
 <div class="text-center">
     <i class="fa-solid fa-1xl text-info">Redaction en cours</i><br />
     <i class="fa-solid fa-spinner fa-spin-pulse fa-2xl text-info mt-3"></i>

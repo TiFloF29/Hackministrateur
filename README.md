@@ -10,7 +10,7 @@ Ce projet est basé sur le thème [portfolYOU](https://github.com/yousinix/portf
 > * 2024/09/01 : Mise à jour de ***Bootstrap*** de v4.6.0 vers v5.3.0
 > * 2024/09/03 : Remplacement des animations WOW par AOS ***Animate On Scroll***
 > * 2024/09/04 : Ajout de la possibilité de changer la langue des dates basée sur le travail de [freakdesign](https://github.com/freakdesign/Shopify-code-snippets/blob/master/Translate%20date%20strings%20into%20other%20languages/date-translate.liquid) pour Shopify Liquid
-> * 2025/03/20 : Mise en place d'un système permettant de cacher des images et des blocs de réponse
+> * 2026/02/12 : Mise à jour de ***Font Awesome*** vers 7.1.0
 
 > [!NOTE]
 >
@@ -18,3 +18,5 @@ Ce projet est basé sur le thème [portfolYOU](https://github.com/yousinix/portf
 > * Rendre les images du carrousel cliquables
 > * Possibilité d'utiliser plusieurs carrousels par page
 > * Possibilité d'utiliser des couleurs personnalisées
+> * Mise en place d'un système permettant de cacher des images et des blocs de réponse
+> * Changement de police pour les blocs de code + police pour les titres

@@ -13,7 +13,7 @@ dribbble:
 
 email:
   url   : "mailto:"
-  icon  : fa-solid fa-envelope
+  icon  : fa-solid fa-at
   color : db4437
 
 facebook:
@@ -23,7 +23,7 @@ facebook:
 
 github:
   url   : https://www.github.com/
-  icon  : fa-brands fa-github
+  icon  : fa-brands fa-github-alt
   color : 333333
 
 gitlab:

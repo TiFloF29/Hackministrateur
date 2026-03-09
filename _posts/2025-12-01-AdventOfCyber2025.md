@@ -1,6 +1,6 @@
 ---
 title: Advent Of Cyber 2025
-tags: [TryHackMe, Facile, Avent, Défis, En cours]
+tags: [TryHackMe, Facile, Avent, Défis]
 style: border
 color: thm
 comments: false
