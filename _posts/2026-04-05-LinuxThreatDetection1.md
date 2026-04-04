@@ -254,4 +254,4 @@ L'attaquant a donc utilisé un reverse shell Python.
 ---
 L'analyse de logs Linux s'étend sur 2 autres box. Pour passer à la suivante :
 
-{% include elements/button.html link="/Hackministrateur/comptes-rendus/LinuxThreatDetection2" text="Epreuve suivante" style="primary" size="sm" %}
+{% include elements/button.html link="/Hackministrateur/comptes-rendus/LinuxThreatDetection2" text="Epreuve suivante" style="outline-info" %}

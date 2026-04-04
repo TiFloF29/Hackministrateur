@@ -256,4 +256,4 @@ type=SYSCALL msg=audit(08/13/25 18:29:51.986:1527) : arch=x86_64 syscall=execve 
 ---
 L'analyse de logs Linux s'étend sur 3 autres box. Pour passer à la suivante :
 
-{% include elements/button.html link="/Hackministrateur/comptes-rendus/LinuxThreatDetection1" text="Epreuve suivante" style="primary" size="sm" %}
+{% include elements/button.html link="/Hackministrateur/comptes-rendus/LinuxThreatDetection1" text="Epreuve suivante" style="outline-info" %}
