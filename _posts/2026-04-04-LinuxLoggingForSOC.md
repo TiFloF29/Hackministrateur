@@ -4,7 +4,7 @@ tags: [TryHackMe, Facile, Défense, Analyse de logs, Linux]
 style: border
 color: thm
 comments: false
-description: Déchiffrer une information en analysant le mode de chiffrement
+description: Comprendre les logs d'une machine Linux
 ---
 Lien vers l'épreuve : <https://tryhackme.com/room/linuxloggingforsoc>
 
