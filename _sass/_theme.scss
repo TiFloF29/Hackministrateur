@@ -1,4 +1,3 @@
-@use "variables" as *;
 @mixin themed($property, $light-value, $dark-value) {
   [data-theme="light"] & {
     #{$property}: $light-value;
