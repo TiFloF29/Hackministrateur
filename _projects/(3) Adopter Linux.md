@@ -25,27 +25,25 @@ description: Se séparer de Windows et passer à Linux
 
 ## Pourquoi utiliser Windows ?
 
-C'est la première question que je me suis posée : pour quelles raisons j'utilise Windows ?
+La question initiale de ma réflexion réside dans la motivation de mon usage actuel de Windows.
 
-La première raison, est clairement l'habitude. Mon premier contact avec un ordinateur était sur Windows 95. Quelques années plus tard, cette machine devenait mon premier PC. Je suis ensuite passé sur Windows XP. Puis mon premier PC portable était sous Windows 7, le second sous Windows 10, et la tour sur laquelle je rédige ces lignes est actuellement sous Windows 11.
+Premièrement, cet usage repose sur une habitude ancrée dans le temps. Mon parcours informatique a débuté sous Windows 95, et j'ai ensuite évolué progressivement vers les versions XP, 7, 10, jusqu'à la version 11 actuellement installée sur ma machine de travail.
 
-La seconde raison est la compatibilité des jeux vidéos sur d'autres plateformes. La plupart est développée pour Windows, et la compatibilité n'est pas garantie sur d'autres OS. Perdre l'argent investi dans des jeux PC ne fait pas partie de la liste des objectifs dans l'adoption d'une distribution Linux.
+Deuxièmement, des enjeux de compatibilité logicielle — particulièrement concernant le jeu vidéo — constituent un frein majeur à la migration. La majorité des titres sont optimisés pour Windows ; une transition vers Linux ne doit donc pas compromettre l'investissement réalisé dans ces actifs numériques.
 
 ## Pourquoi quitter Windows ?
 
-Les conditions actuelles pour conserver Windows sont de plus en plus restrictives : Puce TPM 2.0 (rendant mon PC portable obsolète), une puce dédiée à l'intelligence artificielle pour Copilot+ (rendant également ma tour obsolète).
+L’écosystème Windows se restreint progressivement avec des exigences techniques strictes, rendant certains équipements obsolètes avant même leur date de fin de vie. La **puce TPM 2.0**, désormais obligatoire pour les mises à jour logicielles, invalide mon ordinateur portable, tandis que l’intégration d’**une puce dédiée à l’IA** (Copilot+) rend ma station fixe incompatible avec les futures fonctionnalités.
 
-Ajoutons des fonctionnalités discutables comme Rappel (*Recall*) qui prévoit de prendre des captures d'écran **toutes les 5 secondes** pour lesquelles il faudra définir manuellement les sites sur lesquels on souhaite le désactiver afin d'éviter d'enregistrer des données personnelles ou bancaire, et j'ai plus de raisons que nécessaire pour envisager une alternative moins contraignante.
+Ajoutons à cela des innovations controversées comme **Recall**, un outil qui prévoit de capturer automatiquement des captures d’écran toutes les 5 secondes sur l’ensemble du système. Pour limiter la collecte de données sensibles (comptes bancaires, informations personnelles), il faudra configurer manuellement une liste d’exclusions – une solution peu pratique et intrusive.
+
+Face à ces contraintes croissantes, envisager une alternative comme **Linux** apparaît comme une option plus flexible, respectueuse des données et adaptée aux besoins des utilisateurs exigeants en termes de liberté et de sécurité.
 
 ## Pourquoi passer sur Linux ?
 
-Certes, quitter Windows est en ligne de mire, mais pour aller où ?
+Si l’idée de quitter Windows vous tente, mais que les solutions Apple et macOS ne correspondent pas à vos attentes (ni à votre portefeuille), Linux s’impose comme une alternative idéale ! Gratuite, légère et disponible pour presque toutes les machines, cette famille de systèmes d’exploitation regorge d’options variées.
 
-Apple et Mac OS ? Vider mon compte en banque n'est pas mon objectif !
-
-Une des innombrables distributions de Linux ? Je peux l'installer sur toutes mes machines, la plupart est relativement légère, et en plus c'est **gratuit** !!
-
-Mais quelle distribution choisir ? C'est qu'il y en a quelques unes :
+Mais comment choisir parmi ces nombreuses distributions ? Voici quelques pistes pour affiner votre décision :
 
 {% include elements/figure.html image="https://upload.wikimedia.org/wikipedia/commons/1/1b/Linux_Distribution_Timeline.svg" caption="Chronologie des distributions Linux" %}
 
@@ -56,7 +54,7 @@ Grâce au site [DistroSea](https://distrosea.com/fr/) j'ai pu tester quelques di
 * [Nobara Linux](https://nobaraproject.org/) : Basée sur Fedora, optimisée pour le jeu vidéo ; mais originaire des États-Unis et je recherche une solution plus souveraine
 * [OpenSuse](https://www.opensuse.org/) : Originaire d'Allemagne, réputée pour sa fiabilité, disponible en version *stable* et *rolling* ; mais moins optimisée pour le jeu.
 
-Mon intention est d'installer Garuda sur mon PC portable pour m'assurer que la distribution corresponde bien à mes besoins, puis d'installer Garuda à côté de Windows dans un premier temps sur mon PC fixe afin d'évaluer Garuda sur une utilisation quotidienne en gardant Windows "au cas où".
+Mon intention est d'installer Garuda sur mon PC portable pour m'assurer que la distribution corresponde bien à mes besoins, puis d'installer une autre distribution à côté de Windows dans un premier temps sur mon PC fixe afin d'évaluer cette  sur une utilisation quotidienne en gardant Windows "au cas où".
 
 ## Choix et installation
 
@@ -66,25 +64,19 @@ Dans mon cas, le PC portable est secondaire, et n'est utile qu'en cas de déplac
 
 La distribution choisie sera **Garuda**. En cas de problème lors d'une configuration hasardeuse, il sera possible de revenir en arrière grâce aux snapshots de BTRFS.
 
-<div class="text-center">
-    <i class="fa-solid fa-1xl text-info">Redaction en cours</i><br />
-    <i class="fa-solid fa-spinner fa-spin-pulse fa-2xl text-info mt-3"></i>
-</div>
-
 ### PC Fixe
 
 Ce choix est plus complexe car il s'agit de la machine principale.
 
-Sur le papier, Nobara semble la meilleure solution. Mais dans un remplacer un outil américain par un autre perd malheureusement en intérêt.
+Sur le papier, Nobara semble la meilleure solution. Mais remplacer un outil américain par un autre perd malheureusement en intérêt.
 
 Garuda pourrait ne pas être assez stable pour une utilisation sans contrainte au quotidien.
 
 LMDE et OpenSuse sont stables, viennent de pays européens (Irlande et Allemagne respectivement), mais manquent d'optimisation pour les jeux vidéos qui est une des utilisations principales de cette machine.
 
-<div class="text-center">
-    <i class="fa-solid fa-1xl text-info">Redaction en cours</i><br />
-    <i class="fa-solid fa-spinner fa-spin-pulse fa-2xl text-info mt-3"></i>
-</div>
+Après avoir testé ces distributions sur machines virtuelles, je pensais installer OpenSuse Tumbleweed. Mais je reconnais avoir été surpris par les corrections à apporter après l'installation sur la machine physique : des paquets installés par défaut appartenant à la version "Micro" (serveur, atomique), Windows non détecté pour pouvoir utiliser le dual-boot pour en citer quelques-unes. Si j'apprécie la liberté qu'offre Linux en matière de personnalisation, j'attends néanmoins que l'installation initiale soit propre.
+
+Finalement, Nobara a été installée, et me permet actuellement d'écrire ces lignes. La distribution est stable, très facilement personnalisable grâce à l'environnement KDE Plasma 6, et permet de lancer des jeux vidéo sans difficulté.
 
 ## Pourquoi se contenter d'un Linux de base ?
 
