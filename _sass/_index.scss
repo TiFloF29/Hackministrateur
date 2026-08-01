@@ -1,0 +1,16 @@
+// Import partials from `sass_dir` (defaults to `_sass`)
+// _index.scss
+@forward "variables";
+@forward "theme";
+@forward "theme-dark";
+@forward "portfolYOU";
+@forward "base";
+@forward "404";
+@forward "blog";
+@forward "footer";
+@forward "landing";
+@forward "navbar";
+@forward "markdown";
+@forward "projects";
+@forward "timeline";
+@forward "autumn";
