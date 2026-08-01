@@ -1,3 +1,6 @@
+@use "variables" as *;
+@use "native" as *;
+@use "sass:color";
 [data-theme="dark"] {
   body {
     background-color: $dark-900;
@@ -6,7 +9,7 @@
 
   // Code blocks & Syntax highlighting
 
-  @import "native.scss";
+  //@import "native.scss";
 
   pre,
   code.highlighter-rouge {
@@ -63,7 +66,7 @@
 
     &:hover,
     &:focus {
-      background-color: darken($color: $dark-600, $amount: 3);
+      background-color: color.adjust($dark-600, $lightness: -3%);
     }
   }
 

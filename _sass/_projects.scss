@@ -1,4 +1,5 @@
 // No need to upgrade
+@use "variables" as *;
 .project.card {
   border-radius: $rounded-borders;
   text-decoration: none !important;
