@@ -11,3 +11,6 @@ Gemfile.lock
 
 # Log Files
 *.log
+
+# Ruby version
+mise.toml
