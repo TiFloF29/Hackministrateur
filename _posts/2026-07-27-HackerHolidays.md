@@ -829,6 +829,39 @@ THM{cr3d3nt14l_r3us3_4t_th3_b34ch_b4r}
 
 ## Jour 6 : [*Overheard at Breakfast*](https://tryhackme.com/room/hh-overheardatbreakfast-6f01793c)
 
+Le défi du sixième jour est un défi OSINT (*Open Source Intelligence*). Le but est de retrouver des informations sur un compte normalement supprimé, sur un site gratuit permettant de gérer ses réseaux sociaux dont le nom commence par `G`.
+
+{% include elements/figure.html image="images/THM/HH2026/conversation.png" caption="Conversation fournie pour le défi" %}
+
+### 6.1 Recherche du site <!-- omit in toc -->
+
+Une recherche sur différents moteurs de recherche permet de trouver le site [Gravatar](gravatar.com) qui pourrait correspondre à l'utilisation faite par Lambo.
+
+> La même recherche effectuée sur Google et Duckduckgo a permis de retrouver le site, mais Startpage (outil européen) n'a rien donné.
+
+### 6.2 Exploration de Gravatar <!-- omit in toc -->
+
+En renseignant l'adresse mail de l'utilisateur Lambo dans la barre de recherche du site, le profil apparaît.
+
+{% include elements/figure.html image="images/THM/HH2026/Capture_ecran_2026-08-29_gravatar.png" caption="Recherche de l'adresse mail sur Gravatar" %}
+
+{% include elements/figure_spoil.html image="images/THM/HH2026/Capture_ecran_2026-08-29_lambo-profile.png" caption="Profil de l'utilisateur" %}
+
+Le message contient un "prix" au format `base64` qui s'avère être le flag du jour.
+
+```bash
+echo -n "VEhNe1MzY3JlVF9QcjBmaWwzX0g0c19iMzNuX0lkZW50MWZpM2R9" | base64 -d
+```
+
+{% capture spoil %}
+
+```txt
+THM{[...expurgé...]}
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
 ## Jour 7 : [*Do Not Disturb*](https://tryhackme.com/room/hh-donotdisturb-84a45644)
 
 ### 7.1 Enumération <!-- omit in toc -->
@@ -1097,6 +1130,11 @@ THM{[...expurgé...]}
 {% include elements/spoil.html %}
 
 ## Jour 8 : [*Towel on the Sunbed*](https://tryhackme.com/room/hh-towelonthesunbed-61271709)
+
+<div class="text-center">
+    <i class="fa-solid fa-1xl text-info">Redaction en cours</i><br />
+    <i class="fa-solid fa-spinner fa-spin-pulse fa-2xl text-info mt-3"></i>
+</div>
 
 ## Jour 9 : [*CryptoCabana*](https://tryhackme.com/room/hh-cryptocabana-f81cac95)
 
