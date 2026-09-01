@@ -1131,12 +1131,144 @@ THM{[...expurgé...]}
 
 ## Jour 8 : [*Towel on the Sunbed*](https://tryhackme.com/room/hh-towelonthesunbed-61271709)
 
+### 8.1 Enumération <!-- omit in toc -->
+
+La première étape consiste à réaliser un scan {% include dictionary.html word="NMAP" %} afin de découvrir les ports ouverts sur la machine.
+
+```bash
+nmap -sC -sV 10.128.186.144 -oN nmap_results
+```
+
+{% capture spoil %}
+
+```txt
+Starting Nmap 7.99 ( https://nmap.org ) at 2026-09-01 14:22 +0200
+Nmap scan report for 10.128.186.144
+Host is up (0.032s latency).
+Not shown: 998 closed tcp ports (reset)
+PORT     STATE SERVICE VERSION
+22/tcp   open  ssh     OpenSSH 9.6p1 Ubuntu 3ubuntu13.16 (Ubuntu Linux; protocol 2.0)
+| ssh-hostkey: 
+|   256 3c:4b:03:dc:82:3e:c5:72:03:cf:e1:6b:5a:ce:73:df (ECDSA)
+|_  256 41:71:0d:7d:5f:19:aa:39:0b:5b:62:c2:87:b0:7a:66 (ED25519)
+3000/tcp open  http    Node.js Express framework
+| http-title: Ponzi Portfolio \xE2\x80\x94 Login
+|_Requested resource was /auth/login
+Service Info: OS: Linux; CPE: cpe:/o:linux:linux_kernel
+
+Service detection performed. Please report any incorrect results at https://nmap.org/submit/ .
+Nmap done: 1 IP address (1 host up) scanned in 13.95 seconds
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
+Le serveur {% include dictionary.html word="HTTP" %} tourne sur le port 3000.
+
+Un scan des dossiers et pages avec {% include dictionary.html word="feroxbuster" %} indique l'existence d'un tableau de bord (*dashboard*) et d'un coffre-fort (*vault*) uniquement accessible avec un compte authentifié (erreur 401 relevée par l'outil)
+
+```bash
+feroxbuster -u http://10.128.186.144:3000 -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt
+```
+
+{% capture spoil %}
+
+```txt
+ ___  ___  __   __     __      __         __   ___
+|__  |__  |__) |__) | /  `    /  \ \_/ | |  \ |__
+|    |___ |  \ |  \ | \__,    \__/ / \ | |__/ |___
+by Ben "epi" Risher 🤓                 ver: 2.13.1
+───────────────────────────┬──────────────────────
+ 🎯  Target Url            │ http://10.128.186.144:3000/
+ 🚩  In-Scope Url          │ 10.128.186.144
+ 🚀  Threads               │ 50
+ 📖  Wordlist              │ /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt
+ 👌  Status Codes          │ All Status Codes!
+ 💥  Timeout (secs)        │ 7
+ 🦡  User-Agent            │ feroxbuster/2.13.1
+ 💉  Config File           │ /etc/feroxbuster/ferox-config.toml
+ 🔎  Extract Links         │ true
+ 🏁  HTTP methods          │ [GET]
+ 🔃  Recursion Depth       │ 4
+───────────────────────────┴──────────────────────
+ 🏁  Press [ENTER] to use the Scan Management Menu™
+──────────────────────────────────────────────────
+404      GET        1l        2w       21c Auto-filtering found 404-like response and created new filter; toggle off with --dont-filter
+302      GET        1l        4w       33c http://10.128.186.144:3000/ => http://10.128.186.144:3000/auth/login
+301      GET       10l       15w      153c http://10.128.186.144:3000/css => http://10.128.186.144:3000/css/
+301      GET       10l       15w      152c http://10.128.186.144:3000/js => http://10.128.186.144:3000/js/
+200      GET       35l       85w     1213c http://10.128.186.144:3000/auth/login
+401      GET        1l        2w       61c http://10.128.186.144:3000/dashboard
+401      GET        1l        2w       61c http://10.128.186.144:3000/vault
+401      GET        1l        2w       61c http://10.128.186.144:3000/Dashboard
+401      GET        1l        2w       61c http://10.128.186.144:3000/Vault
+[####################] - 6m    661640/661640  0s      found:8       errors:0      
+[####################] - 6m    220546/220546  571/s   http://10.128.186.144:3000/ 
+[####################] - 6m    220546/220546  571/s   http://10.128.186.144:3000/css/ 
+[####################] - 6m    220546/220546  571/s   http://10.128.186.144:3000/js/
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
+### 8.2 Exploration du site <!-- omit in toc -->
+
+Dans l'ordre de mission, il est demandé de créer un compte pour découvrir le mécanisme de récompense.
+
+Une fois le compte créé, l'utilisateur est redirigé vers son tableau de bord dans lequel il est invité à récupérer sa première récompense de 50 PONZI. Puis un compteur de 24 heures démarre jusqu'à la prochaine récompense. A raison de 50 PONZI par jour, il faudrait 3 jours pour pouvoir ouvrir le coffre.
+
+{% include elements/figure_spoil.html image="images/THM/HH2026/Capture_ecran_2026-09-01_Ponzi.png" caption="Compte créé et récompense obtenue" %}
+
+Pour tenter de contourner la limite de temps, une possibilité est d'utiliser le mode *Repeater* de BurpSuite pour envoyer au moins 3 requêtes de récompense en parallèle. Mais pour se faire, il faudra créer un nouveau compte.
+
+Une fois le nouveau compte connecté, il faut passer le proxy de BurpSuite en mode *Interception* puis réclamer la récompense.
+
+{% include elements/figure.html image="images/THM/HH2026/Capture_ecran_2026-09-01_Intercept.png" caption="Requête interceptée" %}
+
+La requête interceptée sera ensuite envoyée vers le module *Repeater*.
+
+Pour lancer plusieurs requêtes en parallèle, il faut ajouter la première requête à un groupe :
+
+{% include elements/figure.html image="images/THM/HH2026/Capture_ecran_2026-09-01_AddGroup.png" caption="Ajouter la requête à un groupe" %}
+
+Puis dupliquer l'onglet suffisamment de fois.
+
+{% include elements/figure.html image="images/THM/HH2026/Capture_ecran_2026-09-01_Duplicate.png" caption="Dupliquer l'onglet au moins 3 fois" %}
+
+Enfin, paramétrer l'envoi du groupe en parallèle.
+
+{% include elements/figure.html image="images/THM/HH2026/Capture_ecran_2026-09-01_Parallel.png" caption="Envoi des messages en parallèle" %}
+
+La réponse obtenue confirme que le total de PONZI ainsi obtenu est de 300 (pour 6 requêtes envoyées).
+
+{% capture spoil %}
+
+```json
+{
+  "message":"Staking reward claimed successfully.",
+  "reward":50,
+  "newBalance":300,
+  "tier":"Whale",
+  "priceSnapshot":4.2
+}
+```
+
+{% endcapture %}
+{% include elements/spoil.html %}
+
+Dans l'onglet Proxy de BurpSuite, il est possible de *Drop* le paquet capturé qui ne sera plus accepté, puis de désactiver le mode interception.
+
+Puis en rafraîchissant le navigateur, le coffre-fort est désormais accessible :
+
+{% include elements/figure_spoil.html image="images/THM/HH2026/Capture_ecran_2026-09-01_OpenVault.png" caption="Ouvrir le coffre pour récupérer le secret" %}
+
+
+## Jour 9 : [*CryptoCabana*](https://tryhackme.com/room/hh-cryptocabana-f81cac95)
+
 <div class="text-center">
     <i class="fa-solid fa-1xl text-info">Redaction en cours</i><br />
     <i class="fa-solid fa-spinner fa-spin-pulse fa-2xl text-info mt-3"></i>
 </div>
-
-## Jour 9 : [*CryptoCabana*](https://tryhackme.com/room/hh-cryptocabana-f81cac95)
 
 ```bash
 az account show
